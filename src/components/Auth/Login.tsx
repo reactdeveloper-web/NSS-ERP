@@ -22,7 +22,6 @@ const _Login = (props: Props) => {
 
   const onFinish = async formData => {
     try {
-      //console.log('hello',formData);
       await login(formData);
     } catch (error) {
       message.error(error.message);
