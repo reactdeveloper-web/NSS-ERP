@@ -18,8 +18,6 @@ interface ReqUserActivity {
 export const loadUser = (payload: ReqUserActivity) => async dispatch => {
   const userJson = localStorage.getItem('user') || '{}';
   const user = JSON.parse(userJson);
-  //console.log('userJson',userJson);
- 
   const id = user.empNum;
   //console.log('payload',payload);
    //console.log('userid',id);
@@ -29,14 +27,6 @@ export const loadUser = (payload: ReqUserActivity) => async dispatch => {
     return;
   }
   try {
-    // const res = await axiosInstance.post(`/master/GetDashboard`,
-    //   payload
-    // );
-    // if (res) {
-    //   console.log('res',res);
-    //   //return
-    //   return dispatch(actions.userLoaded(res.data));
-    // }
     dispatch(actions.authError());
     dispatch(setAlert({ msg: 'Get user error!', type: AlertTypes.ERROR }));
     return;
@@ -48,10 +38,8 @@ export const loadUser = (payload: ReqUserActivity) => async dispatch => {
 };
 
 export const login = (payload: ReqLogin) => async dispatch => {
-  //const { username, password } = payload;
    try {
-      //const res = await axios.post(`${URL.baseAPIUrl}/login/UserLogin`,
-      const res = await axios.post(`/login/UserLogin`,
+      const res = await axios.post(`/erp/login/UserLogin`,
         payload
       );
     const allUsers = res.data;
@@ -68,14 +56,6 @@ export const login = (payload: ReqLogin) => async dispatch => {
           type: AlertTypes.SUCCESS,
         }),
       );
-
-      const reqUserActivity: ReqUserActivity = {
-      empnum: payload.username,
-      DataFlag: "GANGOTRI",
-      Type: 1,
-      Show : ""
-      };
-
       //dispatch(loadUser(reqUserActivity));
       return;
     }

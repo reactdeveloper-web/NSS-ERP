@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 // import 'src/assets/scss/index.scss';
 // import 'antd/dist/antd.css';
 import { App } from './App/App';
+import 'src/assets/scss/custom.scss';
 //import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux';
 import { store } from './redux';
