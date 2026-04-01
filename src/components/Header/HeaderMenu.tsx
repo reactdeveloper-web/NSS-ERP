@@ -1,13 +1,35 @@
 import React from 'react';
-import { Menu, Grid } from 'antd';
-import { NavLink } from 'react-router-dom';
-import { LoginOutlined } from '@ant-design/icons';
-import { logout } from 'src/components/Auth/Auth.thunks';
 import { connect, ConnectedProps } from 'react-redux';
+import { NavLink, useHistory } from 'react-router-dom';
+import { logout } from 'src/components/Auth/Auth.thunks';
 import { PATH } from 'src/constants/paths';
+import { MetronicDropdown } from 'src/components/Common/MetronicDropdown';
 
+const mapStateToProps = (state: AppState) => ({
+  user: state.auth.user as IUser,
+});
 
-export const HeaderMenu = () => {
+const mapDispatchToProps = {
+  logout,
+};
+
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+interface Props extends ConnectedProps<typeof connector> {}
+
+const _HeaderMenu = (props: Props) => {
+  const { user, logout } = props;
+  const history = useHistory();
+  const displayName = user.empName || user.username || 'User';
+  const departmentName = user.deptName || 'Department';
+  const employeeNumber = user.empNum ? Math.trunc(user.empNum) : '';
+
+  const onLogout = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    logout();
+    history.push(PATH.LOGIN);
+  };
+
   return (
         <div id="kt_header" className="header align-items-stretch">
 						{/* <!--begin::Container--> */}
@@ -280,11 +302,68 @@ export const HeaderMenu = () => {
 
                     {/* <!--begin::User--> */}
 										<div className="d-flex align-items-center ms-1 ms-lg-3" id="kt_header_user_menu_toggle">
-											{/* <!--begin::Menu wrapper--> */}
-                      {/* <!--begin::Menu wrapper--> */}
-											<div className="cursor-pointer symbol symbol-30px symbol-md-40px" data-kt-menu-trigger="click" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
-												<img src="assets/media/avatars/150-26.jpg" alt="user" />
-											</div>
+											<MetronicDropdown
+												wrapperClassName="position-relative"
+												openOnHover={true}
+												trigger={
+													<div className="cursor-pointer symbol symbol-30px symbol-md-40px">
+														<img src="assets/media/avatars/150-26.jpg" alt="user" />
+													</div>
+												}
+												menuClassName="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px show-dropdown-menu"
+											>
+												<div className="menu-item px-3">
+													<div className="menu-content d-flex align-items-center px-3">
+														<div className="symbol symbol-50px me-5">
+															<img alt="Logo" src="assets/media/avatars/150-26.jpg" />
+														</div>
+														<div className="d-flex flex-column">
+															<div className="fw-bolder d-flex align-items-center fs-5">
+																{displayName}
+																<span className="badge badge-light-success fw-bolder fs-8 px-2 py-1 ms-2">
+																	{employeeNumber}
+																</span>
+															</div>
+															<span className="fw-bold text-muted fs-7">
+																{departmentName}
+															</span>
+														</div>
+													</div>
+												</div>
+												<div className="separator my-2"></div>
+												<div className="menu-item px-5">
+													<NavLink to={PATH.PROFILE} className="menu-link px-5">
+														My Profile
+													</NavLink>
+												</div>
+												<div className="menu-item px-5">
+													<a href={PATH.LOGIN} className="menu-link px-5" onClick={onLogout}>
+														Sign Out
+													</a>
+												</div>
+												<div className="separator my-2"></div>
+												<div className="menu-item px-5">
+													<div className="menu-content px-5">
+														<label
+															className="form-check form-switch form-check-custom form-check-solid pulse pulse-success"
+															htmlFor="kt_user_menu_dark_mode_toggle"
+														>
+															<input
+																className="form-check-input w-30px h-20px"
+																type="checkbox"
+																value="1"
+																name="mode"
+																id="kt_user_menu_dark_mode_toggle"
+																data-kt-url="#"
+															/>
+															<span className="pulse-ring ms-n1"></span>
+															<span className="form-check-label text-gray-600 fs-7">
+																Dark Mode
+															</span>
+														</label>
+													</div>
+												</div>
+											</MetronicDropdown>
                     </div>
                     {/* <!--end::User --> */}
                   </div>
@@ -299,3 +378,7 @@ export const HeaderMenu = () => {
 		</div>
   )
 };
+
+const HeaderMenu = connector(_HeaderMenu);
+
+export { HeaderMenu };

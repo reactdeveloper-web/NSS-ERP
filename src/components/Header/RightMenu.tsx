@@ -26,7 +26,7 @@ const _RightMenu = (props: Props) => {
     
         <a
           className="navbar-item primary"
-          href={PATH.HOME}
+          href={PATH.LOGIN}
           onClick={() => logout()}
         >
             <LoginOutlined />
