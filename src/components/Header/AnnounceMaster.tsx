@@ -1,13 +1,13 @@
 import React from 'react';
-import { HeaderContent } from 'src/components/Header/HeaderContent';
+import { AnnounceMasterContent } from 'src/components/AnnounceMaster/AnnounceMasterContent';
 import { AuthenticatedPageShell } from 'src/components/Layout/AuthenticatedPageShell';
 
-const Dashboard = () => {
+const AnnounceMaster = () => {
   return (
     <AuthenticatedPageShell>
-      <HeaderContent />
+      <AnnounceMasterContent />
     </AuthenticatedPageShell>
   );
 };
 
-export { Dashboard };
+export { AnnounceMaster };

@@ -15,21 +15,19 @@ interface ReqUserActivity {
   Show : ""
 }
 
-export const loadUser = (payload: ReqUserActivity) => async dispatch => {
+export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
   const userJson = localStorage.getItem('user') || '{}';
   const user = JSON.parse(userJson);
-  const id = user.empNum;
-  //console.log('payload',payload);
-   //console.log('userid',id);
+  const id = user.empNum || user.id;
+
   if (!id) {
     dispatch(actions.authError());
-    dispatch(setAlert({ msg: 'Cant not load user!', type: AlertTypes.ERROR }));
     return;
   }
+
   try {
-    dispatch(actions.authError());
-    dispatch(setAlert({ msg: 'Get user error!', type: AlertTypes.ERROR }));
-    return;
+    dispatch(actions.userLoaded(user));
+    return user;
   } catch (error) {
     dispatch(actions.authError());
     dispatch(setAlert({ msg: error.message, type: AlertTypes.ERROR }));

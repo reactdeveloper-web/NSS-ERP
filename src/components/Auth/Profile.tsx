@@ -22,7 +22,7 @@ const _Profile = (props: Props) => {
   const { user } = props;
   const history = useHistory();
   const onSetting = () => {
-    history.push(PATH.HOME);
+    history.push(PATH.DASHBOARD);
   };
   return (
     <div className="mt-1">
