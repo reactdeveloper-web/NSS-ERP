@@ -44,7 +44,7 @@ const _Dashboard = (props: Props) => {
 					{/* <!--end::Footer--> */}
 
 				</div>
-				//<!--end::Wrapper-->
+				// <!--end::Wrapper-->
     
   );
   return <>{isAuthenticated ? authLinks : ''}</>;

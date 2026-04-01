@@ -41,8 +41,6 @@ export const authReducer = (state = initialState, action: ActionRedux) =>
         break;
       case types.LOGOUT:
         localStorage.removeItem('user');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
         draft.token = null;
         draft.isAuthenticated = false;
         draft.loading = false;
