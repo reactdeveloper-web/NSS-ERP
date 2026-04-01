@@ -19,8 +19,8 @@ interface Props extends ConnectedProps<typeof connector> {}
 const _Login = (props: Props) => {
   //  eslint-disable-next-line
   const [error, setError] = useState('');
-   const [activeTab, setActiveTab] = useState("NSS");
-   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("NSS");
+  const [loading, setLoading] = useState(false);
   const { login, isAuthenticated } = props;
 
   const onFinish = async formData => {
@@ -32,8 +32,8 @@ const _Login = (props: Props) => {
       message.error(error.message);
       setError(error.payload.message);
     } finally {
-    setLoading(false); // ✅ stop loader
-  }
+      setLoading(false); // ✅ stop loader
+    }
   };
 
   if (isAuthenticated) {
@@ -42,8 +42,6 @@ const _Login = (props: Props) => {
   const hrefa: React.CSSProperties = {
     margin: '0 auto',
   };
-
- 
 
   return (
     <div className="bottom-bg d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
