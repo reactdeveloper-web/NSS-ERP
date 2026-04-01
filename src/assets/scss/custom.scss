@@ -1,0 +1,92 @@
+.ant-form-item {
+	&.ant-form-item-has-error {
+		.ant-input {
+			border-color: red;
+		}
+
+		.ant-form-item-explain-error {
+			color: red;
+			position: absolute
+		}
+	}
+}
+
+.nssTextColor {
+	color: #2A2B6B;
+}
+
+.nssBtnColor {
+	background: #2A2B6B;
+}
+
+.btn-check:active+.btn.btn-active-success,
+.btn-check:checked+.btn.btn-active-success,
+.btn.btn-active-success.active,
+.btn.btn-active-success.show,
+.btn.btn-active-success:active:not(.btn-active),
+.btn.btn-active-success:focus:not(.btn-active),
+.btn.btn-active-success:hover:not(.btn-active),
+.show>.btn.btn-active-success {
+	color: #2A2B6B;
+	border-color: #F5FCFB;
+	background-color: #F5FCFB !important;
+}
+
+.bottom-bg {
+	background-image: url(../images/login-bg.png);
+	background-size: 100%;
+	background-position: center 90%;
+}
+
+@media all and (min-width:1180px) {
+	.bottom-bg {
+		background-size: 80%;
+		background-position: center bottom;
+	}
+}
+
+@media all and (min-width:1400px) {
+	.bottom-bg {
+		background-size: 90%;
+		background-position: center bottom;
+	}
+}
+
+@media all and (min-width:1600px) {
+	.bottom-bg {
+		background-size: 85%;
+		background-position: center 130%;
+	}
+}
+
+.custom-rounded {
+	border-radius: 0.5rem;
+}
+
+@media (min-width: 768px) {
+	.custom-rounded {
+		border-radius: 50%;
+	}
+}
+
+/* .login-form-page {
+  max-width: 0px;
+} */
+
+.login-logo {
+	background: linear-gradient(to bottom, #ffffff 0%, #ffffff 35%, #00B79C10 35%, #00B79C10 100%);
+}
+
+.aside-brand {
+	border-bottom: 1px solid #eff2f5;
+}
+
+.nssBtnColorHover {
+	transition: all 0.2s ease-in-out !important;
+}
+
+.nssBtnColorHover:hover {
+	background-color: #ff7a00;
+	border-color: #ff7a00;
+	transition: all 0.2s ease-in-out !important;
+}
