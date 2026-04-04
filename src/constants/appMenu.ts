@@ -21,9 +21,9 @@ export const APP_MENU_ITEMS: AppMenuItem[] = [
     iconClass: 'fas fa-bullhorn fs-4',
   },
    {
-    key: 'announce-master-2',
-    label: 'Announce Master 2',
-    path: PATH.ANNOUNCE_MASTER,
+    key: 'Profile',
+    label: 'Profile',
+    path: PATH.PROFILE,
     iconClass: 'fas fa-bullhorn fs-4',
   },
 ];

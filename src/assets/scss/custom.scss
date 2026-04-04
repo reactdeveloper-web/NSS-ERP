@@ -132,3 +132,8 @@
 iframe{
 	display: none !important;
 }
+@media (min-width: 992px) {
+    .header-fixed.toolbar-fixed .wrapper {
+        padding-top: calc(65px + 55px);
+    }
+}

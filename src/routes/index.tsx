@@ -25,7 +25,7 @@ const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
 const RegisterPage = lazy(() => import('src/pages/AuthPages/RegisterPage'));
-const ProfilePage = lazy(() => import('src/pages/AuthPages/ProfilePage'));
+const ProfilePage = lazy(() => import('src/pages/MasterPages/ProfilePage'));
 
 // ---> Products pages
 // const ProductListPage = lazy(
@@ -52,42 +52,27 @@ export const Routes = () => {
       <HelmetProvider context={helmetContext}>
         <Helmet>
           <meta charSet="utf-8" />
-          <title>React TS </title>
-          <link
-            rel="canonical"
-            href="https://reactts-boilerplate.netlify.app/"
-          />
+          <title>React TS</title>
         </Helmet>
 
-        <MainLayout>
-          <Suspense fallback={<Loading />}>
-            <Switch>
-              {/* Static pages routes */}
-              <Route exact path={PATH.HOME} component={LoginPage} />
-              <Route exact path={PATH.DASHBOARD} component={DashboardPage} />
-              <Route exact path={PATH.ABOUT} component={AboutPage} />
-              <Route exact path={PATH.DEMO1} component={Demo1Page} />
-              <Route exact path={PATH.DEMO2} component={Demo2Page} />
-              <Route exact path={PATH.FEATURE1} component={Feature1Page} />
-              <Route exact path={PATH.FEATURE2} component={Feature2Page} />
-              <Route exact path={PATH.CONTACT} component={ContactPage} />
+        <Suspense fallback={<Loading />}>
+          <Switch>
 
-              {/* Auth routes */}
-              <Route exact path={PATH.LOGIN} component={LoginPage} />
-              <Route exact path={PATH.PROFILE} component={ProfilePage} />
-              <Route
-                exact
-                path={PATH.ANNOUNCE_MASTER}
-                component={AnnounceMasterPage}
-              />
+            {/* PUBLIC ROUTES */}
+            <Route exact path={PATH.LOGIN} component={LoginPage} />
+            <Route exact path={PATH.HOME} component={LoginPage} />
 
-             
+            {/* PRIVATE ROUTES (WITH DASHBOARD LAYOUT) */}
+            <PrivateRoute exact path={PATH.DASHBOARD} component={DashboardPage} />
+            <PrivateRoute exact path={PATH.PROFILE} component={ProfilePage} />
+            <PrivateRoute exact path={PATH.ANNOUNCE_MASTER} component={AnnounceMasterPage} />
 
-              {/* Error routes */}
-              <Route component={NotFoundPage} />
-            </Switch>
-          </Suspense>
-        </MainLayout>
+            {/* ERROR */}
+            <Route component={NotFoundPage} />
+
+          </Switch>
+        </Suspense>
+
       </HelmetProvider>
     </BrowserRouter>
   );

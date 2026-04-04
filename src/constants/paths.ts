@@ -10,7 +10,7 @@ export const PATH = {
   DEMO2: '/demo2',
   FEATURE1: '/feature1',
   FEATURE2: '/feature2',
-  PROFILE: '/profile',
+  PROFILE: '/profile-master',
   PRODUCTS: '/products',
   PRODUCT_SHOW: '/products/:id',
   PRODUCT_NEW: '/products/new',

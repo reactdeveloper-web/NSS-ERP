@@ -8,6 +8,7 @@ import { connect, ConnectedProps } from 'react-redux';
 import { logout } from 'src/components/Auth/Auth.thunks';
 import { PATH } from 'src/constants/paths';
 import { APP_MENU_ITEMS } from 'src/constants/appMenu';
+import { IMAGEPATH } from 'src/constants/img-paths';
 
 const { useBreakpoint } = Grid;
 
@@ -41,7 +42,7 @@ const _AppAside = (props: Props) => {
 					<div className="aside-logo flex-column-auto aside-brand" id="kt_aside_logo">
 						{/* <!--begin::Logo--> */}
 						<a href="../../demo1/dist/index.html">
-							<img alt="Logo" src="assets/media/logos/logo-1-dark.svg" className="h-25px logo" />
+						<img alt="Logo" src={IMAGEPATH.LOGO} className="h-35px logo" />
 						</a>
 						{/* <!--end::Logo--> */}
 						{/* <!--begin::Aside toggler--> */}
