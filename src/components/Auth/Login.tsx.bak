@@ -26,13 +26,13 @@ const _Login = (props: Props) => {
   const onFinish = async formData => {
     try {
       //console.log('hello',formData);
-      //setLoading(true); 
+      setLoading(true); 
       await login(formData);
     } catch (error) {
       message.error(error.message);
       setError(error.payload.message);
     } finally {
-     // setLoading(false); // ✅ stop loader
+      setLoading(false); // ✅ stop loader
     }
   };
 
@@ -44,7 +44,6 @@ const _Login = (props: Props) => {
   };
 
   return (
-    <div className='login-logo d-flex vh-100'>
     <div className="bottom-bg d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
       <div className="d-flex flex-start text-center flex-column flex-column-fluid p-5 px-2 p-md-5">
         <div className=" ">
@@ -175,18 +174,12 @@ const _Login = (props: Props) => {
                       </span>
                     )}
                   </button>
-                  <div className="login-form-register-link-wrapper">
-                  <Link to={PATH.FORGOT} className="login-form-register-link">
-                    Forgot Password
-                  </Link>
-                  </div>
                 </div>
               </Form>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 };

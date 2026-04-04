@@ -3,7 +3,6 @@ export const PATH = {
   DASHBOARD: '/dashboard',
   LOGIN: '/login',
   ANNOUNCE_MASTER: '/announce-master',
-  FORGOT: '/forgot',
   REGISTER: '/signup',
   CONTACT: '/contact',
   ABOUT: '/about',
@@ -16,5 +15,4 @@ export const PATH = {
   PRODUCT_SHOW: '/products/:id',
   PRODUCT_NEW: '/products/new',
   PRODUCT_EDIT: '/products/:id/edit',
-  DUMMY: '/dummy-page',
 };
