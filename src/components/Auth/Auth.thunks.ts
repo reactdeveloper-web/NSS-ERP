@@ -86,8 +86,7 @@ export const forgot = (payload: ReqForgot) => async dispatch => {
        const addPayload = { ...payload, Emp_Num, Data_Flag };
 
       console.log('forgot',addPayload);
-      
-      const res = await axios.post(`/login/ForgotPasswordRequest`,
+      const res = await axiosInstance.post(`/login/ForgotPasswordRequest`,
         addPayload
       );
     const result = res.data.result;
