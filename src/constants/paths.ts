@@ -15,4 +15,5 @@ export const PATH = {
   PRODUCT_SHOW: '/products/:id',
   PRODUCT_NEW: '/products/new',
   PRODUCT_EDIT: '/products/:id/edit',
+  DUMMY: '/dummy-page',
 };

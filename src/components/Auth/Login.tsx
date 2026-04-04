@@ -44,6 +44,7 @@ const _Login = (props: Props) => {
   };
 
   return (
+    <div className='login-logo d-flex vh-100'>
     <div className="bottom-bg d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
       <div className="d-flex flex-start text-center flex-column flex-column-fluid p-5 px-2 p-md-5">
         <div className=" ">
@@ -180,6 +181,7 @@ const _Login = (props: Props) => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

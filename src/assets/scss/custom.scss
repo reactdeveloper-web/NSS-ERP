@@ -118,16 +118,24 @@
 }
 
 .show-dropdown-menu {
-	display: none;
+	// display: none;
 	position: absolute;
-	top: calc(100% + 0.5rem);
+	// top: calc(100% + 0.5rem);
 	right: 0;
-	z-index: 105;
+	// z-index: 105;
 }
 
 .show-dropdown-menu.show {
 	display: block;
 }
+
+.header-fixed.toolbar-fixed .wrapper {
+        padding-top: 120px;
+    }
+
+	.toolbar-fixed .toolbar{
+		height: 55px;
+	}
 
 iframe{
 	display: none !important;
