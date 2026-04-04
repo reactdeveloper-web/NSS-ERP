@@ -1,6 +1,8 @@
 export const PATH = {
   HOME: '/',
+  DASHBOARD: '/dashboard',
   LOGIN: '/login',
+  ANNOUNCE_MASTER: '/announce-master',
   REGISTER: '/signup',
   CONTACT: '/contact',
   ABOUT: '/about',
