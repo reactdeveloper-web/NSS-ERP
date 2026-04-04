@@ -8,23 +8,26 @@ import { setAlert } from 'src/components/Alert/Alert.thunks';
 import { AlertTypes } from 'src/constants/alerts';
 import axiosInstance from '../../redux/interceptor';
 
-export const loadUser = () => async dispatch => {
+interface ReqUserActivity {
+  empnum: number;
+  DataFlag: string;
+  Type: number;
+  Show : ""
+}
+
+export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
   const userJson = localStorage.getItem('user') || '{}';
-  const user = JSON.parse(userJson) as IUser;
-  const id = user.id;
+  const user = JSON.parse(userJson);
+  const id = user.empNum || user.id;
+
   if (!id) {
     dispatch(actions.authError());
-    dispatch(setAlert({ msg: 'Cant not load user!', type: AlertTypes.ERROR }));
     return;
   }
+
   try {
-    const res = await axios.get(`${URL.baseAPIUrl}/api/users/${id}`);
-    if (res) {
-      return dispatch(actions.userLoaded(res.data));
-    }
-    dispatch(actions.authError());
-    dispatch(setAlert({ msg: 'Get user error!', type: AlertTypes.ERROR }));
-    return;
+    dispatch(actions.userLoaded(user));
+    return user;
   } catch (error) {
     dispatch(actions.authError());
     dispatch(setAlert({ msg: error.message, type: AlertTypes.ERROR }));
@@ -32,41 +35,26 @@ export const loadUser = () => async dispatch => {
   }
 };
 
-// export const loginUser = createAsyncThunk(
-//   'auth/login',
-//   async (data: { Username: string; Password: string }) => {
-//     const response = await axiosInstance.post(
-//       '/login/UserLogin',
-//       data
-//     );
-
-//     return response.data;
-//   }
-// );
-
 export const login = (payload: ReqLogin) => async dispatch => {
-  //const { username, password } = payload;
    try {
-      const res = await axiosInstance.post(`${URL.baseAPIUrl}/erpapi/login/UserLogin`,
+      const res = await axios.post(`/erp/login/UserLogin`,
         payload
-        // {
-        //   headers: {
-        //     APIKey: 'NSSAPI4SANSTHANUAT',   // ✅ custom header
-        //     'Content-Type': 'application/json',
-        //   },
-        // }
       );
     const allUsers = res.data;
-     let user = allUsers.UserLogin.filter(x => x.status === 'Success')[0];
-    if (user && user.empNum == payload.username) {
+    let user = allUsers.userData;
+    //console.log('login',allUsers);
+    if (allUsers.userData.status === 'Success' && user && user.empNum == payload.username) {
       dispatch(actions.loginSuccess(user));
+      // ✅ store tokens
+      localStorage.setItem("accessToken", res.data.token);
+      localStorage.setItem("refreshToken", res.data.refreshToken);
       dispatch(
         setAlert({
           msg: 'You are logged in!',
           type: AlertTypes.SUCCESS,
         }),
       );
-      //dispatch(loadUser());
+      //dispatch(loadUser(reqUserActivity));
       return;
     }
     dispatch(

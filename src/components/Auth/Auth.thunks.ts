@@ -6,6 +6,7 @@ import * as actions from './Auth.actions';
 import { v4 as uuid } from 'uuid';
 import { setAlert } from 'src/components/Alert/Alert.thunks';
 import { AlertTypes } from 'src/constants/alerts';
+import { ContentTypes } from 'src/constants/content';
 import axiosInstance from '../../redux/interceptor';
 
 interface ReqUserActivity {
@@ -63,7 +64,7 @@ export const login = (payload: ReqLogin) => async dispatch => {
         type: AlertTypes.ERROR,
       }),
     );
-    return dispatch(actions.loginFailed());
+    //return dispatch(actions.loginFailed());
   } catch (error) {
     dispatch(
       setAlert({
@@ -76,6 +77,43 @@ export const login = (payload: ReqLogin) => async dispatch => {
   
 }
 
+export const forgot = (payload: ReqForgot) => async dispatch => {
+   try {
+      //const res = await axios.post(`${URL.baseAPIUrl}/login/UserLogin`,
+      //const { Emp_Num, Data_Flag } = payload;
+       const Emp_Num = payload.userid;
+       const Data_Flag = ContentTypes.DataFlag
+       const addPayload = { ...payload, Emp_Num, Data_Flag };
+
+      console.log('forgot',addPayload);
+      
+      const res = await axios.post(`/login/ForgotPasswordRequest`,
+        addPayload
+      );
+    const result = res.data.result;
+    if (result) {
+      dispatch(
+      setAlert({
+        msg: 'Password reset link sent successfully to your email.',
+        type: AlertTypes.SUCCESS,
+      }),
+    );
+    return dispatch(actions.forgotSuccess());
+    }
+    //console.log('result',result);
+    return dispatch(actions.loginFailed());
+    //dispatch(login());
+  } catch (error) {
+    dispatch(
+      setAlert({
+        msg: 'Invalid User Id',
+        type: AlertTypes.ERROR,
+      }),
+    );
+    //return dispatch(actions.loginFailed());
+  }
+  
+}
 
 export const register = (payload: ReqLogin) => async dispatch => {
   try {

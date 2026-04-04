@@ -21,7 +21,6 @@ const Feature2Page = lazy(() => import('src/pages/StaticPages/Feature2Page'));
 
 // ---> Auth pages
 const LoginPage = lazy(() => import('src/pages/AuthPages/LoginPage'));
-const ForgotPage = lazy(() => import('src/pages/AuthPages/ForgotPage'));
 const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
@@ -76,7 +75,6 @@ export const Routes = () => {
               {/* Auth routes */}
               <Route exact path={PATH.LOGIN} component={LoginPage} />
               <Route exact path={PATH.PROFILE} component={ProfilePage} />
-			  <Route exact path={PATH.FORGOT} component={ForgotPage} />
               <Route
                 exact
                 path={PATH.ANNOUNCE_MASTER}

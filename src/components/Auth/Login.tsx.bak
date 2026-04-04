@@ -26,13 +26,13 @@ const _Login = (props: Props) => {
   const onFinish = async formData => {
     try {
       //console.log('hello',formData);
-      //setLoading(true); 
+      setLoading(true); 
       await login(formData);
     } catch (error) {
       message.error(error.message);
       setError(error.payload.message);
     } finally {
-     // setLoading(false); // ✅ stop loader
+      setLoading(false); // ✅ stop loader
     }
   };
 
@@ -174,11 +174,6 @@ const _Login = (props: Props) => {
                       </span>
                     )}
                   </button>
-                  <div className="login-form-register-link-wrapper">
-                  <Link to={PATH.FORGOT} className="login-form-register-link">
-                    Forgot Password
-                  </Link>
-                  </div>
                 </div>
               </Form>
             </div>
