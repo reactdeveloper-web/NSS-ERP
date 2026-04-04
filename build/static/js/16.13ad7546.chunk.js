@@ -1,2 +1,0 @@
-(this["webpackJsonptypescript-react"]=this["webpackJsonptypescript-react"]||[]).push([[16],{287:function(t,e,c){"use strict";c.r(e);c(1);var s=c(74),p=c(0);e.default=()=>Object(p.jsx)(p.Fragment,{children:Object(p.jsx)(s.a,{})})}}]);
-//# sourceMappingURL=16.13ad7546.chunk.js.map
