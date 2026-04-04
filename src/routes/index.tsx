@@ -8,6 +8,9 @@ import { MainLayout } from 'src/pages/layouts/MainLayout';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 // ---> Static pages
+const DashboardPage = lazy(
+  () => import('src/pages/DashboardPages/DashboardPage'),
+);
 const HomePage = lazy(() => import('src/pages/HomePages/HomePage'));
 const ContactPage = lazy(() => import('src/pages/StaticPages/ContactPage'));
 const AboutPage = lazy(() => import('src/pages/StaticPages/AboutPage'));
@@ -18,6 +21,10 @@ const Feature2Page = lazy(() => import('src/pages/StaticPages/Feature2Page'));
 
 // ---> Auth pages
 const LoginPage = lazy(() => import('src/pages/AuthPages/LoginPage'));
+const ForgotPage = lazy(() => import('src/pages/AuthPages/ForgotPage'));
+const AnnounceMasterPage = lazy(
+  () => import('src/pages/MasterPages/AnnounceMasterPage'),
+);
 const RegisterPage = lazy(() => import('src/pages/AuthPages/RegisterPage'));
 const ProfilePage = lazy(() => import('src/pages/AuthPages/ProfilePage'));
 
@@ -58,6 +65,7 @@ export const Routes = () => {
             <Switch>
               {/* Static pages routes */}
               <Route exact path={PATH.HOME} component={LoginPage} />
+              <Route exact path={PATH.DASHBOARD} component={DashboardPage} />
               <Route exact path={PATH.ABOUT} component={AboutPage} />
               <Route exact path={PATH.DEMO1} component={Demo1Page} />
               <Route exact path={PATH.DEMO2} component={Demo2Page} />
@@ -67,6 +75,13 @@ export const Routes = () => {
 
               {/* Auth routes */}
               <Route exact path={PATH.LOGIN} component={LoginPage} />
+              <Route exact path={PATH.PROFILE} component={ProfilePage} />
+			  <Route exact path={PATH.FORGOT} component={ForgotPage} />
+              <Route
+                exact
+                path={PATH.ANNOUNCE_MASTER}
+                component={AnnounceMasterPage}
+              />
 
              
 

@@ -19,40 +19,36 @@ interface Props extends ConnectedProps<typeof connector> {}
 const _Login = (props: Props) => {
   //  eslint-disable-next-line
   const [error, setError] = useState('');
-   const [activeTab, setActiveTab] = useState("NSS");
-   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("NSS");
+  const [loading, setLoading] = useState(false);
   const { login, isAuthenticated } = props;
 
   const onFinish = async formData => {
     try {
       //console.log('hello',formData);
-      setLoading(true); 
+      //setLoading(true); 
       await login(formData);
     } catch (error) {
       message.error(error.message);
       setError(error.payload.message);
     } finally {
-    setLoading(false); // ✅ stop loader
-  }
+     // setLoading(false); // ✅ stop loader
+    }
   };
 
   if (isAuthenticated) {
-    return <Redirect to={PATH.HOME} />;
+    return <Redirect to={PATH.DASHBOARD} />;
   }
   const hrefa: React.CSSProperties = {
     margin: '0 auto',
   };
 
- 
-
   return (
     <div className="bottom-bg d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
       <div className="d-flex flex-start text-center flex-column flex-column-fluid p-5 px-2 p-md-5">
-        <div className=" ant-layout-content fdd">
+        <div className=" ">
           <div className="container">
-            <a href="#" style={hrefa}>
               <img alt="Logo" src={IMAGEPATH.LOGO} className="h-60px" />
-            </a>
             <div className="w-md-500px h-md-500px w-xxl-600px h-xxl-600px w-100 bg-body custom-rounded mx-auto d-flex flex-center p-4">
               <Form
                 name="login_form"
@@ -102,11 +98,7 @@ const _Login = (props: Props) => {
                   </ul>
                 </div>
                 <div className="fv-row mb-8 d-flex flex-center position-relative">
-                  <img
-                    src={IMAGEPATH.USERICON}
-                    alt=""
-                    className="position-absolute  start-0 ms-2 top-0 mt-4"
-                  />
+                  
                   <Form.Item
                     name="username"
                     className="w-100"
@@ -124,14 +116,15 @@ const _Login = (props: Props) => {
                       placeholder="Enter your ID"
                     />
                   </Form.Item>
+                  <img
+                    src={IMAGEPATH.USERICON}
+                    alt=""
+                    className="position-absolute  start-0 ms-2 top-0 mt-4"
+                  />
                 </div>
 
                 <div className="fv-row mb-8 d-flex flex-center position-relative">
-                  <img
-                    src={IMAGEPATH.PASSWORD}
-                    alt=""
-                    className="position-absolute start-0 ms-2 top-0 mt-4"
-                  />
+                 
                   <Form.Item
                     className="w-100"
                     name="password"
@@ -154,6 +147,12 @@ const _Login = (props: Props) => {
                     alt=""
                     className="position-absolute end-0 me-2 top-0 mt-4"
                   />
+                   <img
+                    src={IMAGEPATH.PASSWORD}
+                    alt=""
+                    className="position-absolute start-0 ms-2 top-0 mt-4"
+                  />
+                  
                 </div>
                 <div className="text-center">
                   <button
@@ -175,6 +174,11 @@ const _Login = (props: Props) => {
                       </span>
                     )}
                   </button>
+                  <div className="login-form-register-link-wrapper">
+                  <Link to={PATH.FORGOT} className="login-form-register-link">
+                    Forgot Password
+                  </Link>
+                  </div>
                 </div>
               </Form>
             </div>

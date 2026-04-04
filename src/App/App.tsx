@@ -16,7 +16,7 @@ const _App = (props: Props) => {
     const { loadUser, logout } = props;
     // check for token in LS
     if (localStorage.user) {
-     // loadUser();
+      loadUser();
     }
 
     // log user out from all tabs if they log out in one tab
