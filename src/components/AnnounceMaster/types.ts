@@ -23,6 +23,8 @@ export interface AnnounceEventForm {
 }
 
 export interface PersonalInfoForm {
+  salutation: string;
+  salutationLocked: boolean;
   mobileNo: string;
   whatsappNo: string;
   announcerName: string;
@@ -78,6 +80,11 @@ export interface DonorSearchResult {
   mobileNo: string;
   email: string;
   record: Record<string, unknown>;
+}
+
+export interface SalutationOption {
+  value: string;
+  label: string;
 }
 
 export type AnnouncerTabKey =

@@ -1,5 +1,13 @@
 import React, { useEffect, useRef } from 'react';
-import { AnnouncerTabKey, AnnounceDetailsForm, DepositBank, FollowUpForm, FollowUpItem, PersonalInfoForm } from '../types';
+import {
+  AnnouncerTabKey,
+  AnnounceDetailsForm,
+  DepositBank,
+  FollowUpForm,
+  FollowUpItem,
+  PersonalInfoForm,
+  SalutationOption,
+} from '../types';
 import { AnnounceDetailsTab } from './AnnounceDetailsTab';
 import { BankDetailsTab } from './BankDetailsTab';
 import { FollowUpTab } from './FollowUpTab';
@@ -8,6 +16,7 @@ import { PersonalInfoTab } from './PersonalInfoTab';
 interface AnnouncerPersonalDetailsCardProps {
   activeTab: AnnouncerTabKey;
   personalInfoForm: PersonalInfoForm;
+  salutations: SalutationOption[];
   announceDetailsForm: AnnounceDetailsForm;
   followUpForm: FollowUpForm;
   followUpItems: FollowUpItem[];
@@ -59,9 +68,10 @@ const tabs: { key: AnnouncerTabKey; label: string; title: string }[] = [
   },
 ];
 
-export const  AnnouncerPersonalDetailsCard = ({
+export const AnnouncerPersonalDetailsCard = ({
   activeTab,
   personalInfoForm,
+  salutations,
   announceDetailsForm,
   followUpForm,
   followUpItems,
@@ -85,10 +95,9 @@ export const  AnnouncerPersonalDetailsCard = ({
   useEffect(() => {
     const bootstrap = (window as Window & {
       bootstrap?: {
-        Tooltip?: new (
-          element: Element,
-          options?: Record<string, unknown>,
-        ) => { dispose?: () => void };
+        Tooltip?: new (element: Element, options?: Record<string, unknown>) => {
+          dispose?: () => void;
+        };
       };
     }).bootstrap;
 
@@ -100,11 +109,11 @@ export const  AnnouncerPersonalDetailsCard = ({
       tabsRef.current.querySelectorAll('[data-bs-toggle="tooltip"]'),
     );
     const tooltips = tooltipElements.map(
-      (element) => new bootstrap.Tooltip!(element, { trigger: 'hover' }),
+      element => new bootstrap.Tooltip!(element, { trigger: 'hover' }),
     );
 
     return () => {
-      tooltips.forEach((tooltip) => tooltip.dispose?.());
+      tooltips.forEach(tooltip => tooltip.dispose?.());
     };
   }, []);
 
@@ -121,7 +130,7 @@ export const  AnnouncerPersonalDetailsCard = ({
           ref={tabsRef}
           className="nav nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 fw-semibold mb-6"
         >
-          {tabs.map((tab) => (
+          {tabs.map(tab => (
             <li className="nav-item" key={tab.key}>
               <button
                 className={`nav-link ${activeTab === tab.key ? 'active' : ''}`}
@@ -141,12 +150,22 @@ export const  AnnouncerPersonalDetailsCard = ({
         </ul>
 
         <div className="tab-content">
-          <div className={`tab-pane fade ${activeTab === 'personal' ? 'active show' : ''}`}>
-            <PersonalInfoTab form={personalInfoForm} onChange={onPersonalInfoChange} />
+          <div
+            className={`tab-pane fade ${
+              activeTab === 'personal' ? 'active show' : ''
+            }`}
+          >
+            <PersonalInfoTab
+              form={personalInfoForm}
+              salutations={salutations}
+              onChange={onPersonalInfoChange}
+            />
           </div>
 
           <div
-            className={`tab-pane fade ${activeTab === 'announceDetails' ? 'active show' : ''}`}
+            className={`tab-pane fade ${
+              activeTab === 'announceDetails' ? 'active show' : ''
+            }`}
           >
             <AnnounceDetailsTab
               form={announceDetailsForm}
@@ -156,7 +175,11 @@ export const  AnnouncerPersonalDetailsCard = ({
             />
           </div>
 
-          <div className={`tab-pane fade ${activeTab === 'bankDetails' ? 'active show' : ''}`}>
+          <div
+            className={`tab-pane fade ${
+              activeTab === 'bankDetails' ? 'active show' : ''
+            }`}
+          >
             <BankDetailsTab
               banks={banks}
               isLoading={bankLoading}
@@ -166,7 +189,11 @@ export const  AnnouncerPersonalDetailsCard = ({
             />
           </div>
 
-          <div className={`tab-pane fade ${activeTab === 'followUp' ? 'active show' : ''}`}>
+          <div
+            className={`tab-pane fade ${
+              activeTab === 'followUp' ? 'active show' : ''
+            }`}
+          >
             <FollowUpTab
               form={followUpForm}
               items={followUpItems}

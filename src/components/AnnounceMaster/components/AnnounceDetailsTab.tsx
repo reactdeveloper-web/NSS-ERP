@@ -31,7 +31,7 @@ export const AnnounceDetailsTab = ({
               id="occasionType"
               className="form-select"
               value={form.occasionType}
-              onChange={(event) => onChange('occasionType', event.target.value)}
+              onChange={event => onChange('occasionType', event.target.value)}
             >
               <option value="">Select</option>
               <option value="birthday">Birthday</option>
@@ -53,7 +53,7 @@ export const AnnounceDetailsTab = ({
               className="form-control"
               placeholder=" "
               value={form.occasionDate}
-              onChange={(event) => onChange('occasionDate', event.target.value)}
+              onChange={event => onChange('occasionDate', event.target.value)}
             />
             <label htmlFor="occasionDate">
               Occasion Date <span className="text-danger">*</span>
@@ -69,7 +69,7 @@ export const AnnounceDetailsTab = ({
               className="form-control"
               placeholder=" "
               value={form.occasionRemark}
-              onChange={(event) => onChange('occasionRemark', event.target.value)}
+              onChange={event => onChange('occasionRemark', event.target.value)}
             />
             <label htmlFor="occasionRemark">
               Remark <span className="text-danger">*</span>
@@ -87,7 +87,7 @@ export const AnnounceDetailsTab = ({
               id="causeHead"
               className="form-select"
               value={form.causeHead}
-              onChange={(event) => onChange('causeHead', event.target.value)}
+              onChange={event => onChange('causeHead', event.target.value)}
             >
               <option value="">Select</option>
               <option value="limb">Artificial Limb</option>
@@ -107,9 +107,9 @@ export const AnnounceDetailsTab = ({
               id="purpose"
               className="form-select"
               value={form.purpose}
-              onChange={(event) => onChange('purpose', event.target.value)}
+              onChange={event => onChange('purpose', event.target.value)}
             >
-              {purposeOptions.map((option) => (
+              {purposeOptions.map(option => (
                 <option key={option.value || 'empty'} value={option.value}>
                   {option.label}
                 </option>
@@ -139,7 +139,7 @@ export const AnnounceDetailsTab = ({
               className="form-control text-center"
               value={form.quantity}
               inputMode="numeric"
-              onChange={(event) =>
+              onChange={event =>
                 onQuantityChange(Number(event.target.value) || 1)
               }
             />
@@ -167,7 +167,9 @@ export const AnnounceDetailsTab = ({
               Amount (Auto) <span className="text-danger">*</span>
             </label>
           </div>
-          <div className="text-muted fs-8 mt-2">Auto = fixed rate x quantity</div>
+          <div className="text-muted fs-8 mt-2">
+            Auto = fixed rate x quantity
+          </div>
         </div>
       </div>
 
@@ -178,7 +180,7 @@ export const AnnounceDetailsTab = ({
               id="paymentMode"
               className="form-select"
               value={form.paymentMode}
-              onChange={(event) => onChange('paymentMode', event.target.value)}
+              onChange={event => onChange('paymentMode', event.target.value)}
             >
               <option value="">Select</option>
               <option value="Cash">Cash</option>
@@ -197,7 +199,7 @@ export const AnnounceDetailsTab = ({
               id="howToDonate"
               className="form-select"
               value={form.howToDonate}
-              onChange={(event) => onChange('howToDonate', event.target.value)}
+              onChange={event => onChange('howToDonate', event.target.value)}
             >
               <option value="">Select</option>
               <option value="Bank Transfer">Bank Transfer</option>
@@ -217,7 +219,7 @@ export const AnnounceDetailsTab = ({
               className="form-control"
               placeholder=" "
               value={form.expectedDate}
-              onChange={(event) => onChange('expectedDate', event.target.value)}
+              onChange={event => onChange('expectedDate', event.target.value)}
             />
             <label htmlFor="expectedDate">Expected Donation Date</label>
           </div>
@@ -231,7 +233,7 @@ export const AnnounceDetailsTab = ({
               className="form-control"
               placeholder=" "
               value={form.expectedTime}
-              onChange={(event) => onChange('expectedTime', event.target.value)}
+              onChange={event => onChange('expectedTime', event.target.value)}
             />
             <label htmlFor="expectedTime">Expected Donation Time</label>
           </div>
@@ -243,7 +245,7 @@ export const AnnounceDetailsTab = ({
               className="form-check-input"
               type="checkbox"
               checked={form.isMotivated}
-              onChange={(event) => onChange('isMotivated', event.target.checked)}
+              onChange={event => onChange('isMotivated', event.target.checked)}
             />
             <span className="form-check-label fw-semibold">Motivated</span>
           </label>
@@ -258,7 +260,7 @@ export const AnnounceDetailsTab = ({
                 className="form-control"
                 placeholder=" "
                 value={form.motivatedAmount}
-                onChange={(event) =>
+                onChange={event =>
                   onChange('motivatedAmount', event.target.value)
                 }
               />

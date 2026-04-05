@@ -17,8 +17,8 @@ const mapDispatchToProps = {
 };
 const connector = connect(mapStateToProps, mapDispatchToProps);
 interface Props extends ConnectedProps<typeof connector> {}
-  const hrefa: React.CSSProperties = {
-  margin: "0 auto"
+const hrefa: React.CSSProperties = {
+  margin: '0 auto',
 };
 
 const _Forgot = (props: Props) => {
@@ -32,7 +32,6 @@ const _Forgot = (props: Props) => {
       setError(error.payload.message);
     }
   };
-
   if (isforgot) {
     return <Redirect to={PATH.HOME} />;
   }

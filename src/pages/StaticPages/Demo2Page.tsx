@@ -5,7 +5,7 @@ import { DemoOption2 } from 'src/components/StaticPages/Demo.option.2';
 const _Demo2 = () => {
   return (
     // <PageLayout>
-      <DemoOption2 />
+    <DemoOption2 />
     // </PageLayout>
   );
 };

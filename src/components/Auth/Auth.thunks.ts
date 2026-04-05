@@ -13,7 +13,7 @@ interface ReqUserActivity {
   empnum: number;
   DataFlag: string;
   Type: number;
-  Show : ""
+  Show: '';
 }
 
 export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
@@ -44,11 +44,15 @@ export const login = (payload: ReqLogin) => async dispatch => {
     const allUsers = res.data;
     let user = allUsers.userData;
     //console.log('login',allUsers);
-    if (allUsers.userData.status === 'Success' && user && user.empNum == payload.username) {
+    if (
+      allUsers.userData.status === 'Success' &&
+      user &&
+      user.empNum == payload.username
+    ) {
       dispatch(actions.loginSuccess(user));
       // ✅ store tokens
-      localStorage.setItem("accessToken", res.data.token);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
+      localStorage.setItem('accessToken', res.data.token);
+      localStorage.setItem('refreshToken', res.data.refreshToken);
       dispatch(
         setAlert({
           msg: 'You are logged in!',
@@ -74,8 +78,7 @@ export const login = (payload: ReqLogin) => async dispatch => {
     );
     return dispatch(actions.loginFailed());
   }
-  
-}
+};
 
 export const forgot = (payload: ReqForgot) => async dispatch => {
   try {

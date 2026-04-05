@@ -1,15 +1,26 @@
 import React from 'react';
-import { PersonalInfoForm } from '../types';
+import { PersonalInfoForm, SalutationOption } from '../types';
 
 interface PersonalInfoTabProps {
   form: PersonalInfoForm;
+  salutations: SalutationOption[];
   onChange: <K extends keyof PersonalInfoForm>(
     field: K,
     value: PersonalInfoForm[K],
   ) => void;
 }
 
-export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
+export const PersonalInfoTab = ({
+  form,
+  salutations,
+  onChange,
+}: PersonalInfoTabProps) => {
+  const salutationOptions =
+    form.salutation &&
+    !salutations.some(salutation => salutation.value === form.salutation)
+      ? [{ value: form.salutation, label: form.salutation }, ...salutations]
+      : salutations;
+
   return (
     <div>
       <div className="text-muted fs-7 mb-4">
@@ -25,7 +36,7 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
               className="form-control"
               placeholder=" "
               value={form.mobileNo}
-              onChange={(event) => onChange('mobileNo', event.target.value)}
+              onChange={event => onChange('mobileNo', event.target.value)}
             />
             <label htmlFor="mobileNo">
               Mobile No. <span className="text-danger">*</span>
@@ -41,9 +52,28 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
               className="form-control"
               placeholder=" "
               value={form.whatsappNo}
-              onChange={(event) => onChange('whatsappNo', event.target.value)}
+              onChange={event => onChange('whatsappNo', event.target.value)}
             />
             <label htmlFor="whatsappNo">WhatsApp No.</label>
+          </div>
+        </div>
+        <div className="col-md-2">
+          <div className="form-floating">
+            <select
+              id="salutation"
+              className="form-select"
+              value={form.salutation}
+              disabled={form.salutationLocked}
+              onChange={event => onChange('salutation', event.target.value)}
+            >
+              <option value="">Select</option>
+              {salutationOptions.map(salutation => (
+                <option key={salutation.value} value={salutation.value}>
+                  {salutation.label}
+                </option>
+              ))}
+            </select>
+            <label htmlFor="salutation">Salutation</label>
           </div>
         </div>
 
@@ -55,7 +85,7 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
               className="form-control"
               placeholder=" "
               value={form.announcerName}
-              onChange={(event) => onChange('announcerName', event.target.value)}
+              onChange={event => onChange('announcerName', event.target.value)}
             />
             <label htmlFor="announcerName">
               Announcer Name <span className="text-danger">*</span>
@@ -63,13 +93,13 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
           </div>
         </div>
 
-        <div className="col-md-4">
-          <label className="form-check form-check-custom form-check-solid pt-10">
+        <div className="col-md-3">
+          <label className="form-check form-check-custom form-check-solid pt-3">
             <input
               className="form-check-input"
               type="checkbox"
               checked={form.announceInOtherName}
-              onChange={(event) =>
+              onChange={event =>
                 onChange('announceInOtherName', event.target.checked)
               }
             />
@@ -90,12 +120,13 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
                     className="form-control"
                     placeholder=" "
                     value={form.announcedForName}
-                    onChange={(event) =>
+                    onChange={event =>
                       onChange('announcedForName', event.target.value)
                     }
                   />
                   <label htmlFor="announcedForName">
-                    Announcer In The Name Of <span className="text-danger">*</span>
+                    Announcer In The Name Of{' '}
+                    <span className="text-danger">*</span>
                   </label>
                 </div>
               </div>
@@ -108,7 +139,9 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
                     className="form-control"
                     placeholder=" "
                     value={form.relationName}
-                    onChange={(event) => onChange('relationName', event.target.value)}
+                    onChange={event =>
+                      onChange('relationName', event.target.value)
+                    }
                   />
                   <label htmlFor="relationName">Relation</label>
                 </div>
@@ -125,7 +158,7 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
               className="form-control"
               placeholder=" "
               value={form.pincode}
-              onChange={(event) => onChange('pincode', event.target.value)}
+              onChange={event => onChange('pincode', event.target.value)}
             />
             <label htmlFor="pincode">Pincode</label>
           </div>
@@ -133,7 +166,12 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
 
         <div className="col-md-2">
           <div className="form-floating">
-            <select id="country" className="form-select" value={form.country} disabled>
+            <select
+              id="country"
+              className="form-select"
+              value={form.country}
+              disabled
+            >
               <option value="India">India</option>
             </select>
             <label htmlFor="country">Country</label>
@@ -147,7 +185,7 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
               className="form-select"
               value={form.state}
               disabled={form.stateLocked}
-              onChange={(event) => onChange('state', event.target.value)}
+              onChange={event => onChange('state', event.target.value)}
             >
               <option value="">Select</option>
               <option value="Rajasthan">Rajasthan</option>
@@ -166,7 +204,7 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
               className="form-control"
               placeholder=" "
               value={form.district}
-              onChange={(event) => onChange('district', event.target.value)}
+              onChange={event => onChange('district', event.target.value)}
             />
             <label htmlFor="district">District</label>
           </div>

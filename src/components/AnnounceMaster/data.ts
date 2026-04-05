@@ -6,8 +6,7 @@ import {
   PersonalInfoForm,
 } from './types';
 
-export const bankOptions = [
-];
+export const bankOptions = [];
 
 export const purposeOptions = [
   { value: '', label: 'Select' },
@@ -44,6 +43,8 @@ export const createInitialAnnounceEventForm = (): AnnounceEventForm => ({
 });
 
 export const createInitialPersonalInfoForm = (): PersonalInfoForm => ({
+  salutation: '',
+  salutationLocked: false,
   mobileNo: '',
   whatsappNo: '',
   announcerName: '',
