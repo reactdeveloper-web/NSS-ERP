@@ -1,3 +1,7 @@
+body {
+    font-family: 'Poppins';
+}
+
 .ant-form-item {
 	&.ant-form-item-has-error {
 		.ant-input {
@@ -118,17 +122,115 @@
 }
 
 .show-dropdown-menu {
-	display: none;
+	// display: none;
 	position: absolute;
-	top: calc(100% + 0.5rem);
+	// top: calc(100% + 0.5rem);
 	right: 0;
-	z-index: 105;
+	// z-index: 105;
 }
 
 .show-dropdown-menu.show {
 	display: block;
 }
 
+.header-fixed.toolbar-fixed .wrapper {
+        padding-top: 120px;
+    }
+
+	.toolbar-fixed .toolbar{
+		height: 55px;
+	}
+
 iframe{
 	display: none !important;
+}
+
+	/* Container smooth height */
+	.tab-content {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.nav-line-tabs .nav-item .nav-link {
+		padding: 8px 10px;
+		margin: 0 5px;
+	}
+
+	.nav-line-tabs .nav-item .nav-link.active,
+	.nav-line-tabs .nav-item .nav-link:hover {
+		background-color: #1cb8a1 !important;
+		color: #ffffff;
+	}
+
+	/* Base */
+	.tab-pane {
+		transition: all 0.35s ease;
+		opacity: 0;
+		transform: translateX(40px);
+	}
+
+	/* Active tab */
+	.tab-pane.active.show {
+		opacity: 1;
+		transform: translateX(0);
+	}
+
+	/* Slide left (Previous) */
+	.tab-pane.slide-left {
+		transform: translateX(-40px);
+		opacity: 0;
+	}
+
+	/* Slide right (Next) */
+	.tab-pane.slide-right {
+		transform: translateX(40px);
+		opacity: 0;
+	}
+
+	/* Smooth buttons feel */
+	#prevTabBtn,
+	#nextTabBtn {
+		min-width: 120px;
+	}
+
+.card .card-header{
+	min-height: 56px;
+}
+
+.form-floating {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.form-floating > .form-control,
+.form-floating > .form-control-plaintext,
+.form-floating > .form-select {
+	
+}
+
+.form-floating > label {
+	font-weight: 500;
+	color: #5e6278;
+}
+
+.form-floating>.form-control:focus~label, .form-floating>.form-control:not(:placeholder-shown)~label, .form-floating>.form-select~label{
+    opacity: 1;
+    transform: scale(0.85) translateY(-0.9rem) translateX(0.15rem);
+    background: #fff;
+    padding: 0px 8px 0px 8px;
+    height: auto;
+    border-radius: 4px;
+}
+
+.form-floating>.form-control,
+.form-floating>.form-control:focus, .form-floating>.form-control:not(:placeholder-shown),
+.form-floating>.form-select {
+       padding: .75rem 1rem;
+	   min-height: inherit;
+	   height: inherit;
+    line-height: 1.5;
+}
+
+.form-floating > .form-control:read-only:focus ~ label, .form-floating > .form-select:read-only:focus ~ label {
+     background: transparent;
 }

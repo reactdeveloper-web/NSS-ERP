@@ -1,5 +1,7 @@
 .DS_STORE
 node_modules
+build
+build.zip
 scripts/flow/*/.flowconfig
 .flowconfig
 *~
@@ -90,6 +92,8 @@ bower.json
 
 # Ignore node_modules
 node_modules/
+build/
+build.zip
 
 # Ignore precompiled javascript packs
 /public/packs
@@ -148,6 +152,7 @@ bower_components
 # Dependency directories
 node_modules/
 jspm_packages/
+build/
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
