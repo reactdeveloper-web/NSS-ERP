@@ -8,6 +8,7 @@
     "antd": "4.13.1",
     "concurrently": "6.0.0",
     "cors": "^2.8.6",
+    "cross-env": "^10.1.0",
     "formik": "^2.4.9",
     "immer": "8.0.1",
     "json-server": "0.16.3",
@@ -45,11 +46,11 @@
     "prettier": "2.2.1",
     "uuid": "8.3.2"
   },
-  "scripts": {
-    "dev": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
-    "start": "npm run dev",
-   "build": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts build"
-  },
+ "scripts": {
+  "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
+  "start": "npm run dev",
+  "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts build"
+},
   "browserslist": {
     "production": [
       ">0.2%",
