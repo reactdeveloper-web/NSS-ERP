@@ -25,6 +25,10 @@ const ForgotPage = lazy(() => import('src/pages/AuthPages/ForgotPage'));
 const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
+
+const DummyPage = lazy(
+  () => import('src/pages/Dummy/DummyPage'),
+);
 const RegisterPage = lazy(() => import('src/pages/AuthPages/RegisterPage'));
 const ProfilePage = lazy(() => import('src/pages/AuthPages/ProfilePage'));
 
@@ -81,6 +85,11 @@ export const Routes = () => {
                 exact
                 path={PATH.ANNOUNCE_MASTER}
                 component={AnnounceMasterPage}
+              />
+              <Route
+                exact
+                path={PATH.DUMMY}
+                component={DummyPage}
               />
 
              

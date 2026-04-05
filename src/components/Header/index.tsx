@@ -19,7 +19,8 @@ export const AppHeader = () => {
 
   if (
     pathname === PATH.ANNOUNCE_MASTER ||
-    pathname === PATH.DASHBOARD
+    pathname === PATH.DASHBOARD ||
+    pathname === PATH.DUMMY
   ) {
     return null;
   }
