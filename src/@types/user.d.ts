@@ -5,6 +5,12 @@ interface ReqLogin {
   password: string;
   email?: string;
 }
+
+interface ReqForgot {
+  empNum: number;
+  DataFlag: string;
+}
+
 interface ResLoginApi extends Res {
   data: {
     id: string;
@@ -17,9 +23,6 @@ interface ResLoginApi extends Res {
 interface IUser {
   id: string;
   empNum: number;
-  empName?: string;
-  deptName?: string;
-  status?: string;
   username: string;
   email?: string;
   password: string;
