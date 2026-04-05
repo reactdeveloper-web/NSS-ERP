@@ -10,7 +10,7 @@ interface ReqUserActivity {
   empnum: number;
   DataFlag: string;
   Type: number;
-  Show : ""
+  Show: '';
 }
 
 const dispatchError = (dispatch, error) => {
@@ -27,7 +27,6 @@ const dispatchError = (dispatch, error) => {
   );
 };
 
-
 // export const getTodos = (payload: ReqUserActivity) => async dispatch => {
 //   const userJson = localStorage.getItem('user') || '{}';
 //   const user = JSON.parse(userJson);
@@ -41,7 +40,7 @@ const dispatchError = (dispatch, error) => {
 //   };
 
 //  //console.log('reqUserActivity',reqUserActivity)
- 
+
 //   try {
 //     //console.log('call getTodos');
 //     const res = await axiosInstance.post(`/master/GetDashboard`,
@@ -54,33 +53,30 @@ const dispatchError = (dispatch, error) => {
 //         dispatch(actions.getTodosSuccess(todos));
 //       }
 
-     
-      
 //     } catch (error) {
 //       dispatchError(dispatch, error);
 //     }
-  
-// };
 
+// };
 
 export const getTodos = () => async dispatch => {
   try {
+    const userJson = localStorage.getItem('user') || '{}';
+    const user = JSON.parse(userJson);
 
-  const userJson = localStorage.getItem('user') || '{}';
-  const user = JSON.parse(userJson);
-
-  const reqUserActivity: ReqUserActivity = {
-  empnum: user.empNum,
-  DataFlag: "GANGOTRI",
-  Type: 1,
-  Show : ""
-  };
-     const res = await axiosInstance.post(`/master/GetDashboard`,
-      reqUserActivity
+    const reqUserActivity: ReqUserActivity = {
+      empnum: user.empNum,
+      DataFlag: 'GANGOTRI',
+      Type: 1,
+      Show: '',
+    };
+    const res = await axiosInstance.post(
+      `/master/GetDashboard`,
+      reqUserActivity,
     );
     //const res = await axios.get(`${URL.baseAPIUrl}/api/products`);
     const todos = res.data.Dashboard;
-    console.log('todo-thunk',todos)
+    console.log('todo-thunk', todos);
     dispatch(actions.getTodosSuccess(todos));
     //console.log('aa',aa);
   } catch (error) {
@@ -91,5 +87,3 @@ export const getTodos = () => async dispatch => {
 export const clearProduct = () => dispatch => {
   dispatch(actions.clearProductSuccess());
 };
-
-

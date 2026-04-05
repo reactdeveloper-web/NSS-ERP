@@ -6,16 +6,21 @@
       "warn",
       {
         "arrowParens": "avoid",
+        "semi": true,
         "trailingComma": "all",
         "endOfLine": "lf",
         "tabWidth": 2,
         "printWidth": 80,
-        "useTabs": false
+        "useTabs": false,
+        "singleQuote": true
       },
       {
-      "usePrettierrc": false
-    }
+        "usePrettierrc": false
+      }
     ],
-    "no-console": "warn"
+    "no-console": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "jsx-a11y/anchor-is-valid": "off",
+    "react/jsx-no-target-blank": "off"
   }
 }

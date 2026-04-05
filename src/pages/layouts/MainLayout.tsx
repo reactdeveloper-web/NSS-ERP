@@ -1,12 +1,8 @@
 import React, { ReactNode, useEffect } from 'react';
 import { AppAside } from 'src/components/Aside';
 import { AppHeader } from 'src/components/Header';
-import { AppFooter } from 'src/components/Footer';
-import { Layout } from 'antd';
-import { AppAlert } from 'src/components/Alert';
 import { useLocation } from 'react-router-dom';
 import { PATH } from 'src/constants/paths';
-const { Header, Content, Footer } = Layout;
 
 interface Props {
   children: ReactNode;
@@ -71,9 +67,8 @@ export const MainLayout = (props: Props) => {
   return (
     <>
       <AppAside></AppAside>
-        <AppHeader />
-            {/* <AppAlert /> */}
-            {children}
-     </> 
+      <AppHeader />
+      {children}
+    </>
   );
 };

@@ -6,8 +6,7 @@ import {
   PersonalInfoForm,
 } from './types';
 
-export const bankOptions = [
-];
+export const bankOptions = [];
 
 export const purposeOptions = [
   { value: '', label: 'Select' },

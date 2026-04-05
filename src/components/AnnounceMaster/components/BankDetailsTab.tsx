@@ -59,24 +59,24 @@ export const BankDetailsTab = ({
               </tr>
             ) : null}
             {!isLoading && !error
-              ? banks.map((bank) => (
-              <tr key={bank.id}>
-                <td>
-                  <div className="form-check form-check-custom">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={selectedBankIds.includes(bank.id)}
-                      onChange={() => onToggleBank(bank.id)}
-                    />
-                  </div>
-                </td>
-                <td>{bank.bankName}</td>
-                <td>{bank.accountNo}</td>
-                <td>{bank.accountType}</td>
-                <td>{bank.ifsc}</td>
-                <td>{bank.branch}</td>
-              </tr>
+              ? banks.map(bank => (
+                  <tr key={bank.id}>
+                    <td>
+                      <div className="form-check form-check-custom">
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          checked={selectedBankIds.includes(bank.id)}
+                          onChange={() => onToggleBank(bank.id)}
+                        />
+                      </div>
+                    </td>
+                    <td>{bank.bankName}</td>
+                    <td>{bank.accountNo}</td>
+                    <td>{bank.accountType}</td>
+                    <td>{bank.ifsc}</td>
+                    <td>{bank.branch}</td>
+                  </tr>
                 ))
               : null}
           </tbody>

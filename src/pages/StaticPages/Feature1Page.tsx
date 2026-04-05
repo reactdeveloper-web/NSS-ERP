@@ -5,7 +5,7 @@ import { FeatureOption1 } from 'src/components/StaticPages/Feature.option.1';
 const _Feature1 = () => {
   return (
     // <PageLayout>
-      <FeatureOption1 />
+    <FeatureOption1 />
     // </PageLayout>
   );
 };

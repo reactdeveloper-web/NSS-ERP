@@ -5,7 +5,7 @@ import { Home } from 'src/components/Home';
 const _HomePage = () => {
   return (
     // <PageLayout>
-      <Home />
+    <Home />
     // </PageLayout>
   );
 };

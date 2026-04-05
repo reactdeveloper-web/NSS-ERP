@@ -1,4 +1,4 @@
-import { EnumType } from "typescript";
+import { EnumType } from 'typescript';
 
 interface ReqLogin {
   username: string;
@@ -33,9 +33,8 @@ interface ReqUserActivity {
   empnum: string;
   DataFlag: string;
   Type: EnumType;
-  Show : ""
+  Show: '';
 }
-
 
 interface DispatchAuth {
   type: string;

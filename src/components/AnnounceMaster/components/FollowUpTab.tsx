@@ -4,7 +4,10 @@ import { FollowUpForm, FollowUpItem } from '../types';
 interface FollowUpTabProps {
   form: FollowUpForm;
   items: FollowUpItem[];
-  onChange: <K extends keyof FollowUpForm>(field: K, value: FollowUpForm[K]) => void;
+  onChange: <K extends keyof FollowUpForm>(
+    field: K,
+    value: FollowUpForm[K],
+  ) => void;
   onAdd: () => void;
   onRemove: (id: number) => void;
 }
@@ -21,7 +24,9 @@ export const FollowUpTab = ({
       <div className="card-header min-h-50px">
         <div className="card-title d-flex flex-column">
           <h5 className="fw-bold mb-1">Follow-up</h5>
-          <span className="text-muted fs-8">Add follow-up tasks / reminders</span>
+          <span className="text-muted fs-8">
+            Add follow-up tasks / reminders
+          </span>
         </div>
       </div>
 
@@ -35,7 +40,7 @@ export const FollowUpTab = ({
                 className="form-control"
                 placeholder=" "
                 value={form.date}
-                onChange={(event) => onChange('date', event.target.value)}
+                onChange={event => onChange('date', event.target.value)}
               />
               <label htmlFor="followupDate">Follow-up Date</label>
             </div>
@@ -49,7 +54,7 @@ export const FollowUpTab = ({
                 className="form-control"
                 placeholder=" "
                 value={form.time}
-                onChange={(event) => onChange('time', event.target.value)}
+                onChange={event => onChange('time', event.target.value)}
               />
               <label htmlFor="followupTime">Follow-up Time</label>
             </div>
@@ -61,12 +66,16 @@ export const FollowUpTab = ({
                 id="assignTo"
                 className="form-select"
                 value={form.assignTo}
-                onChange={(event) => onChange('assignTo', event.target.value)}
+                onChange={event => onChange('assignTo', event.target.value)}
               >
                 <option value="">Select</option>
-                <option value="Contact Center Executive">Contact Center Executive</option>
+                <option value="Contact Center Executive">
+                  Contact Center Executive
+                </option>
                 <option value="Area Manager">Area Manager</option>
-                <option value="HOD - Contact Center">HOD - Contact Center</option>
+                <option value="HOD - Contact Center">
+                  HOD - Contact Center
+                </option>
               </select>
               <label htmlFor="assignTo">Assign To</label>
             </div>
@@ -78,7 +87,7 @@ export const FollowUpTab = ({
                 id="followupStatus"
                 className="form-select"
                 value={form.status}
-                onChange={(event) => onChange('status', event.target.value)}
+                onChange={event => onChange('status', event.target.value)}
               >
                 <option value="Open">Open</option>
                 <option value="In Progress">In Progress</option>
@@ -96,14 +105,18 @@ export const FollowUpTab = ({
                 className="form-control"
                 placeholder=" "
                 value={form.note}
-                onChange={(event) => onChange('note', event.target.value)}
+                onChange={event => onChange('note', event.target.value)}
               />
               <label htmlFor="followupNote">Follow-up Note</label>
             </div>
           </div>
 
           <div className="col-md-3 d-flex align-items-end">
-            <button className="btn btn-primary w-100" type="button" onClick={onAdd}>
+            <button
+              className="btn btn-primary w-100"
+              type="button"
+              onClick={onAdd}
+            >
               Add Follow-up
             </button>
           </div>
@@ -123,7 +136,7 @@ export const FollowUpTab = ({
             </thead>
             <tbody>
               {items.length ? (
-                items.map((item) => (
+                items.map(item => (
                   <tr key={item.id}>
                     <td>{item.date || '-'}</td>
                     <td>{item.time || '-'}</td>

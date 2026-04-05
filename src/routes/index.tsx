@@ -3,7 +3,6 @@ import { BrowserRouter } from 'react-router-dom';
 import { PATH } from 'src/constants/paths';
 import { Loading } from 'src/components/Loading';
 import { Route, Switch } from 'react-router-dom';
-import { PrivateRoute } from './PrivateRoute';
 import { MainLayout } from 'src/pages/layouts/MainLayout';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 
@@ -11,7 +10,6 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 const DashboardPage = lazy(
   () => import('src/pages/DashboardPages/DashboardPage'),
 );
-const HomePage = lazy(() => import('src/pages/HomePages/HomePage'));
 const ContactPage = lazy(() => import('src/pages/StaticPages/ContactPage'));
 const AboutPage = lazy(() => import('src/pages/StaticPages/AboutPage'));
 const Demo1Page = lazy(() => import('src/pages/StaticPages/Demo1Page'));
@@ -26,10 +24,7 @@ const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
 
-const DummyPage = lazy(
-  () => import('src/pages/Dummy/DummyPage'),
-);
-const RegisterPage = lazy(() => import('src/pages/AuthPages/RegisterPage'));
+const DummyPage = lazy(() => import('src/pages/Dummy/DummyPage'));
 const ProfilePage = lazy(() => import('src/pages/AuthPages/ProfilePage'));
 
 // ---> Products pages
@@ -80,19 +75,13 @@ export const Routes = () => {
               {/* Auth routes */}
               <Route exact path={PATH.LOGIN} component={LoginPage} />
               <Route exact path={PATH.PROFILE} component={ProfilePage} />
-			  <Route exact path={PATH.FORGOT} component={ForgotPage} />
+              <Route exact path={PATH.FORGOT} component={ForgotPage} />
               <Route
                 exact
                 path={PATH.ANNOUNCE_MASTER}
                 component={AnnounceMasterPage}
               />
-              <Route
-                exact
-                path={PATH.DUMMY}
-                component={DummyPage}
-              />
-
-             
+              <Route exact path={PATH.DUMMY} component={DummyPage} />
 
               {/* Error routes */}
               <Route component={NotFoundPage} />
