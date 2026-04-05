@@ -24,25 +24,9 @@ const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
 
-const DummyPage = lazy(
-  () => import('src/pages/Dummy/DummyPage'),
-);
-const RegisterPage = lazy(() => import('src/pages/AuthPages/RegisterPage'));
-const ProfilePage = lazy(() => import('src/pages/MasterPages/ProfilePage'));
-
-// ---> Products pages
-// const ProductListPage = lazy(
-//   () => import('src/pages/ProductPages/ProductListPage'),
-// );
-// const ProductItemPage = lazy(
-//   () => import('src/pages/ProductPages/ProductItemPage'),
-// );
-// const ProductNewPage = lazy(
-//   () => import('src/pages/ProductPages/ProductNewPage'),
-// );
-// const ProductEditPage = lazy(
-//   () => import('src/pages/ProductPages/ProductEditPage'),
-// );
+const DummyPage = lazy(() => import('src/pages/Dummy/DummyPage'));
+const ProfilePage = lazy(
+  () => import('src/pages/MasterPages/ProfilePage'),);
 
 // ---> Error pages
 const NotFoundPage = lazy(() => import('src/pages/ErrorPages/404Pages'));
@@ -55,15 +39,26 @@ export const Routes = () => {
       <HelmetProvider context={helmetContext}>
         <Helmet>
           <meta charSet="utf-8" />
-          <title>React TS</title>
+          <title>React TS </title>
+          <link
+            rel="canonical"
+            href="https://reactts-boilerplate.netlify.app/"
+          />
         </Helmet>
 
-        <Suspense fallback={<Loading />}>
-          <Switch>
+        <MainLayout>
+          <Suspense fallback={<Loading />}>
+            <Switch>
+              {/* Static pages routes */}
+              <Route exact path={PATH.HOME} component={LoginPage} />
+              <Route exact path={PATH.DASHBOARD} component={DashboardPage} />
+              <Route exact path={PATH.ABOUT} component={AboutPage} />
+              <Route exact path={PATH.DEMO1} component={Demo1Page} />
+              <Route exact path={PATH.DEMO2} component={Demo2Page} />
+              <Route exact path={PATH.FEATURE1} component={Feature1Page} />
+              <Route exact path={PATH.FEATURE2} component={Feature2Page} />
+              <Route exact path={PATH.CONTACT} component={ContactPage} />
 
-            {/* PUBLIC ROUTES */}
-            <Route exact path={PATH.LOGIN} component={LoginPage} />
-            <Route exact path={PATH.HOME} component={LoginPage} />
               {/* Auth routes */}
               <Route exact path={PATH.LOGIN} component={LoginPage} />
               <Route exact path={PATH.PROFILE} component={ProfilePage} />
@@ -73,23 +68,13 @@ export const Routes = () => {
                 path={PATH.ANNOUNCE_MASTER}
                 component={AnnounceMasterPage}
               />
-              <Route
-                exact
-                path={PATH.DUMMY}
-                component={DummyPage}
-              />
+              <Route exact path={PATH.DUMMY} component={DummyPage} />
 
-            {/* PRIVATE ROUTES (WITH DASHBOARD LAYOUT) */}
-            <PrivateRoute exact path={PATH.DASHBOARD} component={DashboardPage} />
-            <PrivateRoute exact path={PATH.PROFILE} component={ProfilePage} />
-            <PrivateRoute exact path={PATH.ANNOUNCE_MASTER} component={AnnounceMasterPage} />
-
-            {/* ERROR */}
-            <Route component={NotFoundPage} />
-
-          </Switch>
-        </Suspense>
-
+              {/* Error routes */}
+              <Route component={NotFoundPage} />
+            </Switch>
+          </Suspense>
+        </MainLayout>
       </HelmetProvider>
     </BrowserRouter>
   );

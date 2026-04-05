@@ -177,7 +177,7 @@ const _Login = (props: Props) => {
                         to={PATH.FORGOT}
                         className="login-form-register-link"
                       >
-                        Forgot Password
+                        Forgot Password?
                       </Link>
                     </div>
                   </div>
