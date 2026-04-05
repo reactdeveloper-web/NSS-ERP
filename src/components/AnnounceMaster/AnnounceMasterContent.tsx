@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import axios from 'axios';
 import { ContentTypes } from 'src/constants/content';
 import axiosInstance from 'src/redux/interceptor';
 import { AnnounceMasterNav } from './AnnounceMasterNav';
@@ -22,6 +23,7 @@ import {
   FollowUpForm,
   FollowUpItem,
   PersonalInfoForm,
+  SalutationOption,
 } from './types';
 
 const getToday = () => new Date().toISOString().split('T')[0];
@@ -139,8 +141,19 @@ const mapDonorToPersonalInfo = (
   const rawState = getMappedValue(donorRecord, ['StateName', 'State']);
   const state =
     rawState === undefined ? undefined : normalizeStateValue(rawState);
+  const donorSalutation = getMappedValue(donorRecord, [
+    'DShri',
+    'Salutation',
+    'SalutationName',
+    'Title',
+    'TitleName',
+    'Prefix',
+  ]);
 
   return {
+    salutation: donorSalutation,
+    salutationLocked:
+      donorSalutation === undefined ? undefined : donorSalutation.trim() !== '',
     mobileNo: getMappedValue(donorRecord, ['DMobile', 'MobileNo', 'Mobile', 'mobile']),
     whatsappNo: getMappedValue(donorRecord, [
       'WhatsappNo',
@@ -201,6 +214,40 @@ const extractArrayPayload = (payload: unknown): Record<string, unknown>[] => {
   return [];
 };
 
+const extractSalutationOptions = (payload: unknown): SalutationOption[] => {
+  const salutationRecords = extractArrayPayload(payload);
+
+  return salutationRecords
+    .map((record) => ({
+      value: getFirstValue(record, [
+        'SAL_CODE',
+        'SalutationCode',
+        'Code',
+        'Id',
+        'ID',
+      ]),
+      label: getFirstValue(record, [
+        'SAL_NAME',
+        'Salutation',
+        'SalutationName',
+        'Title',
+        'TitleName',
+        'Prefix',
+        'Name',
+        'Text',
+      ]),
+    }))
+    .filter((option, index, currentOptions) => {
+      const normalizedValue = option.value.trim();
+      const normalizedLabel = option.label.trim();
+      return (
+        normalizedValue !== '' &&
+        normalizedLabel !== '' &&
+        currentOptions.findIndex((item) => item.value === option.value) === index
+      );
+    });
+};
+
 const mapBankRecord = (bankRecord: Record<string, unknown>, index: number): DepositBank => ({
   id:
     getFirstValue(bankRecord, ["ID", "Id", "BankId", "DepositBankId"]) ||
@@ -247,6 +294,7 @@ export const AnnounceMasterContent = () => {
     createInitialFollowUpForm,
   );
   const [followUpItems, setFollowUpItems] = useState<FollowUpItem[]>([]);
+  const [salutations, setSalutations] = useState<SalutationOption[]>([]);
   const [selectedBankIds, setSelectedBankIds] = useState<string[]>([]);
   const [banks, setBanks] = useState<DepositBank[]>([]);
   const [bankLoading, setBankLoading] = useState(false);
@@ -507,6 +555,24 @@ export const AnnounceMasterContent = () => {
   }, [donorIdentificationForm.donorId, donorIdentificationForm.donorSearchType]);
 
   useEffect(() => {
+    const loadSalutations = async () => {
+      try {
+        const response = await axios.get('http://10.32.1.187:84/master/GetSalutations', {
+          params: {
+            Data_Flag: ContentTypes.DataFlag,
+          },
+        });
+
+        setSalutations(extractSalutationOptions(response.data));
+      } catch (error) {
+        setSalutations([]);
+      }
+    };
+
+    void loadSalutations();
+  }, []);
+
+  useEffect(() => {
     const loadBanks = async () => {
       setBankLoading(true);
       setBankError('');
@@ -591,6 +657,7 @@ export const AnnounceMasterContent = () => {
               <AnnouncerPersonalDetailsCard
                 activeTab={activeTab}
                 personalInfoForm={personalInfoForm}
+                salutations={salutations}
                 announceDetailsForm={announceDetailsForm}
                 followUpForm={followUpForm}
                 followUpItems={followUpItems}

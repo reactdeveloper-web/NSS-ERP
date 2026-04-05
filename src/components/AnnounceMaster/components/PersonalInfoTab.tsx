@@ -1,15 +1,21 @@
 import React from 'react';
-import { PersonalInfoForm } from '../types';
+import { PersonalInfoForm, SalutationOption } from '../types';
 
 interface PersonalInfoTabProps {
   form: PersonalInfoForm;
+  salutations: SalutationOption[];
   onChange: <K extends keyof PersonalInfoForm>(
     field: K,
     value: PersonalInfoForm[K],
   ) => void;
 }
 
-export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
+export const PersonalInfoTab = ({ form, salutations, onChange }: PersonalInfoTabProps) => {
+  const salutationOptions =
+    form.salutation && !salutations.some((salutation) => salutation.value === form.salutation)
+      ? [{ value: form.salutation, label: form.salutation }, ...salutations]
+      : salutations;
+
   return (
     <div>
       <div className="text-muted fs-7 mb-4">
@@ -17,6 +23,8 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
       </div>
 
       <div className="row g-5">
+        
+
         <div className="col-md-2">
           <div className="form-floating">
             <input
@@ -46,6 +54,25 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
             <label htmlFor="whatsappNo">WhatsApp No.</label>
           </div>
         </div>
+        <div className="col-md-2">
+          <div className="form-floating">
+            <select
+              id="salutation"
+              className="form-select"
+              value={form.salutation}
+              disabled={form.salutationLocked}
+              onChange={(event) => onChange('salutation', event.target.value)}
+            >
+              <option value="">Select</option>
+              {salutationOptions.map((salutation) => (
+                <option key={salutation.value} value={salutation.value}>
+                  {salutation.label}
+                </option>
+              ))}
+            </select>
+            <label htmlFor="salutation">Salutation</label>
+          </div>
+        </div>
 
         <div className="col-md-3">
           <div className="form-floating">
@@ -63,8 +90,8 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
           </div>
         </div>
 
-        <div className="col-md-4">
-          <label className="form-check form-check-custom form-check-solid pt-10">
+        <div className="col-md-3">
+          <label className="form-check form-check-custom form-check-solid pt-3">
             <input
               className="form-check-input"
               type="checkbox"

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { AnnouncerTabKey, AnnounceDetailsForm, DepositBank, FollowUpForm, FollowUpItem, PersonalInfoForm } from '../types';
+import { AnnouncerTabKey, AnnounceDetailsForm, DepositBank, FollowUpForm, FollowUpItem, PersonalInfoForm, SalutationOption } from '../types';
 import { AnnounceDetailsTab } from './AnnounceDetailsTab';
 import { BankDetailsTab } from './BankDetailsTab';
 import { FollowUpTab } from './FollowUpTab';
@@ -8,6 +8,7 @@ import { PersonalInfoTab } from './PersonalInfoTab';
 interface AnnouncerPersonalDetailsCardProps {
   activeTab: AnnouncerTabKey;
   personalInfoForm: PersonalInfoForm;
+  salutations: SalutationOption[];
   announceDetailsForm: AnnounceDetailsForm;
   followUpForm: FollowUpForm;
   followUpItems: FollowUpItem[];
@@ -62,6 +63,7 @@ const tabs: { key: AnnouncerTabKey; label: string; title: string }[] = [
 export const  AnnouncerPersonalDetailsCard = ({
   activeTab,
   personalInfoForm,
+  salutations,
   announceDetailsForm,
   followUpForm,
   followUpItems,
@@ -142,7 +144,11 @@ export const  AnnouncerPersonalDetailsCard = ({
 
         <div className="tab-content">
           <div className={`tab-pane fade ${activeTab === 'personal' ? 'active show' : ''}`}>
-            <PersonalInfoTab form={personalInfoForm} onChange={onPersonalInfoChange} />
+            <PersonalInfoTab
+              form={personalInfoForm}
+              salutations={salutations}
+              onChange={onPersonalInfoChange}
+            />
           </div>
 
           <div

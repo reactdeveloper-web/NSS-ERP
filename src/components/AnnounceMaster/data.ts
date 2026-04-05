@@ -44,6 +44,8 @@ export const createInitialAnnounceEventForm = (): AnnounceEventForm => ({
 });
 
 export const createInitialPersonalInfoForm = (): PersonalInfoForm => ({
+  salutation: '',
+  salutationLocked: false,
   mobileNo: '',
   whatsappNo: '',
   announcerName: '',

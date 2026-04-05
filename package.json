@@ -2,7 +2,7 @@
   "name": "typescript-react",
   "version": "0.1.0",
   "private": true,
-  "proxy": "https://deverp.narayanseva.org",
+  "proxy": "http://10.32.1.187:84/",
   "dependencies": {
     "@ant-design/icons": "4.5.0",
     "antd": "4.13.1",
