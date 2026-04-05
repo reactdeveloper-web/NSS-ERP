@@ -28,61 +28,78 @@ export const FollowUpTab = ({
       <div className="card-body">
         <div className="row g-5">
           <div className="col-md-3">
-            <label className="form-label fw-semibold">Follow-up Date</label>
-            <input
-              type="date"
-              className="form-control"
-              value={form.date}
-              onChange={(event) => onChange('date', event.target.value)}
-            />
+            <div className="form-floating">
+              <input
+                id="followupDate"
+                type="date"
+                className="form-control"
+                placeholder=" "
+                value={form.date}
+                onChange={(event) => onChange('date', event.target.value)}
+              />
+              <label htmlFor="followupDate">Follow-up Date</label>
+            </div>
           </div>
 
           <div className="col-md-3">
-            <label className="form-label fw-semibold">Follow-up Time</label>
-            <input
-              type="time"
-              className="form-control"
-              value={form.time}
-              onChange={(event) => onChange('time', event.target.value)}
-            />
+            <div className="form-floating">
+              <input
+                id="followupTime"
+                type="time"
+                className="form-control"
+                placeholder=" "
+                value={form.time}
+                onChange={(event) => onChange('time', event.target.value)}
+              />
+              <label htmlFor="followupTime">Follow-up Time</label>
+            </div>
           </div>
 
           <div className="col-md-3">
-            <label className="form-label fw-semibold">Assign To</label>
-            <select
-              className="form-select"
-              value={form.assignTo}
-              onChange={(event) => onChange('assignTo', event.target.value)}
-            >
-              <option value="">Select</option>
-              <option value="Contact Center Executive">Contact Center Executive</option>
-              <option value="Area Manager">Area Manager</option>
-              <option value="HOD - Contact Center">HOD - Contact Center</option>
-            </select>
+            <div className="form-floating">
+              <select
+                id="assignTo"
+                className="form-select"
+                value={form.assignTo}
+                onChange={(event) => onChange('assignTo', event.target.value)}
+              >
+                <option value="">Select</option>
+                <option value="Contact Center Executive">Contact Center Executive</option>
+                <option value="Area Manager">Area Manager</option>
+                <option value="HOD - Contact Center">HOD - Contact Center</option>
+              </select>
+              <label htmlFor="assignTo">Assign To</label>
+            </div>
           </div>
 
           <div className="col-md-3">
-            <label className="form-label fw-semibold">Status</label>
-            <select
-              className="form-select"
-              value={form.status}
-              onChange={(event) => onChange('status', event.target.value)}
-            >
-              <option value="Open">Open</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Closed">Closed</option>
-            </select>
+            <div className="form-floating">
+              <select
+                id="followupStatus"
+                className="form-select"
+                value={form.status}
+                onChange={(event) => onChange('status', event.target.value)}
+              >
+                <option value="Open">Open</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Closed">Closed</option>
+              </select>
+              <label htmlFor="followupStatus">Status</label>
+            </div>
           </div>
 
           <div className="col-md-9">
-            <label className="form-label fw-semibold">Follow-up Note</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Short note..."
-              value={form.note}
-              onChange={(event) => onChange('note', event.target.value)}
-            />
+            <div className="form-floating">
+              <input
+                id="followupNote"
+                type="text"
+                className="form-control"
+                placeholder=" "
+                value={form.note}
+                onChange={(event) => onChange('note', event.target.value)}
+              />
+              <label htmlFor="followupNote">Follow-up Note</label>
+            </div>
           </div>
 
           <div className="col-md-3 d-flex align-items-end">

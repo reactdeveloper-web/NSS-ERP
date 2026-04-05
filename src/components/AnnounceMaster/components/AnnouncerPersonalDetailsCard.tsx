@@ -1,5 +1,5 @@
-import React from 'react';
-import { AnnouncerTabKey, AnnounceDetailsForm, FollowUpForm, FollowUpItem, PersonalInfoForm } from '../types';
+import React, { useEffect, useRef } from 'react';
+import { AnnouncerTabKey, AnnounceDetailsForm, DepositBank, FollowUpForm, FollowUpItem, PersonalInfoForm } from '../types';
 import { AnnounceDetailsTab } from './AnnounceDetailsTab';
 import { BankDetailsTab } from './BankDetailsTab';
 import { FollowUpTab } from './FollowUpTab';
@@ -11,6 +11,9 @@ interface AnnouncerPersonalDetailsCardProps {
   announceDetailsForm: AnnounceDetailsForm;
   followUpForm: FollowUpForm;
   followUpItems: FollowUpItem[];
+  banks: DepositBank[];
+  bankLoading: boolean;
+  bankError: string;
   selectedBankIds: string[];
   amount: number;
   onTabChange: (tab: AnnouncerTabKey) => void;
@@ -56,12 +59,15 @@ const tabs: { key: AnnouncerTabKey; label: string; title: string }[] = [
   },
 ];
 
-export const AnnouncerPersonalDetailsCard = ({
+export const  AnnouncerPersonalDetailsCard = ({
   activeTab,
   personalInfoForm,
   announceDetailsForm,
   followUpForm,
   followUpItems,
+  banks,
+  bankLoading,
+  bankError,
   selectedBankIds,
   amount,
   onTabChange,
@@ -74,6 +80,34 @@ export const AnnouncerPersonalDetailsCard = ({
   onRemoveFollowUp,
   onReset,
 }: AnnouncerPersonalDetailsCardProps) => {
+  const tabsRef = useRef<HTMLUListElement | null>(null);
+
+  useEffect(() => {
+    const bootstrap = (window as Window & {
+      bootstrap?: {
+        Tooltip?: new (
+          element: Element,
+          options?: Record<string, unknown>,
+        ) => { dispose?: () => void };
+      };
+    }).bootstrap;
+
+    if (!bootstrap?.Tooltip || !tabsRef.current) {
+      return;
+    }
+
+    const tooltipElements = Array.from(
+      tabsRef.current.querySelectorAll('[data-bs-toggle="tooltip"]'),
+    );
+    const tooltips = tooltipElements.map(
+      (element) => new bootstrap.Tooltip!(element, { trigger: 'hover' }),
+    );
+
+    return () => {
+      tooltips.forEach((tooltip) => tooltip.dispose?.());
+    };
+  }, []);
+
   return (
     <div className="card card-flush">
       <div className="card-header border-bottom mb-4">
@@ -83,13 +117,21 @@ export const AnnouncerPersonalDetailsCard = ({
       </div>
 
       <div className="card-body pt-2">
-        <ul className="nav nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 fw-semibold mb-6">
+        <ul
+          ref={tabsRef}
+          className="nav nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 fw-semibold mb-6"
+        >
           {tabs.map((tab) => (
             <li className="nav-item" key={tab.key}>
               <button
                 className={`nav-link ${activeTab === tab.key ? 'active' : ''}`}
                 type="button"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-trigger="hover"
+                data-bs-title={tab.title}
                 title={tab.title}
+                aria-pressed={activeTab === tab.key}
                 onClick={() => onTabChange(tab.key)}
               >
                 {tab.label}
@@ -99,27 +141,32 @@ export const AnnouncerPersonalDetailsCard = ({
         </ul>
 
         <div className="tab-content">
-          {activeTab === 'personal' ? (
+          <div className={`tab-pane fade ${activeTab === 'personal' ? 'active show' : ''}`}>
             <PersonalInfoTab form={personalInfoForm} onChange={onPersonalInfoChange} />
-          ) : null}
+          </div>
 
-          {activeTab === 'announceDetails' ? (
+          <div
+            className={`tab-pane fade ${activeTab === 'announceDetails' ? 'active show' : ''}`}
+          >
             <AnnounceDetailsTab
               form={announceDetailsForm}
               amount={amount}
               onChange={onAnnounceDetailsChange}
               onQuantityChange={onQuantityChange}
             />
-          ) : null}
+          </div>
 
-          {activeTab === 'bankDetails' ? (
+          <div className={`tab-pane fade ${activeTab === 'bankDetails' ? 'active show' : ''}`}>
             <BankDetailsTab
+              banks={banks}
+              isLoading={bankLoading}
+              error={bankError}
               selectedBankIds={selectedBankIds}
               onToggleBank={onToggleBank}
             />
-          ) : null}
+          </div>
 
-          {activeTab === 'followUp' ? (
+          <div className={`tab-pane fade ${activeTab === 'followUp' ? 'active show' : ''}`}>
             <FollowUpTab
               form={followUpForm}
               items={followUpItems}
@@ -127,7 +174,7 @@ export const AnnouncerPersonalDetailsCard = ({
               onAdd={onAddFollowUp}
               onRemove={onRemoveFollowUp}
             />
-          ) : null}
+          </div>
         </div>
       </div>
 

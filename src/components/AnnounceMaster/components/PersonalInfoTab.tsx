@@ -18,40 +18,49 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
 
       <div className="row g-5">
         <div className="col-md-2">
-          <label className="form-label fw-semibold">
-            Mobile No. <span className="text-danger">*</span>
-          </label>
-          <input
-            type="tel"
-            className="form-control"
-            placeholder="Enter mobile number"
-            value={form.mobileNo}
-            onChange={(event) => onChange('mobileNo', event.target.value)}
-          />
+          <div className="form-floating">
+            <input
+              id="mobileNo"
+              type="tel"
+              className="form-control"
+              placeholder=" "
+              value={form.mobileNo}
+              onChange={(event) => onChange('mobileNo', event.target.value)}
+            />
+            <label htmlFor="mobileNo">
+              Mobile No. <span className="text-danger">*</span>
+            </label>
+          </div>
         </div>
 
         <div className="col-md-2">
-          <label className="form-label fw-semibold">WhatsApp No.</label>
-          <input
-            type="tel"
-            className="form-control"
-            placeholder="Optional"
-            value={form.whatsappNo}
-            onChange={(event) => onChange('whatsappNo', event.target.value)}
-          />
+          <div className="form-floating">
+            <input
+              id="whatsappNo"
+              type="tel"
+              className="form-control"
+              placeholder=" "
+              value={form.whatsappNo}
+              onChange={(event) => onChange('whatsappNo', event.target.value)}
+            />
+            <label htmlFor="whatsappNo">WhatsApp No.</label>
+          </div>
         </div>
 
         <div className="col-md-3">
-          <label className="form-label fw-semibold">
-            Announcer Name <span className="text-danger">*</span>
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Donor name / New name"
-            value={form.announcerName}
-            onChange={(event) => onChange('announcerName', event.target.value)}
-          />
+          <div className="form-floating">
+            <input
+              id="announcerName"
+              type="text"
+              className="form-control"
+              placeholder=" "
+              value={form.announcerName}
+              onChange={(event) => onChange('announcerName', event.target.value)}
+            />
+            <label htmlFor="announcerName">
+              Announcer Name <span className="text-danger">*</span>
+            </label>
+          </div>
         </div>
 
         <div className="col-md-4">
@@ -74,75 +83,93 @@ export const PersonalInfoTab = ({ form, onChange }: PersonalInfoTabProps) => {
           <div className="col-md-4">
             <div className="row g-5">
               <div className="col-md-6">
-                <label className="form-label fw-semibold">
-                  Announcer In The Name Of <span className="text-danger">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter name to announce"
-                  value={form.announcedForName}
-                  onChange={(event) =>
-                    onChange('announcedForName', event.target.value)
-                  }
-                />
+                <div className="form-floating">
+                  <input
+                    id="announcedForName"
+                    type="text"
+                    className="form-control"
+                    placeholder=" "
+                    value={form.announcedForName}
+                    onChange={(event) =>
+                      onChange('announcedForName', event.target.value)
+                    }
+                  />
+                  <label htmlFor="announcedForName">
+                    Announcer In The Name Of <span className="text-danger">*</span>
+                  </label>
+                </div>
               </div>
 
               <div className="col-md-6">
-                <label className="form-label fw-semibold">
-                  e.g., Father / Mother / Friend
-                </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Relation"
-                  value={form.relationName}
-                  onChange={(event) => onChange('relationName', event.target.value)}
-                />
+                <div className="form-floating">
+                  <input
+                    id="relationName"
+                    type="text"
+                    className="form-control"
+                    placeholder=" "
+                    value={form.relationName}
+                    onChange={(event) => onChange('relationName', event.target.value)}
+                  />
+                  <label htmlFor="relationName">Relation</label>
+                </div>
               </div>
             </div>
           </div>
         ) : null}
 
         <div className="col-md-2">
-          <label className="form-label fw-semibold">Pincode</label>
-          <input
-            type="text"
-            className="form-control"
-            value={form.pincode}
-            onChange={(event) => onChange('pincode', event.target.value)}
-          />
+          <div className="form-floating">
+            <input
+              id="pincode"
+              type="text"
+              className="form-control"
+              placeholder=" "
+              value={form.pincode}
+              onChange={(event) => onChange('pincode', event.target.value)}
+            />
+            <label htmlFor="pincode">Pincode</label>
+          </div>
         </div>
 
         <div className="col-md-2">
-          <label className="form-label fw-semibold">Country</label>
-          <select className="form-select" value={form.country} disabled>
-            <option value="India">India</option>
-          </select>
+          <div className="form-floating">
+            <select id="country" className="form-select" value={form.country} disabled>
+              <option value="India">India</option>
+            </select>
+            <label htmlFor="country">Country</label>
+          </div>
         </div>
 
         <div className="col-md-2">
-          <label className="form-label fw-semibold">State</label>
-          <select
-            className="form-select"
-            value={form.state}
-            onChange={(event) => onChange('state', event.target.value)}
-          >
-            <option value="">Select</option>
-            <option value="Rajasthan">Rajasthan</option>
-            <option value="Delhi">Delhi</option>
-            <option value="Gujarat">Gujarat</option>
-          </select>
+          <div className="form-floating">
+            <select
+              id="state"
+              className="form-select"
+              value={form.state}
+              disabled={form.stateLocked}
+              onChange={(event) => onChange('state', event.target.value)}
+            >
+              <option value="">Select</option>
+              <option value="Rajasthan">Rajasthan</option>
+              <option value="Delhi">Delhi</option>
+              <option value="Gujarat">Gujarat</option>
+            </select>
+            <label htmlFor="state">State</label>
+          </div>
         </div>
 
         <div className="col-md-2">
-          <label className="form-label fw-semibold">District</label>
-          <input
-            type="text"
-            className="form-control"
-            value={form.district}
-            onChange={(event) => onChange('district', event.target.value)}
-          />
+          <div className="form-floating">
+            <input
+              id="district"
+              type="text"
+              className="form-control"
+              placeholder=" "
+              value={form.district}
+              onChange={(event) => onChange('district', event.target.value)}
+            />
+            <label htmlFor="district">District</label>
+          </div>
         </div>
       </div>
     </div>

@@ -7,30 +7,6 @@ import {
 } from './types';
 
 export const bankOptions = [
-  {
-    id: 'bank-au',
-    bankName: 'AU Small Finance Bank',
-    accountNo: 'xxxx-xxxx-1234',
-    accountType: 'Saving',
-    ifsc: 'AUBL0002514',
-    branch: 'Udaipur',
-  },
-  {
-    id: 'bank-boi',
-    bankName: 'Bank of India',
-    accountNo: 'xxxx-xxxx-5678',
-    accountType: 'Saving',
-    ifsc: 'BKID0008515',
-    branch: 'Udaipur',
-  },
-  {
-    id: 'bank-sbi',
-    bankName: 'State Bank of India',
-    accountNo: 'xxxx-xxxx-9012',
-    accountType: 'Saving',
-    ifsc: 'SBIN0000120',
-    branch: 'Udaipur',
-  },
 ];
 
 export const purposeOptions = [
@@ -45,6 +21,7 @@ export const createInitialDonorIdentificationForm = (
   today: string,
 ): DonorIdentificationForm => ({
   announceDate: today,
+  donorSearchType: 'donorId',
   donorId: '',
   callingSadhak: 'Logged-in User (Auto)',
   urgentFollowup: false,
@@ -76,6 +53,7 @@ export const createInitialPersonalInfoForm = (): PersonalInfoForm => ({
   pincode: '',
   country: 'India',
   state: '',
+  stateLocked: false,
   district: '',
 });
 

@@ -1,5 +1,6 @@
 export interface DonorIdentificationForm {
   announceDate: string;
+  donorSearchType: string;
   donorId: string;
   callingSadhak: string;
   urgentFollowup: boolean;
@@ -31,6 +32,7 @@ export interface PersonalInfoForm {
   pincode: string;
   country: string;
   state: string;
+  stateLocked: boolean;
   district: string;
 }
 
@@ -59,6 +61,23 @@ export interface FollowUpForm {
 
 export interface FollowUpItem extends FollowUpForm {
   id: number;
+}
+
+export interface DepositBank {
+  id: string;
+  bankName: string;
+  accountNo: string;
+  accountType: string;
+  ifsc: string;
+  branch: string;
+}
+
+export interface DonorSearchResult {
+  donorId: string;
+  donorName: string;
+  mobileNo: string;
+  email: string;
+  record: Record<string, unknown>;
 }
 
 export type AnnouncerTabKey =
