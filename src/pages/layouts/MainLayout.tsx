@@ -69,11 +69,11 @@ export const MainLayout = (props: Props) => {
   }, [pathname, children]);
 
   return (
-    <div className="page d-flex flex-row flex-column-fluid " >
+    <>
       <AppAside></AppAside>
         <AppHeader />
             {/* <AppAlert /> */}
             {children}
-     </div> 
+     </> 
   );
 };

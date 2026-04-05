@@ -17,7 +17,7 @@ export const AnnounceMasterNav = () => {
             Announce Master
             <span className="h-20px border-gray-200 border-start ms-3 mx-2"></span>
             <small className="text-muted fs-7 fw-bold my-1 ms-1">
-              Blank Page
+              Donor announcement workflow
             </small>
           </h1>
         </div>
