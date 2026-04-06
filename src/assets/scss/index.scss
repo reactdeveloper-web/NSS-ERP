@@ -1,11 +1,11 @@
-@import 'config';
-@import 'fonts';
-@import 'header';
-@import 'footer';
-@import 'home';
-@import 'staticPages';
-@import 'responsive';
-@import 'login';
+@use 'config' as *;
+@use 'fonts';
+@use 'header';
+@use 'footer';
+@use 'home';
+@use 'staticPages';
+@use 'responsive';
+@use 'login';
 
 * {
   box-sizing: border-box;
@@ -14,7 +14,7 @@
 }
 
 body {
-    background-color: #f5f8fa !important;
+  background-color: #f5f8fa !important;
 }
 
 // body {

@@ -5,7 +5,7 @@ import { Profile } from 'src/components/Auth/Profile';
 const _ProfilePage = () => {
   return (
     // <PageLayout>
-      <Profile />
+    <Profile />
     // </PageLayout>
   );
 };

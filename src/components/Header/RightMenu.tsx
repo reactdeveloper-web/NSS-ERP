@@ -23,15 +23,13 @@ const _RightMenu = (props: Props) => {
   const { isAuthenticated, logout, user } = props;
   const { md } = useBreakpoint();
   const authLinks = (
-    
-        <a
-          className="navbar-item primary"
-          href={PATH.LOGIN}
-          onClick={() => logout()}
-        >
-            <LoginOutlined />
-        </a>
-     
+    <a
+      className="navbar-item primary"
+      href={PATH.LOGIN}
+      onClick={() => logout()}
+    >
+      <LoginOutlined />
+    </a>
   );
   return <>{isAuthenticated ? authLinks : ''}</>;
 };

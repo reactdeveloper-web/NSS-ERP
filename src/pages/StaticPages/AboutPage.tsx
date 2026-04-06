@@ -5,7 +5,7 @@ import { About } from 'src/components/StaticPages/About';
 const _AboutPage = () => {
   return (
     // <PageLayout>
-      <About />
+    <About />
     // </PageLayout>
   );
 };

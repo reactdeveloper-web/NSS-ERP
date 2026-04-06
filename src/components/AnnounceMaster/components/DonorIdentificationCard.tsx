@@ -1,4 +1,5 @@
 import React from 'react';
+import { Select } from 'antd';
 import { DonorIdentificationForm, DonorSearchResult } from '../types';
 
 const donorSearchOptions = [
@@ -33,6 +34,42 @@ export const DonorIdentificationCard = ({
   onSelectDonor,
   onCloseDonorModal,
 }: DonorIdentificationCardProps) => {
+  const renderFloatingSelect = (
+    id: keyof Pick<DonorIdentificationForm, 'donorSearchType'>,
+    label: string,
+    value: string,
+    options: { value: string; label: string }[],
+    disabled = false,
+  ) => (
+    <div
+      className={`form-floating ant-select-floating ${
+        value ? 'has-value' : ''
+      } ${disabled ? 'is-disabled' : ''}`}
+      style={{ maxWidth: '170px', minWidth: '170px' }}
+    >
+      <Select
+        id={id}
+        placeholder=""
+        showSearch
+        allowClear={!disabled}
+        disabled={disabled}
+        value={value || undefined}
+        onChange={nextValue => onChange(id, (nextValue as string) || '')}
+        optionFilterProp="label"
+        filterOption={(input, option) =>
+          String(option?.label ?? '')
+            .toLowerCase()
+            .includes(input.toLowerCase())
+        }
+        options={options.map(option => ({
+          value: option.value,
+          label: option.label,
+        }))}
+      />
+      <label htmlFor={id}>{label}</label>
+    </div>
+  );
+
   return (
     <>
       <div className="card card-flush h-xl-100">
@@ -47,11 +84,11 @@ export const DonorIdentificationCard = ({
 
           <div className="row g-5">
             <div className="col-md-6">
-              <div className="form-floating">
+              <div className="form-floating ant-input-floating">
                 <input
                   id="announceDate"
                   type="date"
-                  className="form-control form-control-solid"
+                  className="form-control form-control-solid ant-input-floating-control"
                   placeholder=" "
                   value={form.announceDate}
                   readOnly
@@ -61,11 +98,11 @@ export const DonorIdentificationCard = ({
             </div>
 
             <div className="col-md-6">
-              <div className="form-floating">
+              <div className="form-floating ant-input-floating">
                 <input
                   id="callingSadhak"
                   type="text"
-                  className="form-control form-control-solid"
+                  className="form-control form-control-solid ant-input-floating-control"
                   placeholder=" "
                   value={form.callingSadhak}
                   readOnly
@@ -76,36 +113,29 @@ export const DonorIdentificationCard = ({
 
             <div className="col-md-12 position-relative">
               <div className="d-flex gap-3">
-                <div className="form-floating" style={{ maxWidth: '170px', minWidth: '170px' }}>
-                  <select
-                    id="donorSearchType"
-                    className="form-select"
-                    value={form.donorSearchType}
-                    onChange={(event) =>
-                      onChange('donorSearchType', event.target.value)
-                    }
-                  >
-                    {donorSearchOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <label htmlFor="donorSearchType">Search By</label>
+                <div
+                  className="d-flex"
+                >
+                  {renderFloatingSelect(
+                    'donorSearchType',
+                    'Search By',
+                    form.donorSearchType,
+                    donorSearchOptions,
+                  )}
                 </div>
-                <div className="form-floating flex-grow-1">
+                <div className="form-floating ant-input-floating flex-grow-1">
                   <input
                     id="donorSearchValue"
                     type="text"
-                    className="form-control"
+                    className="form-control ant-input-floating-control"
                     placeholder=" "
                     value={form.donorId}
-                    onChange={(event) => onChange('donorId', event.target.value)}
+                    onChange={event => onChange('donorId', event.target.value)}
                   />
                   <label htmlFor="donorSearchValue">
                     {`Type ${
                       donorSearchOptions.find(
-                        (option) => option.value === form.donorSearchType,
+                        option => option.value === form.donorSearchType,
                       )?.label ?? 'Donor ID'
                     }`}
                   </label>
@@ -121,11 +151,11 @@ export const DonorIdentificationCard = ({
                 ) : null}
               </div>
               {searchError ? (
-                <div className="text-danger fs-7 mt-0 position-absolute e-0">{searchError}</div>
+                <div className="text-danger fs-7 mt-2 position-absolute end-0 top-75 me-2">
+                  {searchError}
+                </div>
               ) : null}
             </div>
-
-          
           </div>
 
           <div className="separator separator-dashed my-6"></div>
@@ -136,7 +166,7 @@ export const DonorIdentificationCard = ({
                 className="form-check-input"
                 type="checkbox"
                 checked={form.urgentFollowup}
-                onChange={(event) =>
+                onChange={event =>
                   onChange('urgentFollowup', event.target.checked)
                 }
               />
@@ -150,7 +180,7 @@ export const DonorIdentificationCard = ({
                 className="form-check-input"
                 type="checkbox"
                 checked={form.followupNotRequired}
-                onChange={(event) =>
+                onChange={event =>
                   onChange('followupNotRequired', event.target.checked)
                 }
               />
@@ -164,7 +194,10 @@ export const DonorIdentificationCard = ({
       {showDonorModal ? (
         <>
           <div className="modal fade show d-block" tabIndex={-1} role="dialog">
-            <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div
+              className="modal-dialog modal-dialog-centered modal-lg"
+              role="document"
+            >
               <div className="modal-content">
                 <div className="modal-header p-4">
                   <h4 className="modal-title">Multiple Donor IDs Found</h4>
@@ -179,7 +212,10 @@ export const DonorIdentificationCard = ({
                   <div className="text-muted fs-7 mb-4">
                     Select the donor ID you want to use for this mobile number.
                   </div>
-                  <div className="table-responsive" style={{ maxHeight: '320px', overflowY: 'auto' }}>
+                  <div
+                    className="table-responsive"
+                    style={{ maxHeight: '320px', overflowY: 'auto' }}
+                  >
                     <table className="table table-row-bordered align-middle">
                       <thead>
                         <tr className="fw-bold text-gray-800">
@@ -191,7 +227,7 @@ export const DonorIdentificationCard = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {donorOptions.map((donor) => (
+                        {donorOptions.map(donor => (
                           <tr key={`${donor.donorId}-${donor.mobileNo}`}>
                             <td>{donor.donorId || '-'}</td>
                             <td>{donor.donorName || '-'}</td>
@@ -215,7 +251,10 @@ export const DonorIdentificationCard = ({
               </div>
             </div>
           </div>
-          <div className="modal-backdrop fade show" onClick={onCloseDonorModal} />
+          <div
+            className="modal-backdrop fade show"
+            onClick={onCloseDonorModal}
+          />
         </>
       ) : null}
     </>

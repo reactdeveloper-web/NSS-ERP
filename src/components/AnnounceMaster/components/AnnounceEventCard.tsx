@@ -1,8 +1,16 @@
 import React from 'react';
-import { AnnounceEventForm } from '../types';
+import { Select } from 'antd';
+import { AnnounceEventForm, EventOption } from '../types';
 
 interface AnnounceEventCardProps {
   form: AnnounceEventForm;
+  eventOptions: EventOption[];
+  eventCauseOptions: EventOption[];
+  eventCityOptions: EventOption[];
+  eventChannelOptions: EventOption[];
+  panditOptions: EventOption[];
+  eventLoading: boolean;
+  eventError: string;
   onChange: <K extends keyof AnnounceEventForm>(
     field: K,
     value: AnnounceEventForm[K],
@@ -11,8 +19,53 @@ interface AnnounceEventCardProps {
 
 export const AnnounceEventCard = ({
   form,
+  eventOptions,
+  eventCauseOptions,
+  eventCityOptions,
+  eventChannelOptions,
+  panditOptions,
+  eventLoading,
+  eventError,
   onChange,
 }: AnnounceEventCardProps) => {
+  const renderFloatingSelect = (
+    id: keyof Pick<
+      AnnounceEventForm,
+      'eventName' | 'eventCause' | 'eventCity' | 'eventChannel' | 'panditJi'
+    >,
+    label: string,
+    value: string,
+    options: EventOption[],
+    disabled = false,
+  ) => (
+    <div
+      className={`form-floating ant-select-floating ${
+        value ? 'has-value' : ''
+      } ${disabled ? 'is-disabled' : ''}`}
+    >
+      <Select
+        id={id}
+        placeholder=""
+        showSearch
+        allowClear={!disabled}
+        disabled={disabled}
+        value={value || undefined}
+        onChange={nextValue => onChange(id, (nextValue as string) || '')}
+        optionFilterProp="label"
+        filterOption={(input, option) =>
+          String(option?.label ?? '')
+            .toLowerCase()
+            .includes(input.toLowerCase())
+        }
+        options={options.map(option => ({
+          value: option.value,
+          label: option.label,
+        }))}
+      />
+      <label htmlFor={id}>{label}</label>
+    </div>
+  );
+
   return (
     <div className="card card-flush h-xl-100">
       <div className="card-header border-bottom mb-4">
@@ -25,7 +78,11 @@ export const AnnounceEventCard = ({
         <div className="row g-5">
           <div className="col-md-2">
             {/* <label className="form-label fw-semibold">Live / NonLive</label> */}
-            <div className="btn-group w-100" role="group" aria-label="Live NonLive">
+            <div
+              className="btn-group w-100"
+              role="group"
+              aria-label="Live NonLive"
+            >
               <input
                 type="radio"
                 className="btn-check"
@@ -37,7 +94,9 @@ export const AnnounceEventCard = ({
               />
               <label
                 className={`btn btn-sm ${
-                  form.liveType === 'live' ? 'btn-light-primary active' : 'btn-light'
+                  form.liveType === 'live'
+                    ? 'btn-light-primary active'
+                    : 'btn-light'
                 }`}
                 htmlFor="btnLive"
               >
@@ -55,7 +114,9 @@ export const AnnounceEventCard = ({
               />
               <label
                 className={`btn btn-sm ${
-                  form.liveType === 'nonLive' ? 'btn-light-primary active' : 'btn-light'
+                  form.liveType === 'nonLive'
+                    ? 'btn-light-primary active'
+                    : 'btn-light'
                 }`}
                 htmlFor="btnNonLive"
               >
@@ -63,88 +124,74 @@ export const AnnounceEventCard = ({
               </label>
             </div>
           </div>
- <div className="col-md-6">
+          <div className="col-md-6">
             {/* <label className="form-label fw-semibold">Event Date Range</label> */}
             <div className="row g-3">
-          <div className="col-md-6">
-            <div className="form-floating">
-              <select
-                id="eventName"
-                className="form-select"
-                value={form.eventName}
-                onChange={(event) => onChange('eventName', event.target.value)}
-              >
-                <option value="">Select</option>
-                <option value="apno">Apno Se Apni Baat, D-live</option>
-                <option value="donormeet">Monthly Donor Meet</option>
-                <option value="csr">CSR Announcement</option>
-              </select>
-              <label htmlFor="eventName">Event Name</label>
+              <div className="col-md-6">
+                {renderFloatingSelect(
+                  'eventName',
+                  'Event Name',
+                  form.eventName,
+                  eventOptions,
+                  eventLoading,
+                )}
+                {eventError ? (
+                  <div className="text-danger fs-8 mt-1">{eventError}</div>
+                ) : null}
+              </div>
+
+              <div className="col-md-6">
+                {renderFloatingSelect(
+                  'eventCause',
+                  'Event Cause',
+                  form.eventCause,
+                  eventCauseOptions,
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="col-md-6">
-            <div className="form-floating">
-              <select
-                id="eventCause"
-                className="form-select"
-                value={form.eventCause}
-                onChange={(event) => onChange('eventCause', event.target.value)}
-              >
-                <option value="">Select</option>
-                <option value="Rehabilitation">Rehabilitation</option>
-                <option value="Artificial Limb Camp">Artificial Limb Camp</option>
-                <option value="Hospital Support">Hospital Support</option>
-                <option value="General Donation">General Donation</option>
-              </select>
-              <label htmlFor="eventCause">Event Cause</label>
+          <div className="col-md-2">
+            <div className="form-floating ant-input-floating">
+              <input
+                id="eventFromDate"
+                type="date"
+                className="form-control ant-input-floating-control"
+                placeholder=" "
+                value={form.eventFromDate}
+                onChange={event =>
+                  onChange('eventFromDate', event.target.value)
+                }
+              />
+              <label htmlFor="eventFromDate">From Date</label>
             </div>
           </div>
+          <div className="col-md-2">
+            <div className="form-floating ant-input-floating">
+              <input
+                id="eventToDate"
+                type="date"
+                className="form-control ant-input-floating-control"
+                placeholder=" "
+                value={form.eventToDate}
+                onChange={event => onChange('eventToDate', event.target.value)}
+              />
+              <label htmlFor="eventToDate">To Date</label>
+            </div>
           </div>
-          </div>
-
-         
-              <div className="col-md-2">
-                <div className="form-floating">
-                  <input
-                    id="eventFromDate"
-                    type="date"
-                    className="form-control"
-                    placeholder=" "
-                    value={form.eventFromDate}
-                    onChange={(event) =>
-                      onChange('eventFromDate', event.target.value)
-                    }
-                  />
-                  <label htmlFor="eventFromDate">From Date</label>
-                </div>
-              </div>
-              <div className="col-md-2">
-                <div className="form-floating">
-                  <input
-                    id="eventToDate"
-                    type="date"
-                    className="form-control"
-                    placeholder=" "
-                    value={form.eventToDate}
-                    onChange={(event) => onChange('eventToDate', event.target.value)}
-                  />
-                  <label htmlFor="eventToDate">To Date</label>
-                </div>
-              </div>
 
           <div className="col-md-4">
             {/* <label className="form-label fw-semibold">Event Time Range</label> */}
             <div className="row g-3">
               <div className="col-6">
-                <div className="form-floating">
+                <div className="form-floating ant-input-floating">
                   <input
                     id="eventFromTime"
                     type="time"
-                    className="form-control"
+                    className="form-control ant-input-floating-control"
                     placeholder=" "
                     value={form.eventFromTime}
-                    onChange={(event) =>
+                    onChange={event =>
                       onChange('eventFromTime', event.target.value)
                     }
                   />
@@ -152,14 +199,16 @@ export const AnnounceEventCard = ({
                 </div>
               </div>
               <div className="col-6">
-                <div className="form-floating">
+                <div className="form-floating ant-input-floating">
                   <input
                     id="eventToTime"
                     type="time"
-                    className="form-control"
+                    className="form-control ant-input-floating-control"
                     placeholder=" "
                     value={form.eventToTime}
-                    onChange={(event) => onChange('eventToTime', event.target.value)}
+                    onChange={event =>
+                      onChange('eventToTime', event.target.value)
+                    }
                   />
                   <label htmlFor="eventToTime">To Time</label>
                 </div>
@@ -168,65 +217,38 @@ export const AnnounceEventCard = ({
           </div>
 
           <div className="col-md-2">
-            <div className="form-floating">
-              <select
-                id="eventCity"
-                className="form-select"
-                value={form.eventCity}
-                onChange={(event) => onChange('eventCity', event.target.value)}
-              >
-                <option value="">Select</option>
-                <option value="Udaipur">Udaipur</option>
-                <option value="Jaipur">Jaipur</option>
-                <option value="Delhi">Delhi</option>
-                <option value="Ahmedabad">Ahmedabad</option>
-              </select>
-              <label htmlFor="eventCity">Event City</label>
-            </div>
+            {renderFloatingSelect(
+              'eventCity',
+              'Event City',
+              form.eventCity,
+              eventCityOptions,
+            )}
           </div>
 
           <div className="col-md-3">
-            <div className="form-floating">
-              <select
-                id="eventChannel"
-                className="form-select"
-                value={form.eventChannel}
-                onChange={(event) => onChange('eventChannel', event.target.value)}
-              >
-                <option value="">Select</option>
-                <option value="Aastha">Aastha</option>
-                <option value="Sanskar">Sanskar</option>
-                <option value="YouTube">YouTube</option>
-                <option value="Facebook Live">Facebook Live</option>
-              </select>
-              <label htmlFor="eventChannel">Channel</label>
-            </div>
+            {renderFloatingSelect(
+              'eventChannel',
+              'Channel',
+              form.eventChannel,
+              eventChannelOptions,
+            )}
           </div>
 
           <div className="col-md-3">
-            <div className="form-floating">
-              <select
-                id="panditJi"
-                className="form-select"
-                value={form.panditJi}
-                onChange={(event) => onChange('panditJi', event.target.value)}
-              >
-                <option value="">Select</option>
-                <option value="Pujya Prashant Agarwal Ji">
-                  Pujya Prashant Agarwal Ji
-                </option>
-                <option value="Pujya ___ Ji">Pujya ___ Ji</option>
-              </select>
-              <label htmlFor="panditJi">Pandit Ji</label>
-            </div>
+            {renderFloatingSelect(
+              'panditJi',
+              'Pandit Ji',
+              form.panditJi,
+              panditOptions,
+            )}
           </div>
 
           <div className="col-md-8">
-            <div className="form-floating">
+            <div className="form-floating ant-input-floating">
               <input
                 id="eventLocation"
                 type="text"
-                className="form-control form-control-solid"
+                className="form-control form-control-solid ant-input-floating-control"
                 placeholder=" "
                 value={form.eventLocation}
                 readOnly
@@ -236,15 +258,15 @@ export const AnnounceEventCard = ({
           </div>
 
           <div className="col-md-4">
-            <div className="form-floating">
-              <select
+            <div
+              className={`form-floating ant-select-floating has-value is-disabled`}
+            >
+              <Select
                 id="eventCurrency"
-                className="form-select form-select-solid"
-                value={form.currency}
+                value={form.currency || undefined}
                 disabled
-              >
-                <option value="INR">INR</option>
-              </select>
+                options={[{ value: 'INR', label: 'INR' }]}
+              />
               <label htmlFor="eventCurrency">Currency</label>
             </div>
           </div>

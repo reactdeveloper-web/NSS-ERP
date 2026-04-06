@@ -5,7 +5,7 @@ import { Forgot } from 'src/components/Auth/Forgot';
 const _ForgotPage = () => {
   return (
     // <PageLayout>
-      <Forgot />
+    <Forgot />
     // </PageLayout>
   );
 };

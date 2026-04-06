@@ -5,7 +5,7 @@ import { Register } from 'src/components/Auth/Register';
 const _RegisterPage = () => {
   return (
     // <PageLayout>
-      <Register />
+    <Register />
     // </PageLayout>
   );
 };
