@@ -6,8 +6,8 @@ import LoginNSS from '../assets/images/login-nss.png';
 
 export const IMAGEPATH = {
   LOGO: logo,
-  USERICON:userIcon,
-  PASSWORD:passwordIcon,
-  EYE:eyeIcon,
-  LOGIN_NSS:LoginNSS
+  USERICON: userIcon,
+  PASSWORD: passwordIcon,
+  EYE: eyeIcon,
+  LOGIN_NSS: LoginNSS,
 };

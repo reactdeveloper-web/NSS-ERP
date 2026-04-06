@@ -1,5 +1,14 @@
 import React, { useEffect, useRef } from 'react';
-import { AnnouncerTabKey, AnnounceDetailsForm, DepositBank, FollowUpForm, FollowUpItem, PersonalInfoForm, SalutationOption } from '../types';
+import {
+  AnnouncerTabKey,
+  AnnounceDetailsForm,
+  DepositBank,
+  EventOption,
+  FollowUpForm,
+  FollowUpItem,
+  PersonalInfoForm,
+  SalutationOption,
+} from '../types';
 import { AnnounceDetailsTab } from './AnnounceDetailsTab';
 import { BankDetailsTab } from './BankDetailsTab';
 import { FollowUpTab } from './FollowUpTab';
@@ -9,7 +18,13 @@ interface AnnouncerPersonalDetailsCardProps {
   activeTab: AnnouncerTabKey;
   personalInfoForm: PersonalInfoForm;
   salutations: SalutationOption[];
+  stateOptions: EventOption[];
+  districtOptions: EventOption[];
+  isPincodeLocationLocked: boolean;
   announceDetailsForm: AnnounceDetailsForm;
+  occasionTypeOptions: EventOption[];
+  causeHeadOptions: EventOption[];
+  purposeOptions: EventOption[];
   followUpForm: FollowUpForm;
   followUpItems: FollowUpItem[];
   banks: DepositBank[];
@@ -40,31 +55,37 @@ interface AnnouncerPersonalDetailsCardProps {
 const tabs: { key: AnnouncerTabKey; label: string; title: string }[] = [
   {
     key: 'personal',
-    label: 'Personal Information',
+    label: '1. Personal Information',
     title: 'Please fill personal details',
   },
   {
     key: 'announceDetails',
-    label: 'Announce Details',
+    label: '2. Announce Details',
     title: 'Please fill announce details',
   },
   {
     key: 'bankDetails',
-    label: 'Bank Details',
+    label: '3. Bank Details',
     title: 'Please select bank details',
   },
   {
     key: 'followUp',
-    label: 'Follow Up',
+    label: '4. Follow Up',
     title: 'Please fill follow up details',
   },
 ];
 
-export const  AnnouncerPersonalDetailsCard = ({
+export const AnnouncerPersonalDetailsCard = ({
   activeTab,
   personalInfoForm,
   salutations,
+  stateOptions,
+  districtOptions,
+  isPincodeLocationLocked,
   announceDetailsForm,
+  occasionTypeOptions,
+  causeHeadOptions,
+  purposeOptions,
   followUpForm,
   followUpItems,
   banks,
@@ -87,10 +108,9 @@ export const  AnnouncerPersonalDetailsCard = ({
   useEffect(() => {
     const bootstrap = (window as Window & {
       bootstrap?: {
-        Tooltip?: new (
-          element: Element,
-          options?: Record<string, unknown>,
-        ) => { dispose?: () => void };
+        Tooltip?: new (element: Element, options?: Record<string, unknown>) => {
+          dispose?: () => void;
+        };
       };
     }).bootstrap;
 
@@ -102,11 +122,11 @@ export const  AnnouncerPersonalDetailsCard = ({
       tabsRef.current.querySelectorAll('[data-bs-toggle="tooltip"]'),
     );
     const tooltips = tooltipElements.map(
-      (element) => new bootstrap.Tooltip!(element, { trigger: 'hover' }),
+      element => new bootstrap.Tooltip!(element, { trigger: 'hover' }),
     );
 
     return () => {
-      tooltips.forEach((tooltip) => tooltip.dispose?.());
+      tooltips.forEach(tooltip => tooltip.dispose?.());
     };
   }, []);
 
@@ -123,7 +143,7 @@ export const  AnnouncerPersonalDetailsCard = ({
           ref={tabsRef}
           className="nav nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 fw-semibold mb-6"
         >
-          {tabs.map((tab) => (
+          {tabs.map(tab => (
             <li className="nav-item" key={tab.key}>
               <button
                 className={`nav-link ${activeTab === tab.key ? 'active' : ''}`}
@@ -143,26 +163,42 @@ export const  AnnouncerPersonalDetailsCard = ({
         </ul>
 
         <div className="tab-content">
-          <div className={`tab-pane fade ${activeTab === 'personal' ? 'active show' : ''}`}>
+          <div
+            className={`tab-pane fade ${
+              activeTab === 'personal' ? 'active show' : ''
+            }`}
+          >
             <PersonalInfoTab
               form={personalInfoForm}
               salutations={salutations}
+              stateOptions={stateOptions}
+              districtOptions={districtOptions}
+              isPincodeLocationLocked={isPincodeLocationLocked}
               onChange={onPersonalInfoChange}
             />
           </div>
 
           <div
-            className={`tab-pane fade ${activeTab === 'announceDetails' ? 'active show' : ''}`}
+            className={`tab-pane fade ${
+              activeTab === 'announceDetails' ? 'active show' : ''
+            }`}
           >
             <AnnounceDetailsTab
               form={announceDetailsForm}
+              occasionTypeOptions={occasionTypeOptions}
+              causeHeadOptions={causeHeadOptions}
+              purposeOptions={purposeOptions}
               amount={amount}
               onChange={onAnnounceDetailsChange}
               onQuantityChange={onQuantityChange}
             />
           </div>
 
-          <div className={`tab-pane fade ${activeTab === 'bankDetails' ? 'active show' : ''}`}>
+          <div
+            className={`tab-pane fade ${
+              activeTab === 'bankDetails' ? 'active show' : ''
+            }`}
+          >
             <BankDetailsTab
               banks={banks}
               isLoading={bankLoading}
@@ -172,7 +208,11 @@ export const  AnnouncerPersonalDetailsCard = ({
             />
           </div>
 
-          <div className={`tab-pane fade ${activeTab === 'followUp' ? 'active show' : ''}`}>
+          <div
+            className={`tab-pane fade ${
+              activeTab === 'followUp' ? 'active show' : ''
+            }`}
+          >
             <FollowUpTab
               form={followUpForm}
               items={followUpItems}

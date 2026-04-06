@@ -13,7 +13,7 @@ interface ReqUserActivity {
   empnum: number;
   DataFlag: string;
   Type: number;
-  Show : ""
+  Show: '';
 }
 
 export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
@@ -37,18 +37,23 @@ export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
 };
 
 export const login = (payload: ReqLogin) => async dispatch => {
-   try {
-      const res = await axios.post(`http://10.32.1.187:84/login/UserLogin`,
-        payload
-      );
+  try {
+    const res = await axiosInstance.post(
+      `/login/UserLogin`,
+      payload,
+    );
     const allUsers = res.data;
     let user = allUsers.userData;
     //console.log('login',allUsers);
-    if (allUsers.userData.status === 'Success' && user && user.empNum == payload.username) {
+    if (
+      allUsers.userData.status === 'Success' &&
+      user &&
+      user.empNum == payload.username
+    ) {
       dispatch(actions.loginSuccess(user));
       // ✅ store tokens
-      localStorage.setItem("accessToken", res.data.token);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
+      localStorage.setItem('accessToken', res.data.token);
+      localStorage.setItem('refreshToken', res.data.refreshToken);
       dispatch(
         setAlert({
           msg: 'You are logged in!',
@@ -74,30 +79,30 @@ export const login = (payload: ReqLogin) => async dispatch => {
     );
     return dispatch(actions.loginFailed());
   }
-  
-}
+};
 
 export const forgot = (payload: ReqForgot) => async dispatch => {
-   try {
-      //const res = await axios.post(`${URL.baseAPIUrl}/login/UserLogin`,
-      //const { Emp_Num, Data_Flag } = payload;
-       const Emp_Num = payload.userid;
-       const Data_Flag = ContentTypes.DataFlag
-       const addPayload = { ...payload, Emp_Num, Data_Flag };
+  try {
+    //const res = await axios.post(`${URL.baseAPIUrl}/login/UserLogin`,
+    //const { Emp_Num, Data_Flag } = payload;
+    const Emp_Num = payload.userid;
+    const Data_Flag = ContentTypes.DataFlag;
+    const addPayload = { ...payload, Emp_Num, Data_Flag };
 
-      console.log('forgot',addPayload);
-      const res = await axiosInstance.post(`/login/ForgotPasswordRequest`,
-        addPayload
-      );
+    console.log('forgot', addPayload);
+    const res = await axiosInstance.post(
+      `/login/ForgotPasswordRequest`,
+      addPayload,
+    );
     const result = res.data.result;
     if (result) {
       dispatch(
-      setAlert({
-        msg: 'Password reset link sent successfully to your email.',
-        type: AlertTypes.SUCCESS,
-      }),
-    );
-    return dispatch(actions.forgotSuccess());
+        setAlert({
+          msg: 'Password reset link sent successfully to your email.',
+          type: AlertTypes.SUCCESS,
+        }),
+      );
+      return dispatch(actions.forgotSuccess());
     }
     //console.log('result',result);
     return dispatch(actions.loginFailed());
@@ -111,8 +116,7 @@ export const forgot = (payload: ReqForgot) => async dispatch => {
     );
     //return dispatch(actions.loginFailed());
   }
-  
-}
+};
 
 export const register = (payload: ReqLogin) => async dispatch => {
   try {

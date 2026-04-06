@@ -87,6 +87,14 @@ export interface SalutationOption {
   label: string;
 }
 
+export interface EventOption {
+  value: string;
+  label: string;
+  purposeId?: string;
+  amountValue?: string;
+  stateCode?: string;
+}
+
 export type AnnouncerTabKey =
   | 'personal'
   | 'announceDetails'
