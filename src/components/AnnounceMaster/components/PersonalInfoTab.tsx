@@ -1,9 +1,13 @@
 import React from 'react';
+import { Select } from 'antd';
 import { PersonalInfoForm, SalutationOption } from '../types';
 
 interface PersonalInfoTabProps {
   form: PersonalInfoForm;
   salutations: SalutationOption[];
+  stateOptions: { value: string; label: string }[];
+  districtOptions: { value: string; label: string }[];
+  isPincodeLocationLocked: boolean;
   onChange: <K extends keyof PersonalInfoForm>(
     field: K,
     value: PersonalInfoForm[K],
@@ -13,13 +17,71 @@ interface PersonalInfoTabProps {
 export const PersonalInfoTab = ({
   form,
   salutations,
+  stateOptions,
+  districtOptions,
+  isPincodeLocationLocked,
   onChange,
 }: PersonalInfoTabProps) => {
+  const fallbackStateOptions = [
+    { value: 'Rajasthan', label: 'Rajasthan' },
+    { value: 'Delhi', label: 'Delhi' },
+    { value: 'Gujarat', label: 'Gujarat' },
+  ];
+
+  const renderFloatingSelect = (
+    id: keyof Pick<
+      PersonalInfoForm,
+      'salutation' | 'country' | 'state' | 'district'
+    >,
+    label: string,
+    value: string,
+    options: { value: string; label: string }[],
+    disabled = false,
+  ) => (
+    <div
+      className={`form-floating ant-select-floating ${
+        value ? 'has-value' : ''
+      } ${disabled ? 'is-disabled' : ''}`}
+    >
+      <Select
+        id={id}
+        placeholder=""
+        showSearch
+        allowClear={!disabled}
+        disabled={disabled}
+        value={value || undefined}
+        onChange={nextValue => onChange(id, (nextValue as string) || '')}
+        optionFilterProp="label"
+        filterOption={(input, option) =>
+          String(option?.label ?? '')
+            .toLowerCase()
+            .includes(input.toLowerCase())
+        }
+        options={options.map(option => ({
+          value: option.value,
+          label: option.label,
+        }))}
+      />
+      <label htmlFor={id}>{label}</label>
+    </div>
+  );
+
   const salutationOptions =
     form.salutation &&
     !salutations.some(salutation => salutation.value === form.salutation)
       ? [{ value: form.salutation, label: form.salutation }, ...salutations]
       : salutations;
+  const resolvedStateOptions =
+    stateOptions.length > 0 ? stateOptions : fallbackStateOptions;
+  const stateSelectOptions =
+    form.state && !resolvedStateOptions.some(state => state.value === form.state)
+      ? [{ value: form.state, label: form.state }, ...resolvedStateOptions]
+      : resolvedStateOptions;
+  const districtSelectOptions =
+    form.district &&
+    !districtOptions.some(district => district.value === form.district)
+      ? [{ value: form.district, label: form.district }, ...districtOptions]
+      : districtOptions;
 
   return (
     <div>
@@ -29,11 +91,11 @@ export const PersonalInfoTab = ({
 
       <div className="row g-5">
         <div className="col-md-2">
-          <div className="form-floating">
+          <div className="form-floating ant-input-floating">
             <input
               id="mobileNo"
               type="tel"
-              className="form-control"
+              className="form-control ant-input-floating-control"
               placeholder=" "
               value={form.mobileNo}
               onChange={event => onChange('mobileNo', event.target.value)}
@@ -45,11 +107,11 @@ export const PersonalInfoTab = ({
         </div>
 
         <div className="col-md-2">
-          <div className="form-floating">
+          <div className="form-floating ant-input-floating">
             <input
               id="whatsappNo"
               type="tel"
-              className="form-control"
+              className="form-control ant-input-floating-control"
               placeholder=" "
               value={form.whatsappNo}
               onChange={event => onChange('whatsappNo', event.target.value)}
@@ -58,31 +120,21 @@ export const PersonalInfoTab = ({
           </div>
         </div>
         <div className="col-md-2">
-          <div className="form-floating">
-            <select
-              id="salutation"
-              className="form-select"
-              value={form.salutation}
-              disabled={form.salutationLocked}
-              onChange={event => onChange('salutation', event.target.value)}
-            >
-              <option value="">Select</option>
-              {salutationOptions.map(salutation => (
-                <option key={salutation.value} value={salutation.value}>
-                  {salutation.label}
-                </option>
-              ))}
-            </select>
-            <label htmlFor="salutation">Salutation</label>
-          </div>
+          {renderFloatingSelect(
+            'salutation',
+            'Salutation',
+            form.salutation,
+            salutationOptions,
+            form.salutationLocked,
+          )}
         </div>
 
         <div className="col-md-3">
-          <div className="form-floating">
+          <div className="form-floating ant-input-floating">
             <input
               id="announcerName"
               type="text"
-              className="form-control"
+              className="form-control ant-input-floating-control"
               placeholder=" "
               value={form.announcerName}
               onChange={event => onChange('announcerName', event.target.value)}
@@ -113,11 +165,11 @@ export const PersonalInfoTab = ({
           <div className="col-md-4">
             <div className="row g-5">
               <div className="col-md-6">
-                <div className="form-floating">
+                <div className="form-floating ant-input-floating">
                   <input
                     id="announcedForName"
                     type="text"
-                    className="form-control"
+                    className="form-control ant-input-floating-control"
                     placeholder=" "
                     value={form.announcedForName}
                     onChange={event =>
@@ -132,11 +184,11 @@ export const PersonalInfoTab = ({
               </div>
 
               <div className="col-md-6">
-                <div className="form-floating">
+                <div className="form-floating ant-input-floating">
                   <input
                     id="relationName"
                     type="text"
-                    className="form-control"
+                    className="form-control ant-input-floating-control"
                     placeholder=" "
                     value={form.relationName}
                     onChange={event =>
@@ -151,11 +203,11 @@ export const PersonalInfoTab = ({
         ) : null}
 
         <div className="col-md-2">
-          <div className="form-floating">
+          <div className="form-floating ant-input-floating">
             <input
               id="pincode"
               type="text"
-              className="form-control"
+              className="form-control ant-input-floating-control"
               placeholder=" "
               value={form.pincode}
               onChange={event => onChange('pincode', event.target.value)}
@@ -165,49 +217,33 @@ export const PersonalInfoTab = ({
         </div>
 
         <div className="col-md-2">
-          <div className="form-floating">
-            <select
-              id="country"
-              className="form-select"
-              value={form.country}
-              disabled
-            >
-              <option value="India">India</option>
-            </select>
-            <label htmlFor="country">Country</label>
-          </div>
+          {renderFloatingSelect(
+            'country',
+            'Country',
+            form.country,
+            [{ value: 'India', label: 'India' }],
+            true,
+          )}
         </div>
 
         <div className="col-md-2">
-          <div className="form-floating">
-            <select
-              id="state"
-              className="form-select"
-              value={form.state}
-              disabled={form.stateLocked}
-              onChange={event => onChange('state', event.target.value)}
-            >
-              <option value="">Select</option>
-              <option value="Rajasthan">Rajasthan</option>
-              <option value="Delhi">Delhi</option>
-              <option value="Gujarat">Gujarat</option>
-            </select>
-            <label htmlFor="state">State</label>
-          </div>
+          {renderFloatingSelect(
+            'state',
+            'State',
+            form.state,
+            stateSelectOptions,
+            form.stateLocked || isPincodeLocationLocked,
+          )}
         </div>
 
         <div className="col-md-2">
-          <div className="form-floating">
-            <input
-              id="district"
-              type="text"
-              className="form-control"
-              placeholder=" "
-              value={form.district}
-              onChange={event => onChange('district', event.target.value)}
-            />
-            <label htmlFor="district">District</label>
-          </div>
+          {renderFloatingSelect(
+            'district',
+            'District',
+            form.district,
+            districtSelectOptions,
+            isPincodeLocationLocked,
+          )}
         </div>
       </div>
     </div>

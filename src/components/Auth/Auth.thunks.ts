@@ -38,8 +38,8 @@ export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
 
 export const login = (payload: ReqLogin) => async dispatch => {
   try {
-    const res = await axios.post(
-      `http://10.32.1.187:84/login/UserLogin`,
+    const res = await axiosInstance.post(
+      `/login/UserLogin`,
       payload,
     );
     const allUsers = res.data;

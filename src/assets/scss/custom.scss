@@ -242,3 +242,175 @@ iframe {
 .form-floating > .form-select:read-only:focus ~ label {
   background: transparent;
 }
+
+.form-floating.ant-select-floating {
+  margin-bottom: 0;
+}
+
+.form-floating.ant-select-floating .ant-select {
+  width: 100%;
+}
+
+.form-floating.ant-select-floating .ant-select-selector {
+  min-height: calc(3.2rem + 2px) !important;
+  height: calc(3.2rem + 2px) !important;
+  padding: 0.75rem 1rem !important;
+  border-color: #e1e3ea !important;
+  border-radius: 0.475rem !important;
+  box-shadow: none !important;
+}
+
+.form-floating.ant-select-floating .ant-select-selection-placeholder,
+.form-floating.ant-select-floating .ant-select-selection-item {
+  font-size: 1.065rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #181c32;
+}
+
+.form-floating.ant-select-floating .ant-select-selection-placeholder {
+  color: #a1a5b7 !important;
+}
+
+.form-floating.ant-select-floating .ant-select-arrow {
+  inset-inline-end: 14px !important;
+}
+
+.form-floating.ant-select-floating > label {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.form-floating.ant-select-floating.has-value > label,
+.form-floating.ant-select-floating:focus-within > label {
+  opacity: 1;
+  transform: scale(0.85) translateY(-0.9rem) translateX(0.15rem);
+  background: #fff;
+  padding: 0px 8px 0px 8px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.form-floating.ant-input-floating {
+  margin-bottom: 0;
+}
+
+.form-floating.ant-input-floating > .form-control.ant-input-floating-control,
+.form-floating.ant-input-floating
+  > .form-control-plaintext.ant-input-floating-control {
+  min-height: calc(3.2rem + 2px);
+  height: calc(3.2rem + 2px);
+  padding: 0.75rem 1rem;
+  border: 1px solid #e1e3ea;
+  border-radius: 0.475rem;
+  box-shadow: none;
+  background-color: #fff;
+  font-size: 1.065rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #181c32;
+}
+
+.form-floating.ant-input-floating
+  > .form-control.ant-input-floating-control:focus,
+.form-floating.ant-input-floating
+  > .form-control.ant-input-floating-control:not(:placeholder-shown),
+.form-floating.ant-input-floating
+  > .form-control-plaintext.ant-input-floating-control:focus {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  box-shadow: none;
+  border-color: #b5b5c3;
+}
+
+.form-floating.ant-input-floating
+  > .form-control.ant-input-floating-control.form-control-solid {
+  background-color: #f5f8fa;
+}
+
+.form-floating.ant-input-floating > label {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.form-floating.ant-input-floating > .form-control.ant-input-floating-control:focus ~ label,
+.form-floating.ant-input-floating
+  > .form-control.ant-input-floating-control:not(:placeholder-shown)
+  ~ label,
+.form-floating.ant-input-floating
+  > .form-control-plaintext.ant-input-floating-control:focus
+  ~ label {
+  opacity: 1;
+  transform: scale(0.85) translateY(-0.9rem) translateX(0.15rem);
+  background: #fff;
+  padding: 0px 8px 0px 8px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.input-group > .form-control.ant-input-floating-control {
+  min-height: calc(3.2rem + 2px);
+  height: calc(3.2rem + 2px);
+  border-color: #e1e3ea;
+  box-shadow: none;
+  font-size: 1.065rem;
+  font-weight: 500;
+  color: #181c32;
+}
+
+.quantity-floating .quantity-input-group.ant-input-floating-control {
+  min-height: calc(3.2rem + 2px);
+  height: calc(3.2rem + 2px);
+  padding: 0;
+  border: 1px solid #e1e3ea;
+  border-radius: 0.475rem;
+  box-shadow: none;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.quantity-floating .quantity-input-btn {
+  min-width: 42px;
+  border: 0;
+  border-radius: 0 !important;
+  background-color: #f5f8fa;
+  color: #181c32;
+  font-size: 1.15rem;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+
+.quantity-floating .quantity-input-btn:hover,
+.quantity-floating .quantity-input-btn:focus,
+.quantity-floating .quantity-input-btn:active {
+  background-color: #eef3f7;
+  color: #181c32;
+}
+
+.quantity-floating .quantity-input-field {
+  border: 0;
+  min-height: calc(3.2rem + 2px);
+  height: calc(3.2rem + 2px);
+  padding: 0.75rem 0.5rem;
+  box-shadow: none !important;
+  background-color: transparent;
+  font-size: 1.065rem;
+  font-weight: 500;
+  color: #181c32;
+}
+
+.quantity-floating .quantity-input-field:focus {
+  box-shadow: none;
+}
+
+.quantity-floating > label,
+.quantity-floating:focus-within > label,
+.quantity-floating .quantity-input-field:not(:placeholder-shown) ~ label {
+  opacity: 1;
+  transform: scale(0.85) translateY(-0.9rem) translateX(0.15rem);
+  background: #fff;
+  padding: 0px 8px 0px 8px;
+  height: auto;
+  border-radius: 4px;
+  left: 35%;
+}
