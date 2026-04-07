@@ -253,7 +253,7 @@ export const AnnounceDetailsTab = ({
         </div>
 
         <div className="col-md-1">
-          <label className="form-check form-check-custom form-check-solid pt-10">
+          <label className="form-check form-check-custom form-check-solid pt-3">
             <input
               className="form-check-input"
               type="checkbox"

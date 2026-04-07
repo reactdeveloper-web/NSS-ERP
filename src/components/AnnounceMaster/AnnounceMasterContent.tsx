@@ -655,7 +655,12 @@ const extractDistrictOptions = (payload: unknown): EventOption[] => {
 
 const extractPincodeLocation = (
   payload: unknown,
-): { state: string; district: string } | null => {
+): {
+  country: string;
+  state: string;
+  stateCode: string;
+  district: string;
+} | null => {
   const candidates = [
     ...extractArrayPayload(payload),
     ...collectObjectArrayCandidates(payload).flat(),
@@ -665,6 +670,16 @@ const extractPincodeLocation = (
   ];
 
   for (const record of candidates) {
+    const country = getFirstValue(record, [
+      'Country_Name',
+      'CountryName',
+      'COUNTRY_NAME',
+      'country_name',
+      'countryName',
+      'Country',
+      'COUNTRY',
+      'country',
+    ]);
     const state = getFirstValue(record, [
       'State_Name',
       'StateName',
@@ -675,6 +690,17 @@ const extractPincodeLocation = (
       'STATE',
       'state',
       'statename',
+    ]);
+    const stateCode = getFirstValue(record, [
+      'State_Code',
+      'StateCode',
+      'STATE_CODE',
+      'state_code',
+      'stateCode',
+      'StateId',
+      'STATEID',
+      'stateId',
+      'Code',
     ]);
     const district = getFirstValue(record, [
       'District_Name',
@@ -688,15 +714,37 @@ const extractPincodeLocation = (
       'districtname',
     ]);
 
-    if (state || district) {
+    if (country || state || stateCode || district) {
       return {
+        country,
         state,
+        stateCode,
         district,
       };
     }
   }
 
   return null;
+};
+
+const resolveStateOption = (
+  options: EventOption[],
+  location: { state: string; stateCode: string },
+): EventOption | undefined => {
+  const normalizedState = location.state.trim().toLowerCase();
+  const normalizedStateCode = location.stateCode.trim().toLowerCase();
+
+  return options.find(option => {
+    const optionValue = option.value.trim().toLowerCase();
+    const optionLabel = option.label.trim().toLowerCase();
+    const optionStateCode = option.stateCode?.trim().toLowerCase() ?? '';
+
+    return (
+      (normalizedStateCode !== '' && optionStateCode === normalizedStateCode) ||
+      (normalizedState !== '' &&
+        (optionValue === normalizedState || optionLabel === normalizedState))
+    );
+  });
 };
 
 const normalizeApiDate = (value: unknown): string => {
@@ -960,6 +1008,21 @@ export const AnnounceMasterContent = () => {
   ) => {
     if (field === 'donorSearchType' || field === 'donorId') {
       setDonorSearchError('');
+    }
+
+    if (field === 'donorSearchType') {
+      lastDonorSearchKeyRef.current = '';
+      donorSearchRequestIdRef.current += 1;
+      setIsSearchingDonor(false);
+      setDonorOptions([]);
+      setShowDonorModal(false);
+      resetPersonalInfo();
+      setDonorIdentificationForm(current => ({
+        ...current,
+        donorSearchType: value as DonorIdentificationForm['donorSearchType'],
+        donorId: '',
+      }));
+      return;
     }
 
     setDonorIdentificationForm(current => ({ ...current, [field]: value }));
@@ -1430,8 +1493,9 @@ export const AnnounceMasterContent = () => {
     const timeoutId = window.setTimeout(() => {
       const loadLocationByPincode = async () => {
         try {
-          const response = await axiosInstance.get(
+          const response = await axiosInstance.post(
             '/master/GetStateAndDistrictByPinCode',
+            null,
             {
               params: {
                 countryCode: 22,
@@ -1453,13 +1517,21 @@ export const AnnounceMasterContent = () => {
             return;
           }
 
+          const matchedState = resolveStateOption(stateOptions, location);
+
           setPersonalInfoForm(current => ({
             ...current,
-            state: location.state || current.state,
-            district: location.district || current.district,
+            country: location.country.trim() || 'India',
+            state:
+              matchedState?.value || location.state.trim() || current.state,
+            district: location.district.trim() || current.district,
           }));
           setIsPincodeLocationLocked(
-            Boolean(location.state.trim() || location.district.trim()),
+            Boolean(
+              matchedState?.value ||
+                location.state.trim() ||
+                location.district.trim(),
+            ),
           );
         } catch (error) {
           if (requestId !== pincodeRequestIdRef.current) {
@@ -1476,7 +1548,7 @@ export const AnnounceMasterContent = () => {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [personalInfoForm.pincode]);
+  }, [personalInfoForm.pincode, stateOptions]);
 
   useEffect(() => {
     const loadCauseHeadOptions = async () => {
