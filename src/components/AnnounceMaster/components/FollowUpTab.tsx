@@ -1,4 +1,5 @@
 import React from 'react';
+import { Select } from 'antd';
 import { FollowUpForm, FollowUpItem } from '../types';
 
 interface FollowUpTabProps {
@@ -19,6 +20,39 @@ export const FollowUpTab = ({
   onAdd,
   onRemove,
 }: FollowUpTabProps) => {
+  const renderFloatingSelect = (
+    id: keyof Pick<FollowUpForm, 'assignTo' | 'status'>,
+    label: string,
+    value: string,
+    options: { value: string; label: string }[],
+  ) => (
+    <div
+      className={`form-floating ant-select-floating ${
+        value ? 'has-value' : ''
+      }`}
+    >
+      <Select
+        id={id}
+        placeholder=""
+        showSearch
+        allowClear
+        value={value || undefined}
+        onChange={nextValue => onChange(id, (nextValue as string) || '')}
+        optionFilterProp="label"
+        filterOption={(input, option) =>
+          String(option?.label ?? '')
+            .toLowerCase()
+            .includes(input.toLowerCase())
+        }
+        options={options.map(option => ({
+          value: option.value,
+          label: option.label,
+        }))}
+      />
+      <label htmlFor={id}>{label}</label>
+    </div>
+  );
+
   return (
     <div className="card border">
       <div className="card-header min-h-50px">
@@ -33,11 +67,11 @@ export const FollowUpTab = ({
       <div className="card-body">
         <div className="row g-5">
           <div className="col-md-3">
-            <div className="form-floating">
+            <div className="form-floating ant-input-floating">
               <input
                 id="followupDate"
                 type="date"
-                className="form-control"
+                className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.date}
                 onChange={event => onChange('date', event.target.value)}
@@ -47,11 +81,11 @@ export const FollowUpTab = ({
           </div>
 
           <div className="col-md-3">
-            <div className="form-floating">
+            <div className="form-floating ant-input-floating">
               <input
                 id="followupTime"
                 type="time"
-                className="form-control"
+                className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.time}
                 onChange={event => onChange('time', event.target.value)}
@@ -61,48 +95,33 @@ export const FollowUpTab = ({
           </div>
 
           <div className="col-md-3">
-            <div className="form-floating">
-              <select
-                id="assignTo"
-                className="form-select"
-                value={form.assignTo}
-                onChange={event => onChange('assignTo', event.target.value)}
-              >
-                <option value="">Select</option>
-                <option value="Contact Center Executive">
-                  Contact Center Executive
-                </option>
-                <option value="Area Manager">Area Manager</option>
-                <option value="HOD - Contact Center">
-                  HOD - Contact Center
-                </option>
-              </select>
-              <label htmlFor="assignTo">Assign To</label>
-            </div>
+            {renderFloatingSelect('assignTo', 'Assign To', form.assignTo, [
+              {
+                value: 'Contact Center Executive',
+                label: 'Contact Center Executive',
+              },
+              { value: 'Area Manager', label: 'Area Manager' },
+              {
+                value: 'HOD - Contact Center',
+                label: 'HOD - Contact Center',
+              },
+            ])}
           </div>
 
           <div className="col-md-3">
-            <div className="form-floating">
-              <select
-                id="followupStatus"
-                className="form-select"
-                value={form.status}
-                onChange={event => onChange('status', event.target.value)}
-              >
-                <option value="Open">Open</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Closed">Closed</option>
-              </select>
-              <label htmlFor="followupStatus">Status</label>
-            </div>
+            {renderFloatingSelect('status', 'Status', form.status, [
+              { value: 'Open', label: 'Open' },
+              { value: 'In Progress', label: 'In Progress' },
+              { value: 'Closed', label: 'Closed' },
+            ])}
           </div>
 
           <div className="col-md-9">
-            <div className="form-floating">
+            <div className="form-floating ant-input-floating">
               <input
                 id="followupNote"
                 type="text"
-                className="form-control"
+                className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.note}
                 onChange={event => onChange('note', event.target.value)}

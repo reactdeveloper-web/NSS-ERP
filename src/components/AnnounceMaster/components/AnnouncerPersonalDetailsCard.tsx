@@ -3,6 +3,7 @@ import {
   AnnouncerTabKey,
   AnnounceDetailsForm,
   DepositBank,
+  EventOption,
   FollowUpForm,
   FollowUpItem,
   PersonalInfoForm,
@@ -17,7 +18,13 @@ interface AnnouncerPersonalDetailsCardProps {
   activeTab: AnnouncerTabKey;
   personalInfoForm: PersonalInfoForm;
   salutations: SalutationOption[];
+  stateOptions: EventOption[];
+  districtOptions: EventOption[];
+  isPincodeLocationLocked: boolean;
   announceDetailsForm: AnnounceDetailsForm;
+  occasionTypeOptions: EventOption[];
+  causeHeadOptions: EventOption[];
+  purposeOptions: EventOption[];
   followUpForm: FollowUpForm;
   followUpItems: FollowUpItem[];
   banks: DepositBank[];
@@ -48,22 +55,22 @@ interface AnnouncerPersonalDetailsCardProps {
 const tabs: { key: AnnouncerTabKey; label: string; title: string }[] = [
   {
     key: 'personal',
-    label: 'Personal Information',
+    label: '1. Personal Information',
     title: 'Please fill personal details',
   },
   {
     key: 'announceDetails',
-    label: 'Announce Details',
+    label: '2. Announce Details',
     title: 'Please fill announce details',
   },
   {
     key: 'bankDetails',
-    label: 'Bank Details',
+    label: '3. Bank Details',
     title: 'Please select bank details',
   },
   {
     key: 'followUp',
-    label: 'Follow Up',
+    label: '4. Follow Up',
     title: 'Please fill follow up details',
   },
 ];
@@ -72,7 +79,13 @@ export const AnnouncerPersonalDetailsCard = ({
   activeTab,
   personalInfoForm,
   salutations,
+  stateOptions,
+  districtOptions,
+  isPincodeLocationLocked,
   announceDetailsForm,
+  occasionTypeOptions,
+  causeHeadOptions,
+  purposeOptions,
   followUpForm,
   followUpItems,
   banks,
@@ -158,6 +171,9 @@ export const AnnouncerPersonalDetailsCard = ({
             <PersonalInfoTab
               form={personalInfoForm}
               salutations={salutations}
+              stateOptions={stateOptions}
+              districtOptions={districtOptions}
+              isPincodeLocationLocked={isPincodeLocationLocked}
               onChange={onPersonalInfoChange}
             />
           </div>
@@ -169,6 +185,9 @@ export const AnnouncerPersonalDetailsCard = ({
           >
             <AnnounceDetailsTab
               form={announceDetailsForm}
+              occasionTypeOptions={occasionTypeOptions}
+              causeHeadOptions={causeHeadOptions}
+              purposeOptions={purposeOptions}
               amount={amount}
               onChange={onAnnounceDetailsChange}
               onQuantityChange={onQuantityChange}
