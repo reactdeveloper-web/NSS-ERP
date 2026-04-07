@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { ContentTypes } from 'src/constants/content';
 import axiosInstance from 'src/redux/interceptor';
@@ -514,19 +514,28 @@ const extractYojnaOptions = (payload: unknown): EventOption[] => {
       ]);
       const yojnaId = getFirstValue(record, [
         'YojnaId',
+        'Yojna_ID',
         'YOJNA_ID',
         'SchemeId',
         'SCHEME_ID',
         'Id',
         'ID',
       ]);
+      const qtyValue = getFirstValue(record, [
+        'Qty',
+        'QTY',
+        'Quantity',
+        'QUANTITY',
+      ]);
 
       return {
-        value: amountValue || yojnaId || yojnaName,
+        value: yojnaId || amountValue || yojnaName,
         label:
           yojnaName && amountValue
             ? `${yojnaName} (Rs. ${Number(amountValue).toLocaleString('en-IN')})`
             : yojnaName || amountValue || yojnaId,
+        yojnaId,
+        qtyValue,
         amountValue,
       };
     })
@@ -537,6 +546,89 @@ const extractYojnaOptions = (payload: unknown): EventOption[] => {
         currentOptions.findIndex(item => item.value === option.value) === index,
     );
 };
+
+const extractCurrencyId = (payload: unknown): string => {
+  const currencyRecords = extractArrayPayload(payload);
+
+  for (const record of currencyRecords) {
+    const currencyId = getFirstValue(record, [
+      'CurrencyId',
+      'CurrencyID',
+      'CURRENCY_ID',
+      'currencyId',
+      'Id',
+      'ID',
+    ]);
+
+    if (currencyId.trim() !== '') {
+      return currencyId.trim();
+    }
+  }
+
+  if (payload && typeof payload === 'object') {
+    return getFirstValue(payload as Record<string, unknown>, [
+      'CurrencyId',
+      'CurrencyID',
+      'CURRENCY_ID',
+      'currencyId',
+      'Id',
+      'ID',
+    ]).trim();
+  }
+
+  return '';
+};
+
+const extractOperationAmount = (payload: unknown): string => {
+  const candidates = [
+    ...extractArrayPayload(payload),
+    ...collectObjectArrayCandidates(payload).flat(),
+    ...(payload && typeof payload === 'object'
+      ? [payload as Record<string, unknown>]
+      : []),
+  ];
+
+  for (const record of candidates) {
+    const amountValue = getFirstValue(record, [
+      'Amount',
+      'AMOUNT',
+      'TotalAmount',
+      'TOTAL_AMOUNT',
+      'OperationAmount',
+      'OPERATION_AMOUNT',
+      'OperationAmt',
+      'Amt',
+      'NetAmount',
+      'DonationAmount',
+      'Value',
+    ]);
+
+    if (amountValue.trim() !== '') {
+      return amountValue.trim();
+    }
+  }
+
+  return '';
+};
+
+const parseAmountValue = (value: string): number => {
+  const sanitizedValue = value.replace(/,/g, '').trim();
+  const parsedValue = Number(sanitizedValue);
+
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+};
+
+const buildQuantityOptions = (
+  baseQuantity: number,
+): { value: number; label: string }[] =>
+  Array.from({ length: 10 }, (_, index) => {
+    const quantityValue = baseQuantity * (index + 1);
+
+    return {
+      value: quantityValue,
+      label: String(quantityValue),
+    };
+  });
 
 const extractStateOptions = (payload: unknown): EventOption[] => {
   const stateKeyCandidates = [
@@ -984,6 +1076,9 @@ export const AnnounceMasterContent = () => {
   const [banks, setBanks] = useState<DepositBank[]>([]);
   const [bankLoading, setBankLoading] = useState(false);
   const [bankError, setBankError] = useState('');
+  const [currencyId, setCurrencyId] = useState('');
+  const [autoAmount, setAutoAmount] = useState('');
+  const [isAmountEditable, setIsAmountEditable] = useState(false);
   const [activeTab, setActiveTab] = useState<AnnouncerTabKey>('personal');
   const [isSearchingDonor, setIsSearchingDonor] = useState(false);
   const [donorSearchError, setDonorSearchError] = useState('');
@@ -993,12 +1088,8 @@ export const AnnounceMasterContent = () => {
   const lastDonorSearchKeyRef = useRef('');
   const donorSearchRequestIdRef = useRef(0);
   const pincodeRequestIdRef = useRef(0);
-
-  const amount = useMemo(() => {
-    const purposeAmount = Number(announceDetailsForm.purpose || 0);
-
-    return purposeAmount * announceDetailsForm.quantity;
-  }, [announceDetailsForm.purpose, announceDetailsForm.quantity]);
+  const purposeOptionsRequestIdRef = useRef(0);
+  const amountRequestIdRef = useRef(0);
 
   const handleDonorIdentificationChange = <
     K extends keyof DonorIdentificationForm
@@ -1056,7 +1147,43 @@ export const AnnounceMasterContent = () => {
     field: K,
     value: AnnounceDetailsForm[K],
   ) => {
+    if (field === 'causeHead') {
+      const nextCauseHead = String(value).trim();
+
+      purposeOptionsRequestIdRef.current += 1;
+      amountRequestIdRef.current += 1;
+      setCurrencyId('');
+      setPurposeOptions([]);
+      setAutoAmount('');
+      setIsAmountEditable(false);
+      setAnnounceDetailsForm(current => ({
+        ...current,
+        causeHead: nextCauseHead,
+        causeHeadDate: nextCauseHead === '150' ? current.causeHeadDate : '',
+        purpose: '',
+        quantity: 1,
+      }));
+      return;
+    }
+
+    if (field === 'purpose') {
+      amountRequestIdRef.current += 1;
+      setAutoAmount('');
+      setIsAmountEditable(false);
+      setAnnounceDetailsForm(current => ({
+        ...current,
+        purpose: value as AnnounceDetailsForm['purpose'],
+        quantity: 1,
+      }));
+      return;
+    }
+
     setAnnounceDetailsForm(current => ({ ...current, [field]: value }));
+  };
+
+  const handleAmountChange = (value: string) => {
+    const normalizedValue = value.replace(/[^\d.]/g, '');
+    setAutoAmount(normalizedValue);
   };
 
   const handleFollowUpChange = <K extends keyof FollowUpForm>(
@@ -1304,7 +1431,7 @@ export const AnnounceMasterContent = () => {
   useEffect(() => {
     const loadEventCauses = async () => {
       try {
-        const response = await axiosInstance.get('master/GetAnnounceCauses', {
+        const response = await axiosInstance.get('CRM/GetAnnounceCauses', {
           params: {
             DataFlag: ContentTypes.DataFlag,
             Operation: 'EDIT',
@@ -1580,29 +1707,75 @@ export const AnnounceMasterContent = () => {
       selectedCauseHead?.purposeId || announceDetailsForm.causeHead.trim();
 
     if (!purposeId) {
+      purposeOptionsRequestIdRef.current += 1;
+      setCurrencyId('');
       setPurposeOptions([]);
+      setAutoAmount('');
+      setIsAmountEditable(false);
       setAnnounceDetailsForm(current =>
-        current.purpose ? { ...current, purpose: '' } : current,
+        current.purpose || current.quantity !== 1
+          ? { ...current, purpose: '', quantity: 1 }
+          : current,
       );
       return;
     }
 
+    const requestId = purposeOptionsRequestIdRef.current + 1;
+    purposeOptionsRequestIdRef.current = requestId;
+
     const loadPurposeOptions = async () => {
       try {
+        const currencyResponse = await axiosInstance.get(
+          '/master/GetCurrencyByCountry',
+          {
+            params: {
+              countryCode: 22,
+              DataFlag: ContentTypes.DataFlag,
+            },
+            headers: createDirectApiHeaders(),
+          },
+        );
+
+        if (requestId !== purposeOptionsRequestIdRef.current) {
+          return;
+        }
+
+        const nextCurrencyId = extractCurrencyId(currencyResponse.data);
+
+        if (!nextCurrencyId) {
+          setCurrencyId('');
+          setPurposeOptions([]);
+          setAutoAmount('');
+          setIsAmountEditable(false);
+          setAnnounceDetailsForm(current =>
+            current.purpose || current.quantity !== 1
+              ? { ...current, purpose: '', quantity: 1 }
+              : current,
+          );
+          return;
+        }
+
+        setCurrencyId(nextCurrencyId);
+
         const response = await axiosInstance.get(
           '/master/GetYojnaByPurposeAndCurrency',
           {
             params: {
               DataFlag: ContentTypes.DataFlag,
-              CurrencyId: 4,
+              CurrencyId: nextCurrencyId,
               PurposeId: purposeId,
             },
             headers: createDirectApiHeaders(),
           },
         );
 
+        if (requestId !== purposeOptionsRequestIdRef.current) {
+          return;
+        }
+
         const nextPurposeOptions = extractYojnaOptions(response.data);
         setPurposeOptions(nextPurposeOptions);
+        setIsAmountEditable(false);
         setAnnounceDetailsForm(current => {
           if (
             !current.purpose ||
@@ -1614,18 +1787,135 @@ export const AnnounceMasterContent = () => {
           return {
             ...current,
             purpose: '',
+            quantity: 1,
           };
         });
       } catch (error) {
+        if (requestId !== purposeOptionsRequestIdRef.current) {
+          return;
+        }
+
+        setCurrencyId('');
         setPurposeOptions([]);
+        setAutoAmount('');
+        setIsAmountEditable(false);
         setAnnounceDetailsForm(current =>
-          current.purpose ? { ...current, purpose: '' } : current,
+          current.purpose || current.quantity !== 1
+            ? { ...current, purpose: '', quantity: 1 }
+            : current,
         );
       }
     };
 
     void loadPurposeOptions();
   }, [announceDetailsForm.causeHead, causeHeadOptions]);
+
+  useEffect(() => {
+    const quantity = Math.max(1, Number(announceDetailsForm.quantity) || 1);
+    const selectedCauseHead = causeHeadOptions.find(
+      option => option.value === announceDetailsForm.causeHead,
+    );
+    const selectedCauseHeadPurposeId =
+      selectedCauseHead?.purposeId?.trim() || announceDetailsForm.causeHead.trim();
+    const selectedPurpose = purposeOptions.find(
+      option => option.value === announceDetailsForm.purpose,
+    );
+    const selectedPurposeId =
+      selectedPurpose?.yojnaId?.trim() || announceDetailsForm.purpose.trim();
+    const selectedPurposeQty = selectedPurpose?.qtyValue?.trim() || '';
+    const selectedPurposeQtyNumber = Math.max(
+      0,
+      Number(selectedPurposeQty || 0),
+    );
+    const selectedPurposeAmount = parseAmountValue(
+      selectedPurpose?.amountValue?.trim() || '',
+    );
+
+    amountRequestIdRef.current += 1;
+    const requestId = amountRequestIdRef.current;
+
+    if (!selectedPurposeId) {
+      setAutoAmount('');
+      setIsAmountEditable(false);
+      return;
+    }
+
+    if (selectedPurposeQty === '0') {
+      const shouldEnableAmountField = selectedPurposeAmount <= 1;
+
+      setIsAmountEditable(shouldEnableAmountField);
+      setAutoAmount(current =>
+        current || (selectedPurposeAmount > 0 ? String(selectedPurposeAmount) : ''),
+      );
+      return;
+    }
+
+    setIsAmountEditable(false);
+
+    if (currencyId !== '4' || selectedCauseHeadPurposeId !== '2') {
+      setAutoAmount(
+        selectedPurposeAmount > 0
+          ? (
+              selectedPurposeAmount *
+              (selectedPurposeQtyNumber > 1
+                ? quantity / selectedPurposeQtyNumber
+                : quantity)
+            ).toLocaleString('en-IN')
+          : '',
+      );
+      return;
+    }
+
+    const loadOperationAmount = async () => {
+      try {
+        const response = await axiosInstance.get(
+          '/master/GetOperationAmountBYQty',
+          {
+            params: {
+              DataFlag: ContentTypes.DataFlag,
+              CurrencyId: currencyId,
+              qty: quantity,
+            },
+            headers: createDirectApiHeaders(),
+          },
+        );
+
+        if (requestId !== amountRequestIdRef.current) {
+          return;
+        }
+
+        setAutoAmount(extractOperationAmount(response.data));
+      } catch (error) {
+        if (requestId !== amountRequestIdRef.current) {
+          return;
+        }
+
+        setAutoAmount('');
+      }
+    };
+
+    void loadOperationAmount();
+  }, [announceDetailsForm.purpose, announceDetailsForm.quantity, currencyId, purposeOptions]);
+
+  useEffect(() => {
+    const selectedPurpose = purposeOptions.find(
+      option => option.value === announceDetailsForm.purpose,
+    );
+    const selectedPurposeQty = Math.max(
+      0,
+      Number(selectedPurpose?.qtyValue?.trim() || 0),
+    );
+
+    if (selectedPurposeQty <= 1) {
+      return;
+    }
+
+    setAnnounceDetailsForm(current =>
+      current.quantity === selectedPurposeQty
+        ? current
+        : { ...current, quantity: selectedPurposeQty },
+    );
+  }, [announceDetailsForm.purpose, purposeOptions]);
 
   useEffect(() => {
     const loadSalutations = async () => {
@@ -1748,6 +2038,24 @@ export const AnnounceMasterContent = () => {
     pincodeRequestIdRef.current += 1;
   };
 
+  const selectedPurposeOption = purposeOptions.find(
+    option => option.value === announceDetailsForm.purpose,
+  );
+  const selectedPurposeQty = Math.max(
+    0,
+    Number(selectedPurposeOption?.qtyValue?.trim() || 1),
+  );
+  const quantityControlMode: 'disabled' | 'stepper' | 'select' =
+    selectedPurposeQty === 0
+      ? 'disabled'
+      : selectedPurposeQty === 1
+        ? 'stepper'
+        : 'select';
+  const quantityOptions =
+    quantityControlMode === 'select'
+      ? buildQuantityOptions(selectedPurposeQty)
+      : [];
+
   return (
     <div
       className="content d-flex flex-column flex-column-fluid"
@@ -1797,13 +2105,17 @@ export const AnnounceMasterContent = () => {
               occasionTypeOptions={occasionTypeOptions}
               causeHeadOptions={causeHeadOptions}
               purposeOptions={purposeOptions}
+              amount={autoAmount}
+              isAmountEditable={isAmountEditable}
+              quantityControlMode={quantityControlMode}
+              quantityOptions={quantityOptions}
+              onAmountChange={handleAmountChange}
               followUpForm={followUpForm}
               followUpItems={followUpItems}
                 banks={banks}
                 bankLoading={bankLoading}
                 bankError={bankError}
                 selectedBankIds={selectedBankIds}
-                amount={amount}
                 onTabChange={setActiveTab}
                 onPersonalInfoChange={handlePersonalInfoChange}
                 onAnnounceDetailsChange={handleAnnounceDetailsChange}

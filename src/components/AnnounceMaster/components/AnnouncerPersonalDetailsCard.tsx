@@ -31,7 +31,11 @@ interface AnnouncerPersonalDetailsCardProps {
   bankLoading: boolean;
   bankError: string;
   selectedBankIds: string[];
-  amount: number;
+  amount: string;
+  isAmountEditable: boolean;
+  quantityControlMode: 'disabled' | 'stepper' | 'select';
+  quantityOptions: { value: number; label: string }[];
+  onAmountChange: (value: string) => void;
   onTabChange: (tab: AnnouncerTabKey) => void;
   onPersonalInfoChange: <K extends keyof PersonalInfoForm>(
     field: K,
@@ -93,6 +97,10 @@ export const AnnouncerPersonalDetailsCard = ({
   bankError,
   selectedBankIds,
   amount,
+  isAmountEditable,
+  quantityControlMode,
+  quantityOptions,
+  onAmountChange,
   onTabChange,
   onPersonalInfoChange,
   onAnnounceDetailsChange,
@@ -189,6 +197,10 @@ export const AnnouncerPersonalDetailsCard = ({
               causeHeadOptions={causeHeadOptions}
               purposeOptions={purposeOptions}
               amount={amount}
+              isAmountEditable={isAmountEditable}
+              quantityControlMode={quantityControlMode}
+              quantityOptions={quantityOptions}
+              onAmountChange={onAmountChange}
               onChange={onAnnounceDetailsChange}
               onQuantityChange={onQuantityChange}
             />

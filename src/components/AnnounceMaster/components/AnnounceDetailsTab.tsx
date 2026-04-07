@@ -7,7 +7,11 @@ interface AnnounceDetailsTabProps {
   occasionTypeOptions: EventOption[];
   causeHeadOptions: EventOption[];
   purposeOptions: EventOption[];
-  amount: number;
+  amount: string;
+  isAmountEditable: boolean;
+  quantityControlMode: 'disabled' | 'stepper' | 'select';
+  quantityOptions: { value: number; label: string }[];
+  onAmountChange: (value: string) => void;
   onChange: <K extends keyof AnnounceDetailsForm>(
     field: K,
     value: AnnounceDetailsForm[K],
@@ -21,6 +25,10 @@ export const AnnounceDetailsTab = ({
   causeHeadOptions,
   purposeOptions,
   amount,
+  isAmountEditable,
+  quantityControlMode,
+  quantityOptions,
+  onAmountChange,
   onChange,
   onQuantityChange,
 }: AnnounceDetailsTabProps) => {
@@ -141,57 +149,105 @@ export const AnnounceDetailsTab = ({
           </div>
         </div>
 
-        <div className="col-md-2">
-          <div className="form-floating ant-input-floating quantity-floating">
-            <div className="input-group ant-input-floating-control quantity-input-group">
-              <button
-                className="btn btn-light quantity-input-btn"
-                type="button"
-                onClick={() => onQuantityChange(form.quantity - 1)}
-              >
-                -
-              </button>
-              <input
-                id="quantity"
-                type="text"
-                className="form-control text-center quantity-input-field"
-                value={form.quantity}
-                inputMode="numeric"
-                placeholder=" "
-                onChange={event =>
-                  onQuantityChange(Number(event.target.value) || 1)
-                }
-              />
-              <button
-                className="btn btn-light quantity-input-btn"
-                type="button"
-                onClick={() => onQuantityChange(form.quantity + 1)}
-              >
-                +
-              </button>
+        {quantityControlMode === 'stepper' ||
+        quantityControlMode === 'disabled' ? (
+          <div className="col-md-2">
+            <div className="form-floating ant-input-floating quantity-floating">
+              <div className="input-group ant-input-floating-control quantity-input-group">
+                <button
+                  className="btn btn-light quantity-input-btn"
+                  type="button"
+                  disabled={quantityControlMode === 'disabled'}
+                  onClick={() => onQuantityChange(form.quantity - 1)}
+                >
+                  -
+                </button>
+                <input
+                  id="quantity"
+                  type="text"
+                  className="form-control text-center quantity-input-field"
+                  value={form.quantity}
+                  inputMode="numeric"
+                  placeholder=" "
+                  disabled={quantityControlMode === 'disabled'}
+                  onChange={event =>
+                    onQuantityChange(Number(event.target.value) || 1)
+                  }
+                />
+                <button
+                  className="btn btn-light quantity-input-btn"
+                  type="button"
+                  disabled={quantityControlMode === 'disabled'}
+                  onClick={() => onQuantityChange(form.quantity + 1)}
+                >
+                  +
+                </button>
+              </div>
+              <label htmlFor="quantity">Quantity</label>
             </div>
-            <label htmlFor="quantity">Quantity</label>
           </div>
-        </div>
+        ) : null}
+
+        {quantityControlMode === 'select' ? (
+          <div className="col-md-2">
+            <div
+              className={`form-floating ant-select-floating ${
+                form.quantity ? 'has-value' : ''
+              }`}
+            >
+              <Select
+                id="quantity"
+                placeholder=""
+                value={form.quantity || undefined}
+                onChange={nextValue => onQuantityChange(Number(nextValue) || 1)}
+                options={quantityOptions.map(option => ({
+                  value: option.value,
+                  label: option.label,
+                }))}
+              />
+              <label htmlFor="quantity">Quantity</label>
+            </div>
+          </div>
+        ) : null}
 
         <div className="col-md-2">
           <div className="form-floating ant-input-floating">
             <input
               id="autoAmount"
               type="text"
-              className="form-control form-control-solid ant-input-floating-control"
+              className={`form-control ant-input-floating-control ${
+                isAmountEditable ? '' : 'form-control-solid'
+              }`}
               placeholder=" "
-              value={amount ? amount.toLocaleString('en-IN') : ''}
-              readOnly
+              value={amount}
+              readOnly={!isAmountEditable}
+              onChange={event => onAmountChange(event.target.value)}
             />
             <label htmlFor="autoAmount">
               Amount (Auto) <span className="text-danger">*</span>
             </label>
           </div>
           <div className="text-muted fs-8 mt-2">
-            Auto = fixed rate x quantity
+            {isAmountEditable
+              ? 'Manual amount allowed for selected purpose'
+              : 'Auto amount fetched/calculated'}
           </div>
         </div>
+          {form.causeHead === '150' ? (
+          <div className="col-md-2">
+            <div className="form-floating ant-input-floating">
+              <input
+                id="causeHeadDate"
+                type="date"
+                className="form-control ant-input-floating-control"
+                placeholder=" "
+                value={form.causeHeadDate}
+                onChange={event => onChange('causeHeadDate', event.target.value)}
+              />
+              <label htmlFor="causeHeadDate">Cause Head Date</label>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="row g-5 mt-1">

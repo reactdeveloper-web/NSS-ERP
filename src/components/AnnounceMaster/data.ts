@@ -63,6 +63,7 @@ export const createInitialAnnounceDetailsForm = (): AnnounceDetailsForm => ({
   occasionDate: '',
   occasionRemark: '',
   causeHead: '',
+  causeHeadDate: '',
   purpose: '',
   quantity: 1,
   paymentMode: '',

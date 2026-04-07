@@ -43,6 +43,7 @@ export interface AnnounceDetailsForm {
   occasionDate: string;
   occasionRemark: string;
   causeHead: string;
+  causeHeadDate: string;
   purpose: string;
   quantity: number;
   paymentMode: string;
@@ -91,6 +92,8 @@ export interface EventOption {
   value: string;
   label: string;
   purposeId?: string;
+  yojnaId?: string;
+  qtyValue?: string;
   amountValue?: string;
   stateCode?: string;
 }
