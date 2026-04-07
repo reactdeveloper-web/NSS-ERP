@@ -17,4 +17,5 @@ export const PATH = {
   PRODUCT_NEW: '/products/new',
   PRODUCT_EDIT: '/products/:id/edit',
   DUMMY: '/dummy-page',
+  RESET_PASSWORD: "/reset-password",
 };

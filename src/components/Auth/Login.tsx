@@ -7,6 +7,7 @@ import { login } from './Auth.thunks';
 import { PATH } from 'src/constants/paths';
 import { IMAGEPATH } from 'src/constants/img-paths';
 
+
 const mapStateToProps = (state: AppState) => ({
   isAuthenticated: state.auth.isAuthenticated,
 });
@@ -17,6 +18,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 interface Props extends ConnectedProps<typeof connector> {}
 
 const _Login = (props: Props) => {
+  const [showPassword, setShowPassword] = useState(false);
   //  eslint-disable-next-line
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('NSS');
@@ -123,35 +125,40 @@ const _Login = (props: Props) => {
                     />
                   </div>
 
-                  <div className="fv-row mb-8 d-flex flex-center position-relative">
-                    <Form.Item
-                      className="w-100"
-                      name="password"
-                      rules={[
-                        {
-                          required: true,
-                          message: 'Please input your Password!',
-                        },
-                      ]}
-                    >
-                      <Input
-                        className="form-control fs-5 fw-normal ps-10"
-                        type="password"
-                        name="password"
-                        placeholder="Enter your Password"
-                      />
-                    </Form.Item>
-                    <img
-                      src={IMAGEPATH.EYE}
-                      alt=""
-                      className="position-absolute end-0 me-2 top-0 mt-4"
-                    />
-                    <img
-                      src={IMAGEPATH.PASSWORD}
-                      alt=""
-                      className="position-absolute start-0 ms-2 top-0 mt-4"
-                    />
-                  </div>
+                 <div className="fv-row mb-8 d-flex flex-center position-relative">
+  <Form.Item
+    className="w-100"
+    name="password"
+    rules={[
+      {
+        required: true,
+        message: 'Please input your Password!',
+      },
+    ]}
+  >
+    <Input
+      className="form-control fs-5 fw-normal ps-10 pe-10"
+      type={showPassword ? "text" : "password"}   // ⭐ toggle here
+      placeholder="Enter your Password"
+    />
+  </Form.Item>
+
+  {/* RIGHT EYE ICON (CLICKABLE) */}
+  <img
+    src={showPassword ? IMAGEPATH.EYE_OPEN : IMAGEPATH.EYE_CLOSE}
+    alt="toggle password"
+    onClick={() => setShowPassword(!showPassword)}   // ⭐ toggle click
+    style={{ cursor: "pointer" }}
+    className="position-absolute end-0 me-2 top-0 mt-4"
+  />
+
+  {/* LEFT LOCK ICON */}
+  <img
+    src={IMAGEPATH.PASSWORD}
+    alt=""
+    className="position-absolute start-0 ms-2 top-0 mt-4"
+  />
+</div>
                   <div className="text-center">
                     <button
                       type="submit"

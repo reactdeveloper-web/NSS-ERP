@@ -20,13 +20,14 @@ const Feature2Page = lazy(() => import('src/pages/StaticPages/Feature2Page'));
 // ---> Auth pages
 const LoginPage = lazy(() => import('src/pages/AuthPages/LoginPage'));
 const ForgotPage = lazy(() => import('src/pages/AuthPages/ForgotPage'));
+const ResetPassword = lazy(() => import('src/pages/AuthPages/SetupNewPassword'));
 const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
 
 const DummyPage = lazy(() => import('src/pages/Dummy/DummyPage'));
-const ProfilePage = lazy(
-  () => import('src/pages/MasterPages/ProfilePage'),);
+const ProfileMasterPage = lazy(
+  () => import('src/pages/MyProfile/ProfilePage'),);
 
 // ---> Error pages
 const NotFoundPage = lazy(() => import('src/pages/ErrorPages/404Pages'));
@@ -58,11 +59,13 @@ export const Routes = () => {
               <Route exact path={PATH.FEATURE1} component={Feature1Page} />
               <Route exact path={PATH.FEATURE2} component={Feature2Page} />
               <Route exact path={PATH.CONTACT} component={ContactPage} />
+              
 
               {/* Auth routes */}
               <Route exact path={PATH.LOGIN} component={LoginPage} />
-              <Route exact path={PATH.PROFILE} component={ProfilePage} />
+              <Route exact path={PATH.PROFILE} component={ProfileMasterPage} />
               <Route exact path={PATH.FORGOT} component={ForgotPage} />
+              <Route path={PATH.RESET_PASSWORD} component={ResetPassword} />
               <Route
                 exact
                 path={PATH.ANNOUNCE_MASTER}

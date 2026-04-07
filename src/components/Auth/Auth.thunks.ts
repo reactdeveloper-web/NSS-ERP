@@ -16,6 +16,7 @@ interface ReqUserActivity {
   Show: '';
 }
 
+
 export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
   const userJson = localStorage.getItem('user') || '{}';
   const user = JSON.parse(userJson);
@@ -38,7 +39,7 @@ export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
 
 export const login = (payload: ReqLogin) => async dispatch => {
    try {
-      const res = await axios.post(`/login/UserLogin`,
+      const res = await axiosInstance.post(`/login/UserLogin`,
         payload
       );
     const allUsers = res.data;
@@ -152,3 +153,60 @@ export const logout = () => async dispatch => {
     }),
   );
 };
+
+// ================= TYPES =================
+export interface ReqSetupPassword {
+  EmpNum: string;
+  Token: string;
+  NewPassword: string;
+  Data_Flag: string;
+}
+
+// ================= THUNK =================
+export const setupNewPassword =
+  (payload: ReqSetupPassword) => async (dispatch: any) => {
+    try {
+      console.log("SETUP PASSWORD FINAL PAYLOAD 🚀", payload);
+
+      const res = await axiosInstance.post(
+        "/login/ResetPasswordConfirm",
+        payload
+      );
+
+      console.log("SETUP PASSWORD RESPONSE ✅", res.data);
+
+      if (res?.data?.result === true) {
+        dispatch(
+          setAlert({
+            msg: res.data.message || "Password changed successfully ✅",
+            type: AlertTypes.SUCCESS,
+          })
+        );
+
+        dispatch(actions.setupPasswordSuccess());
+        return true;
+      }
+
+      dispatch(
+        setAlert({
+          msg: res?.data?.message || "Unable to reset password ❌",
+          type: AlertTypes.ERROR,
+        })
+      );
+
+      return false;
+    } catch (error: any) {
+      console.log("SETUP PASSWORD ERROR ❌", error?.response?.data || error);
+
+      dispatch(
+        setAlert({
+          msg:
+            error?.response?.data?.message ||
+            "Server error while resetting password",
+          type: AlertTypes.ERROR,
+        })
+      );
+
+      return false;
+    }
+  };
