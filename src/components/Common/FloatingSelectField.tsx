@@ -24,9 +24,9 @@ export const FloatingSelectField = ({
   onChange,
 }: FloatingSelectFieldProps) => (
   <div
-    className={`form-floating ant-select-floating ${
-      value ? 'has-value' : ''
-    } ${disabled ? 'is-disabled' : ''}`}
+    className={`form-floating ant-select-floating ${value ? 'has-value' : ''} ${
+      disabled ? 'is-disabled' : ''
+    }`}
   >
     <Select
       id={id}

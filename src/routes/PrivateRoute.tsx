@@ -9,7 +9,7 @@ export const PrivateRoute = ({ component: Component, ...rest }: any) => {
   return (
     <Route
       {...rest}
-      render={(props) =>
+      render={props =>
         isAuth ? (
           <MainLayout>
             <Component {...props} />

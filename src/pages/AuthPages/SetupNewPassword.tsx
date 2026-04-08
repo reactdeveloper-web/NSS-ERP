@@ -1,5 +1,5 @@
-import React from "react";
-import SetupNewPasswordComponent from "src/components/Auth/SetupNewPassword";
+import React from 'react';
+import SetupNewPasswordComponent from 'src/components/Auth/SetupNewPassword';
 
 const SetupNewPasswordPage = () => {
   return (

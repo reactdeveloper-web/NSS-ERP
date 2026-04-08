@@ -35,10 +35,8 @@ export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
 };
 
 export const login = (payload: ReqLogin) => async dispatch => {
-   try {
-      const res = await axiosInstance.post(`/login/UserLogin`,
-        payload
-      );
+  try {
+    const res = await axiosInstance.post(`/login/UserLogin`, payload);
     const allUsers = res.data;
     let user = allUsers.userData;
     if (
@@ -85,32 +83,32 @@ export const forgot = (payload: ReqForgot) => async dispatch => {
     };
     const res = await axiosInstance.post(
       `/login/ForgotPasswordRequest`,
-      addPayload
+      addPayload,
     );
     if (res.data?.result === true) {
       dispatch(
         setAlert({
-          msg: res.data.message || "Password reset link sent to email.",
+          msg: res.data.message || 'Password reset link sent to email.',
           type: AlertTypes.SUCCESS,
-        })
+        }),
       );
       return dispatch(actions.forgotSuccess());
     } else {
       dispatch(
         setAlert({
-          msg: res.data.message || "User not found",
+          msg: res.data.message || 'User not found',
           type: AlertTypes.ERROR,
-        })
+        }),
       );
       return dispatch(actions.loginFailed());
     }
   } catch (error) {
-    console.log("FORGOT ERROR", error.response?.data || error);
+    console.log('FORGOT ERROR', error.response?.data || error);
     dispatch(
       setAlert({
-        msg: "Server error while sending reset mail",
+        msg: 'Server error while sending reset mail',
         type: AlertTypes.ERROR,
-      })
+      }),
     );
   }
 };
@@ -154,50 +152,51 @@ export interface ReqSetupPassword {
 }
 
 // ================= THUNK =================
-export const setupNewPassword =
-  (payload: ReqSetupPassword) => async (dispatch: any) => {
-    try {
-      console.log("SETUP PASSWORD FINAL PAYLOAD 🚀", payload);
+export const setupNewPassword = (payload: ReqSetupPassword) => async (
+  dispatch: any,
+) => {
+  try {
+    console.log('SETUP PASSWORD FINAL PAYLOAD 🚀', payload);
 
-      const res = await axiosInstance.post(
-        "/login/ResetPasswordConfirm",
-        payload
-      );
+    const res = await axiosInstance.post(
+      '/login/ResetPasswordConfirm',
+      payload,
+    );
 
-      console.log("SETUP PASSWORD RESPONSE ✅", res.data);
+    console.log('SETUP PASSWORD RESPONSE ✅', res.data);
 
-      if (res?.data?.result === true) {
-        dispatch(
-          setAlert({
-            msg: res.data.message || "Password changed successfully ✅",
-            type: AlertTypes.SUCCESS,
-          })
-        );
-
-        dispatch(actions.setupPasswordSuccess());
-        return true;
-      }
-
+    if (res?.data?.result === true) {
       dispatch(
         setAlert({
-          msg: res?.data?.message || "Unable to reset password ❌",
-          type: AlertTypes.ERROR,
-        })
+          msg: res.data.message || 'Password changed successfully ✅',
+          type: AlertTypes.SUCCESS,
+        }),
       );
 
-      return false;
-    } catch (error: any) {
-      console.log("SETUP PASSWORD ERROR ❌", error?.response?.data || error);
-
-      dispatch(
-        setAlert({
-          msg:
-            error?.response?.data?.message ||
-            "Server error while resetting password",
-          type: AlertTypes.ERROR,
-        })
-      );
-
-      return false;
+      dispatch(actions.setupPasswordSuccess());
+      return true;
     }
-  };
+
+    dispatch(
+      setAlert({
+        msg: res?.data?.message || 'Unable to reset password ❌',
+        type: AlertTypes.ERROR,
+      }),
+    );
+
+    return false;
+  } catch (error: any) {
+    console.log('SETUP PASSWORD ERROR ❌', error?.response?.data || error);
+
+    dispatch(
+      setAlert({
+        msg:
+          error?.response?.data?.message ||
+          'Server error while resetting password',
+        type: AlertTypes.ERROR,
+      }),
+    );
+
+    return false;
+  }
+};

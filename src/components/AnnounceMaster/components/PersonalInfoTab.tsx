@@ -40,7 +40,8 @@ export const PersonalInfoTab = ({
   const resolvedStateOptions =
     stateOptions.length > 0 ? stateOptions : fallbackStateOptions;
   const stateSelectOptions =
-    form.state && !resolvedStateOptions.some(state => state.value === form.state)
+    form.state &&
+    !resolvedStateOptions.some(state => state.value === form.state)
       ? [{ value: form.state, label: form.state }, ...resolvedStateOptions]
       : resolvedStateOptions;
   const districtSelectOptions =

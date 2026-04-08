@@ -36,5 +36,5 @@ export const registerFailed = () => ({
 });
 
 export const setupPasswordSuccess = () => ({
-  type: "SETUP_PASSWORD_SUCCESS",
+  type: 'SETUP_PASSWORD_SUCCESS',
 });

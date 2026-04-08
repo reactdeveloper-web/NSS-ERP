@@ -525,7 +525,9 @@ const extractYojnaOptions = (payload: unknown): EventOption[] => {
         value: amountValue || yojnaId || yojnaName,
         label:
           yojnaName && amountValue
-            ? `${yojnaName} (Rs. ${Number(amountValue).toLocaleString('en-IN')})`
+            ? `${yojnaName} (Rs. ${Number(amountValue).toLocaleString(
+                'en-IN',
+              )})`
             : yojnaName || amountValue || yojnaId,
         amountValue,
       };
@@ -799,8 +801,8 @@ const normalizeApiTime = (value: unknown): string => {
         period === 'AM'
           ? parsedHours % 12
           : parsedHours % 12 === 0
-            ? 12
-            : (parsedHours % 12) + 12;
+          ? 12
+          : (parsedHours % 12) + 12;
 
       return `${String(normalizedHours).padStart(2, '0')}:${minutes}`;
     }
@@ -828,7 +830,12 @@ const normalizeApiTime = (value: unknown): string => {
 
 const mapEventDetailRecord = (record: Record<string, unknown>) => ({
   id: getFirstValue(record, ['EVENT_ID', 'EventId', 'EventID', 'Id', 'ID']),
-  eventName: getFirstValue(record, ['EName', 'EVENT_NAME', 'EventName', 'Name']),
+  eventName: getFirstValue(record, [
+    'EName',
+    'EVENT_NAME',
+    'EventName',
+    'Name',
+  ]),
   eventCause: getFirstValue(record, [
     'CAUSE_NAME',
     'EventCause',
@@ -858,7 +865,11 @@ const mapEventDetailRecord = (record: Record<string, unknown>) => ({
     ]),
   ),
   eventCity: getFirstValue(record, ['CITY_NAME', 'CityName', 'CITY']),
-  eventChannel: getFirstValue(record, ['CHANNEL_NAME', 'ChannelName', 'CHANNEL']),
+  eventChannel: getFirstValue(record, [
+    'CHANNEL_NAME',
+    'ChannelName',
+    'CHANNEL',
+  ]),
   panditJi: getFirstValue(record, ['PANDIT_NAME', 'PanditName', 'PANDITJI']),
   eventLocation: getFirstValue(record, [
     'FULL_ADDRESS',
@@ -1194,17 +1205,14 @@ export const AnnounceMasterContent = () => {
 
       for (const searchType of searchTypeOptions) {
         try {
-          response = await axiosInstance.get(
-            '/master/searchDonorData',
-            {
-              params: {
-                searchType,
-                searchData,
-                dataFlag: ContentTypes.DataFlag,
-              },
-              headers: createDirectApiHeaders(),
+          response = await axiosInstance.get('/master/searchDonorData', {
+            params: {
+              searchType,
+              searchData,
+              dataFlag: ContentTypes.DataFlag,
             },
-          );
+            headers: createDirectApiHeaders(),
+          });
           break;
         } catch (error) {
           lastError = error;
@@ -1409,15 +1417,12 @@ export const AnnounceMasterContent = () => {
   useEffect(() => {
     const loadOccasionTypes = async () => {
       try {
-        const response = await axiosInstance.get(
-          '/master/GetOccasionMaster',
-          {
-            params: {
-              DataFlag: ContentTypes.DataFlag,
-            },
-            headers: createDirectApiHeaders(),
+        const response = await axiosInstance.get('/master/GetOccasionMaster', {
+          params: {
+            DataFlag: ContentTypes.DataFlag,
           },
-        );
+          headers: createDirectApiHeaders(),
+        });
 
         setOccasionTypeOptions(extractOccasionOptions(response.data));
       } catch (error) {
@@ -1786,19 +1791,19 @@ export const AnnounceMasterContent = () => {
             </div>
 
             <div className="col-12">
-            <AnnouncerPersonalDetailsCard
-              activeTab={activeTab}
-              personalInfoForm={personalInfoForm}
-              salutations={salutations}
-              stateOptions={stateOptions}
-              districtOptions={districtOptions}
-              isPincodeLocationLocked={isPincodeLocationLocked}
-              announceDetailsForm={announceDetailsForm}
-              occasionTypeOptions={occasionTypeOptions}
-              causeHeadOptions={causeHeadOptions}
-              purposeOptions={purposeOptions}
-              followUpForm={followUpForm}
-              followUpItems={followUpItems}
+              <AnnouncerPersonalDetailsCard
+                activeTab={activeTab}
+                personalInfoForm={personalInfoForm}
+                salutations={salutations}
+                stateOptions={stateOptions}
+                districtOptions={districtOptions}
+                isPincodeLocationLocked={isPincodeLocationLocked}
+                announceDetailsForm={announceDetailsForm}
+                occasionTypeOptions={occasionTypeOptions}
+                causeHeadOptions={causeHeadOptions}
+                purposeOptions={purposeOptions}
+                followUpForm={followUpForm}
+                followUpItems={followUpItems}
                 banks={banks}
                 bankLoading={bankLoading}
                 bankError={bankError}

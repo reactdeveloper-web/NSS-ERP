@@ -142,9 +142,9 @@ body {
   padding-top: 120px;
 }
 @media (min-width: 992px) {
-    .header-fixed.toolbar-fixed .wrapper {
-        padding-top: calc(65px + 55px);
-    }
+  .header-fixed.toolbar-fixed .wrapper {
+    padding-top: calc(65px + 55px);
+  }
 }
 
 .toolbar-fixed .toolbar {
@@ -269,10 +269,10 @@ iframe {
 
 .form-floating.ant-select-floating .ant-select-selection-placeholder,
 .form-floating.ant-select-floating .ant-select-selection-item {
-  font-size: .925rem;
-    font-weight: 500;
-    line-height: 1.5;
-    color: #181c32;
+  font-size: 0.925rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #181c32;
 }
 
 .form-floating.ant-select-floating .ant-select-selection-placeholder {
@@ -290,8 +290,8 @@ iframe {
 
 .form-floating.ant-select-floating.has-value > label,
 .form-floating.ant-select-floating:focus-within > label {
-    opacity: 1;
-  transform: scale(0.80) translateY(-0.9rem) translateX(0.15rem);
+  opacity: 1;
+  transform: scale(0.8) translateY(-0.9rem) translateX(0.15rem);
   background: #fff;
   padding: 0px 8px 0px 8px;
   height: auto;
@@ -305,14 +305,14 @@ iframe {
 .form-floating.ant-input-floating > .form-control.ant-input-floating-control,
 .form-floating.ant-input-floating
   > .form-control-plaintext.ant-input-floating-control {
-  min-height:3.1rem;
+  min-height: 3.1rem;
   height: 3.1rem;
   padding: 0.75rem 1rem;
   border: 1px solid #e1e3ea;
   border-radius: 0.475rem;
   box-shadow: none;
   background-color: #fff;
-  font-size: .925rem;
+  font-size: 0.925rem;
   font-weight: 500;
   line-height: 1.5;
   color: #181c32;
@@ -340,7 +340,9 @@ iframe {
   pointer-events: none;
 }
 
-.form-floating.ant-input-floating > .form-control.ant-input-floating-control:focus ~ label,
+.form-floating.ant-input-floating
+  > .form-control.ant-input-floating-control:focus
+  ~ label,
 .form-floating.ant-input-floating
   > .form-control.ant-input-floating-control:not(:placeholder-shown)
   ~ label,
@@ -348,7 +350,7 @@ iframe {
   > .form-control-plaintext.ant-input-floating-control:focus
   ~ label {
   opacity: 1;
-  transform: scale(0.80) translateY(-0.9rem) translateX(0.15rem);
+  transform: scale(0.8) translateY(-0.9rem) translateX(0.15rem);
   background: #fff;
   padding: 0px 8px 0px 8px;
   height: auto;
@@ -356,17 +358,17 @@ iframe {
 }
 
 .ant-select-single.ant-select-show-arrow .ant-select-selection-search {
-    right: 25px;
-    display: flex;
-    align-items: center;
+  right: 25px;
+  display: flex;
+  align-items: center;
 }
 
-.form-floating>label{
-      padding: 0.75rem 1rem;
+.form-floating > label {
+  padding: 0.75rem 1rem;
 }
 
 .input-group > .form-control.ant-input-floating-control {
-  min-height:3.1rem;
+  min-height: 3.1rem;
   height: 3.1rem;
   border-color: #e1e3ea;
   box-shadow: none;
@@ -376,7 +378,7 @@ iframe {
 }
 
 .quantity-floating .quantity-input-group.ant-input-floating-control {
-  min-height:3.1rem;
+  min-height: 3.1rem;
   height: 3.1rem;
   padding: 0;
   border: 1px solid #e1e3ea;
@@ -406,7 +408,7 @@ iframe {
 
 .quantity-floating .quantity-input-field {
   border: 0;
-  min-height:3.1rem;
+  min-height: 3.1rem;
   height: 3.1rem;
   padding: 0.75rem 1rem;
   box-shadow: none !important;
@@ -432,10 +434,11 @@ iframe {
   left: 35%;
 }
 
-.ant-select-clear, .ant-select-arrow{
+.ant-select-clear,
+.ant-select-arrow {
   width: 18px;
-    height: 18px;
-    margin-top: -8px;
-        font-size: 15px;
-        top:50%;
+  height: 18px;
+  margin-top: -8px;
+  font-size: 15px;
+  top: 50%;
 }
