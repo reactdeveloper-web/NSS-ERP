@@ -14,12 +14,14 @@ const DashboardPage = lazy(
 // ---> Auth pages
 const LoginPage = lazy(() => import('src/pages/AuthPages/LoginPage'));
 const ForgotPage = lazy(() => import('src/pages/AuthPages/ForgotPage'));
+const ResetPassword = lazy(
+  () => import('src/pages/AuthPages/SetupNewPassword'));
 const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
 
 const ProfileMasterPage = lazy(
-  () => import('src/pages/MyProfilePage/ProfileMasterPage'),
+  () => import('src/pages/MyProfilePage/ProfileMasterPage')
 );
 
 
@@ -51,11 +53,11 @@ export const Routes = () => {
               <Route exact path={PATH.LOGIN} component={LoginPage} />
               <Route exact path={PATH.PROFILE} component={ProfileMasterPage} />
               <Route exact path={PATH.FORGOT} component={ForgotPage} />
+              <Route path={PATH.RESET_PASSWORD} component={ResetPassword} />
               <Route
                 exact
                 path={PATH.ANNOUNCE_MASTER}
-                component={AnnounceMasterPage}
-              />
+                component={AnnounceMasterPage}/>
               
 
               {/* Error routes */}

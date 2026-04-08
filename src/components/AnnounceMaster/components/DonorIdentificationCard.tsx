@@ -151,7 +151,7 @@ export const DonorIdentificationCard = ({
                 ) : null}
               </div>
               {searchError ? (
-                <div className="text-danger fs-7 mt-2 position-absolute end-0 top-75 me-2">
+                <div className="text-danger fs-7 pt-3 position-absolute end-0 top-75 me-2">
                   {searchError}
                 </div>
               ) : null}

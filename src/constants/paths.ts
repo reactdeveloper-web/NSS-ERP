@@ -5,4 +5,5 @@ export const PATH = {
   ANNOUNCE_MASTER: '/announce-master',
   FORGOT: '/forgot',
   PROFILE: '/profile',
+  RESET_PASSWORD: "/reset-password",
 };

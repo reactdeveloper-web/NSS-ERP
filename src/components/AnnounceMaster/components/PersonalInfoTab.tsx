@@ -1,6 +1,10 @@
 import React from 'react';
-import { Select } from 'antd';
 import { PersonalInfoForm, SalutationOption } from '../types';
+import { CountryField } from '../../Common/CountryField';
+import { DistrictField } from '../../Common/DistrictField';
+import { PincodeField } from '../../Common/PincodeField';
+import { StateField } from '../../Common/StateField';
+import { FloatingSelectField } from '../../Common/FloatingSelectField';
 
 interface PersonalInfoTabProps {
   form: PersonalInfoForm;
@@ -27,44 +31,6 @@ export const PersonalInfoTab = ({
     { value: 'Delhi', label: 'Delhi' },
     { value: 'Gujarat', label: 'Gujarat' },
   ];
-
-  const renderFloatingSelect = (
-    id: keyof Pick<
-      PersonalInfoForm,
-      'salutation' | 'country' | 'state' | 'district'
-    >,
-    label: string,
-    value: string,
-    options: { value: string; label: string }[],
-    disabled = false,
-  ) => (
-    <div
-      className={`form-floating ant-select-floating ${
-        value ? 'has-value' : ''
-      } ${disabled ? 'is-disabled' : ''}`}
-    >
-      <Select
-        id={id}
-        placeholder=""
-        showSearch
-        allowClear={!disabled}
-        disabled={disabled}
-        value={value || undefined}
-        onChange={nextValue => onChange(id, (nextValue as string) || '')}
-        optionFilterProp="label"
-        filterOption={(input, option) =>
-          String(option?.label ?? '')
-            .toLowerCase()
-            .includes(input.toLowerCase())
-        }
-        options={options.map(option => ({
-          value: option.value,
-          label: option.label,
-        }))}
-      />
-      <label htmlFor={id}>{label}</label>
-    </div>
-  );
 
   const salutationOptions =
     form.salutation &&
@@ -120,13 +86,14 @@ export const PersonalInfoTab = ({
           </div>
         </div>
         <div className="col-md-2">
-          {renderFloatingSelect(
-            'salutation',
-            'Salutation',
-            form.salutation,
-            salutationOptions,
-            form.salutationLocked,
-          )}
+          <FloatingSelectField
+            id="salutation"
+            label="Salutation"
+            value={form.salutation}
+            options={salutationOptions}
+            disabled={form.salutationLocked}
+            onChange={value => onChange('salutation', value)}
+          />
         </div>
 
         <div className="col-md-3">
@@ -203,47 +170,35 @@ export const PersonalInfoTab = ({
         ) : null}
 
         <div className="col-md-2">
-          <div className="form-floating ant-input-floating">
-            <input
-              id="pincode"
-              type="text"
-              className="form-control ant-input-floating-control"
-              placeholder=" "
-              value={form.pincode}
-              onChange={event => onChange('pincode', event.target.value)}
-            />
-            <label htmlFor="pincode">Pincode</label>
-          </div>
+          <PincodeField
+            value={form.pincode}
+            onChange={value => onChange('pincode', value)}
+          />
         </div>
 
         <div className="col-md-2">
-          {renderFloatingSelect(
-            'country',
-            'Country',
-            form.country,
-            [{ value: 'India', label: 'India' }],
-            true,
-          )}
+          <CountryField
+            value={form.country}
+            onChange={value => onChange('country', value)}
+          />
         </div>
 
         <div className="col-md-2">
-          {renderFloatingSelect(
-            'state',
-            'State',
-            form.state,
-            stateSelectOptions,
-            form.stateLocked || isPincodeLocationLocked,
-          )}
+          <StateField
+            value={form.state}
+            options={stateSelectOptions}
+            disabled={form.stateLocked || isPincodeLocationLocked}
+            onChange={value => onChange('state', value)}
+          />
         </div>
 
         <div className="col-md-2">
-          {renderFloatingSelect(
-            'district',
-            'District',
-            form.district,
-            districtSelectOptions,
-            isPincodeLocationLocked,
-          )}
+          <DistrictField
+            value={form.district}
+            options={districtSelectOptions}
+            disabled={isPincodeLocationLocked}
+            onChange={value => onChange('district', value)}
+          />
         </div>
       </div>
     </div>

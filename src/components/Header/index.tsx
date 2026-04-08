@@ -19,6 +19,7 @@ export const AppHeader = () => {
 
   if (
     pathname === PATH.ANNOUNCE_MASTER ||
+    pathname === PATH.PROFILE ||
     pathname === PATH.DASHBOARD ||
     pathname === PATH.DUMMY
   ) {
