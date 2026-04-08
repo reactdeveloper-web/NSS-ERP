@@ -7,7 +7,6 @@ import { login } from './Auth.thunks';
 import { PATH } from 'src/constants/paths';
 import { IMAGEPATH } from 'src/constants/img-paths';
 
-
 const mapStateToProps = (state: AppState) => ({
   isAuthenticated: state.auth.isAuthenticated,
 });
@@ -27,8 +26,6 @@ const _Login = (props: Props) => {
 
   const onFinish = async formData => {
     try {
-      //console.log('hello',formData);
-      //setLoading(true);
       await login(formData);
     } catch (error) {
       message.error(error.message);

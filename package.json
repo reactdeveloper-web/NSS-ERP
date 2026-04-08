@@ -1,6 +1,7 @@
 {
   "name": "typescript-react",
   "version": "0.1.0",
+  "homepage": ".",
   "private": true,
   "proxy": "https://deverp.narayanseva.org",
   "dependencies": {
@@ -47,7 +48,7 @@
     "uuid": "8.3.2"
   },
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider SASS_SILENCE_DEPRECATIONS=legacy-js-api react-scripts start",
+    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
     "start": "npm run dev",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider SASS_SILENCE_DEPRECATIONS=legacy-js-api react-scripts build"
   },
