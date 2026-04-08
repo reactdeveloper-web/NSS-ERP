@@ -1,5 +1,3 @@
-/* eslint-disable eqeqeq */
-/* eslint-disable prettier/prettier */
 import axios from 'axios';
 import { URL } from 'src/constants/urls';
 import * as actions from './Auth.actions';
@@ -41,7 +39,6 @@ export const login = (payload: ReqLogin) => async dispatch => {
     const res = await axiosInstance.post(`/login/UserLogin`, payload);
     const allUsers = res.data;
     let user = allUsers.userData;
-    //console.log('login',allUsers);
     if (
       allUsers.userData.status === 'Success' &&
       user &&
@@ -84,16 +81,10 @@ export const forgot = (payload: ReqForgot) => async dispatch => {
       Emp_Num: payload.userid,
       Data_Flag: ContentTypes.DataFlag,
     };
-
-    console.log('FINAL PAYLOAD', addPayload);
-
     const res = await axiosInstance.post(
       `/login/ForgotPasswordRequest`,
       addPayload,
     );
-
-    console.log('API RESPONSE', res.data);
-
     if (res.data?.result === true) {
       dispatch(
         setAlert({
@@ -141,6 +132,7 @@ export const register = (payload: ReqLogin) => async dispatch => {
     return dispatch(actions.registerFailed());
   }
 };
+
 export const logout = () => async dispatch => {
   dispatch(actions.logoutSuccess());
   dispatch(
