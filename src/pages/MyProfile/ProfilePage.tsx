@@ -5,9 +5,9 @@ import { AuthenticatedPageShell } from 'src/components/Layout/AuthenticatedPageS
 const ProfileMasterPage = () => {
   return (
     <>
-    <AuthenticatedPageShell>
-      <ProfileMasterContent />
-    </AuthenticatedPageShell>
+      <AuthenticatedPageShell>
+        <ProfileMasterContent />
+      </AuthenticatedPageShell>
     </>
   );
 };

@@ -4,7 +4,7 @@ import { MyProfileContent } from 'src/components/MyProfile/MyProfileContent';
 const ProfileMasterPage = () => {
   return (
     <>
-     <MyProfileContent/>
+      <MyProfileContent />
     </>
   );
 };

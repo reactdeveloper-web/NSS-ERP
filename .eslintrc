@@ -2,20 +2,17 @@
   "extends": ["react-app", "prettier"],
   "plugins": ["react", "prettier"],
   "rules": {
-    "prettier/prettier": [
+  "prettier/prettier": [
       "warn",
       {
         "arrowParens": "avoid",
         "semi": true,
         "trailingComma": "all",
-        "endOfLine": "lf",
+        "endOfLine": "auto",
         "tabWidth": 2,
         "printWidth": 80,
         "useTabs": false,
         "singleQuote": true
-      },
-      {
-        "usePrettierrc": false
       }
     ],
     "no-console": "off",

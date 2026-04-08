@@ -113,9 +113,7 @@ export const DonorIdentificationCard = ({
 
             <div className="col-md-12 position-relative">
               <div className="d-flex gap-3">
-                <div
-                  className="d-flex"
-                >
+                <div className="d-flex">
                   {renderFloatingSelect(
                     'donorSearchType',
                     'Search By',

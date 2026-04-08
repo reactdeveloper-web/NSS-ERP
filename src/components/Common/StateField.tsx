@@ -1,5 +1,8 @@
 import React from 'react';
-import { FloatingSelectField, FloatingSelectOption } from './FloatingSelectField';
+import {
+  FloatingSelectField,
+  FloatingSelectOption,
+} from './FloatingSelectField';
 
 interface StateFieldProps {
   value: string;
