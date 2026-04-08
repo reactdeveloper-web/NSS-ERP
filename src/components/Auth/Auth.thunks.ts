@@ -42,7 +42,7 @@ export const login = (payload: ReqLogin) => async dispatch => {
     if (
       allUsers.userData.status === 'Success' &&
       user &&
-      user.empNum == payload.username
+      user.empNum === payload.username
     ) {
       dispatch(actions.loginSuccess(user));
       // ✅ store tokens
