@@ -439,3 +439,7 @@ iframe {
         font-size: 15px;
         top:50%;
 }
+
+.table>:not(caption)>*>* {
+    padding: 1rem 1rem;
+}

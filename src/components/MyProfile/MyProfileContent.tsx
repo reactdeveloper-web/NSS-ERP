@@ -1,6 +1,6 @@
 import React from 'react';
 import { AuthenticatedPageShell } from 'src/components/Layout/AuthenticatedPageShell';
-import { UserTimeSheet } from './UserTimeSheet';
+import { UserTimeSheet } from './Components/UserTimeSheet';
 
 const MyProfileContent = () => {
   return (

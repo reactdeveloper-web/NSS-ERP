@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { loadUser, logout } from 'src/components/Auth/Auth.thunks';
+import { AppAlert } from "src/components/Alert";
 import { Routes } from 'src/routes';
 
 const mapStateToProps = () => ({});
@@ -14,17 +15,22 @@ interface Props extends ConnectedProps<typeof connector> {}
 const _App = (props: Props) => {
   useEffect(() => {
     const { loadUser, logout } = props;
-    // check for token in LS
+
     if (localStorage.user) {
       loadUser();
     }
 
-    // log user out from all tabs if they log out in one tab
     window.addEventListener('storage', () => {
       if (!localStorage.user) logout();
     });
   }, [props]);
-  return <Routes />;
+
+  return (
+    <>
+      <AppAlert />   {/* ⭐ GLOBAL ALERT MOUNTED */}
+      <Routes />
+    </>
+  );
 };
 
 export const App = connector(_App);

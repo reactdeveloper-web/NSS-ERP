@@ -7,23 +7,19 @@ import { IMAGEPATH } from "src/constants/img-paths";
 
 const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const dispatch = useDispatch();
   const history = useHistory();
 
-const query = new URLSearchParams(useLocation().search);
+  // 🔗 Read token from mail link
+  const query = new URLSearchParams(useLocation().search);
 
-const token =
-  query.get("token") || query.get("Token");
-
-const empNum =
-  query.get("id") || query.get("emp") || query.get("EmpNum");
-
-const dataFlag =
-  query.get("df") || query.get("Data_Flag") || "GANGOTRI";
-
+  const token = query.get("token") || query.get("Token");
+  const empNum = query.get("id") || query.get("emp") || query.get("EmpNum");
+  const dataFlag = query.get("df") || query.get("Data_Flag") || "GANGOTRI";
 
   // ================= SUBMIT =================
   const onFinish = async (values: any) => {
@@ -32,12 +28,12 @@ const dataFlag =
       return;
     }
 
-  const payload = {
-  EmpNum: empNum,
-  Token: token,
-  NewPassword: values.newPassword,
-  Data_Flag: dataFlag,   // 🔥 dynamic now
-};
+    const payload = {
+      EmpNum: empNum,
+      Token: token,
+      NewPassword: values.newPassword,
+      Data_Flag: dataFlag,
+    };
 
     console.log("FINAL API PAYLOAD 🚀", payload);
 
@@ -45,29 +41,33 @@ const dataFlag =
     const success = await dispatch(setupNewPassword(payload));
     setLoading(false);
 
+    // 🟢 SUCCESS FLOW
     if (success) {
-      message.success("Password changed successfully ✅");
-      setTimeout(() => history.push("/login"), 1500);
+      setIsSuccess(true); // disable form
+
+      setTimeout(() => {
+        history.push("/login");
+      }, 2000);
     }
   };
 
   return (
-  <div className="login-logo d-flex vh-100">
-    <div className="bottom-bg d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
-      <div className="d-flex flex-start text-center flex-column flex-column-fluid p-5 px-2 p-md-5">
-        <div className="">
+    <div className="login-logo d-flex vh-100">
+      <div className="bottom-bg d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
+        <div className="d-flex flex-start text-center flex-column flex-column-fluid p-5 px-2 p-md-5">
           <div className="container">
 
             {/* LOGO */}
             <img alt="Logo" src={IMAGEPATH.LOGO} className="h-60px" />
 
-            {/* CARD (same as login) */}
+            {/* CARD */}
             <div className="w-md-500px h-md-500px w-xxl-600px h-xxl-600px w-100 bg-body custom-rounded mx-auto d-flex flex-center p-4">
 
               <Form
                 className="login-form form w-md-375px w-xxl-425px w-100"
                 onFinish={onFinish}
               >
+
                 {/* HEADING */}
                 <div className="text-center mb-8">
                   <img src={IMAGEPATH.LOGIN_NSS} alt="" />
@@ -90,6 +90,7 @@ const dataFlag =
                       className="form-control fs-5 fw-normal ps-10 pe-10"
                       type={showNew ? "text" : "password"}
                       placeholder="Enter your New Password"
+                      disabled={isSuccess}
                     />
                   </Form.Item>
 
@@ -127,6 +128,7 @@ const dataFlag =
                       className="form-control fs-5 fw-normal ps-10 pe-10"
                       type={showConfirm ? "text" : "password"}
                       placeholder="Confirm Password"
+                      disabled={isSuccess}
                     />
                   </Form.Item>
 
@@ -148,7 +150,7 @@ const dataFlag =
                   <button
                     type="submit"
                     className="btn btn-lg nssBtnColor text-white w-100 mb-5"
-                    disabled={loading}
+                    disabled={loading || isSuccess}
                   >
                     {!loading ? (
                       <span className="indicator-label fs-3 fw-normal">
@@ -175,8 +177,7 @@ const dataFlag =
         </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default ResetPassword;
