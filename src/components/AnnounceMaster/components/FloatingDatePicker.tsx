@@ -64,16 +64,17 @@ export const FloatingDatePicker = ({
       return;
     }
 
-    pickerRef.current = window.flatpickr?.(input, {
-      allowInput: true,
-      clickOpens: true,
-      dateFormat: 'Y-m-d',
-      defaultDate: value || undefined,
-      position: 'auto left',
-      onChange: (_selectedDates, dateStr) => {
-        onChange?.(dateStr);
-      },
-    }) ?? null;
+    pickerRef.current =
+      window.flatpickr?.(input, {
+        allowInput: true,
+        clickOpens: true,
+        dateFormat: 'Y-m-d',
+        defaultDate: value || undefined,
+        position: 'auto left',
+        onChange: (_selectedDates, dateStr) => {
+          onChange?.(dateStr);
+        },
+      }) ?? null;
 
     return () => {
       pickerRef.current?.destroy?.();

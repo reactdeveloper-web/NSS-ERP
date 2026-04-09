@@ -25,7 +25,7 @@ const _Forgot = (props: Props) => {
   const [error, setError] = useState('');
   const { forgot, isforgot } = props;
 
-  const onFinish = async (formData) => {
+  const onFinish = async formData => {
     try {
       await forgot(formData);
     } catch (error) {
@@ -41,18 +41,15 @@ const _Forgot = (props: Props) => {
       <div className="bottom-bg d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
         <div className="d-flex flex-start text-center flex-column flex-column-fluid p-5 px-2 p-md-5">
           <div className="container">
-            
             {/* Logo */}
             <img alt="Logo" src={IMAGEPATH.LOGO} className="h-60px" />
 
             <div className="w-md-500px h-md-500px w-xxl-600px h-xxl-600px w-100 bg-body custom-rounded mx-auto d-flex flex-center p-4">
-              
               <Form
                 name="forgot-form"
                 className="form w-md-375px w-xxl-425px w-100"
                 onFinish={onFinish}
               >
-                
                 {/* Heading */}
                 <div className="text-center mb-8">
                   <img src={IMAGEPATH.LOGIN_NSS} alt="" />
@@ -69,7 +66,9 @@ const _Forgot = (props: Props) => {
                   <Form.Item
                     name="userid"
                     className="w-100"
-                    rules={[{ required: true, message: 'Please enter your User ID!' }]}
+                    rules={[
+                      { required: true, message: 'Please enter your User ID!' },
+                    ]}
                   >
                     <Input
                       className="form-control fs-5 fw-normal ps-10"
@@ -101,10 +100,8 @@ const _Forgot = (props: Props) => {
                     </Link>
                   </div>
                 </div>
-
               </Form>
             </div>
-
           </div>
         </div>
       </div>

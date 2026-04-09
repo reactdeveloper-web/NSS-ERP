@@ -1,20 +1,18 @@
 import React from 'react';
+import { FloatingInputField } from './FloatingInputField';
 
 interface PincodeFieldProps {
   value: string;
   onChange: (value: string) => void;
+  error?: string;
 }
 
-export const PincodeField = ({ value, onChange }: PincodeFieldProps) => (
-  <div className="form-floating ant-input-floating">
-    <input
-      id="pincode"
-      type="text"
-      className="form-control ant-input-floating-control"
-      placeholder=" "
-      value={value}
-      onChange={event => onChange(event.target.value)}
-    />
-    <label htmlFor="pincode">Pincode</label>
-  </div>
+export const PincodeField = ({ value, onChange, error }: PincodeFieldProps) => (
+  <FloatingInputField
+    id="pincode"
+    label="Pincode"
+    value={value}
+    onChange={onChange}
+    error={error}
+  />
 );

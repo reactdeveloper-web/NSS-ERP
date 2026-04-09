@@ -14,7 +14,9 @@ const DashboardPage = lazy(
 // ---> Auth pages
 const LoginPage = lazy(() => import('src/pages/AuthPages/LoginPage'));
 const ForgotPage = lazy(() => import('src/pages/AuthPages/ForgotPage'));
-const ResetPassword = lazy(() => import('src/pages/AuthPages/SetupNewPassword'));
+const ResetPassword = lazy(
+  () => import('src/pages/AuthPages/SetupNewPassword'),
+);
 const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
@@ -22,7 +24,6 @@ const AnnounceMasterPage = lazy(
 const ProfileMasterPage = lazy(
   () => import('src/pages/MyProfilePage/ProfileMasterPage'),
 );
-
 
 // ---> Error pages
 const NotFoundPage = lazy(() => import('src/pages/ErrorPages/404Pages'));
@@ -58,7 +59,6 @@ export const Routes = () => {
                 path={PATH.ANNOUNCE_MASTER}
                 component={AnnounceMasterPage}
               />
-              
 
               {/* Error routes */}
               <Route component={NotFoundPage} />

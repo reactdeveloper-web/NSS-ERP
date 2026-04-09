@@ -5,6 +5,7 @@ interface BankDetailsTabProps {
   banks: DepositBank[];
   isLoading: boolean;
   error: string;
+  validationError?: string;
   selectedBankIds: string[];
   onToggleBank: (bankId: string) => void;
 }
@@ -13,6 +14,7 @@ export const BankDetailsTab = ({
   banks,
   isLoading,
   error,
+  validationError,
   selectedBankIds,
   onToggleBank,
 }: BankDetailsTabProps) => {
@@ -86,6 +88,11 @@ export const BankDetailsTab = ({
       <div className="text-muted fs-8 mt-3">
         Selected banks count: <strong>{selectedBankIds.length}</strong>
       </div>
+      {validationError ? (
+        <div className="announce-master-field-error mt-2">
+          {validationError}
+        </div>
+      ) : null}
     </div>
   );
 };

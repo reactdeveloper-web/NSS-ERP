@@ -1,11 +1,15 @@
 import React from 'react';
-import { FloatingSelectField, FloatingSelectOption } from './FloatingSelectField';
+import {
+  FloatingSelectField,
+  FloatingSelectOption,
+} from './FloatingSelectField';
 
 interface CountryFieldProps {
   value: string;
   onChange: (value: string) => void;
   options?: FloatingSelectOption[];
   disabled?: boolean;
+  error?: string;
 }
 
 const defaultCountryOptions: FloatingSelectOption[] = [
@@ -17,6 +21,7 @@ export const CountryField = ({
   onChange,
   options = defaultCountryOptions,
   disabled = true,
+  error,
 }: CountryFieldProps) => (
   <FloatingSelectField
     id="country"
@@ -25,5 +30,6 @@ export const CountryField = ({
     options={options}
     disabled={disabled}
     onChange={onChange}
+    error={error}
   />
 );

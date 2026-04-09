@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { ContentTypes } from 'src/constants/content';
 import axiosInstance from 'src/redux/interceptor';
@@ -10,14 +10,14 @@ import {
   createInitialFollowUpForm,
   createInitialPersonalInfoForm,
 } from './data';
-import { AnnounceEventCard } from './components/AnnounceEventCard';
 import { AnnouncerPersonalDetailsCard } from './components/AnnouncerPersonalDetailsCard';
-import { DonorIdentificationCard } from './components/DonorIdentificationCard';
 import {
   AddedAnnounceCause,
   AnnouncerTabKey,
   AnnounceDetailsForm,
   AnnounceEventForm,
+  AnnounceValidationErrors,
+  AnnounceValidationField,
   DepositBank,
   DonorIdentificationForm,
   DonorSearchResult,
@@ -29,6 +29,15 @@ import {
 } from './types';
 
 const getToday = () => new Date().toISOString().split('T')[0];
+
+const isValidDateValue = (value: string) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value.trim())) {
+    return false;
+  }
+
+  const parsedDate = new Date(`${value}T00:00:00`);
+  return !Number.isNaN(parsedDate.getTime());
+};
 
 const donorSearchTypeCandidates: Record<string, string[]> = {
   donorId: ['NGCode', 'donorId', 'DonorId'],
@@ -533,7 +542,9 @@ const extractYojnaOptions = (payload: unknown): EventOption[] => {
         value: yojnaId || amountValue || yojnaName,
         label:
           yojnaName && amountValue
-            ? `${yojnaName} (Rs. ${Number(amountValue).toLocaleString('en-IN')})`
+            ? `${yojnaName} (Rs. ${Number(amountValue).toLocaleString(
+                'en-IN',
+              )})`
             : yojnaName || amountValue || yojnaId,
         yojnaId,
         qtyValue,
@@ -1012,8 +1023,8 @@ const normalizeApiTime = (value: unknown): string => {
         period === 'AM'
           ? parsedHours % 12
           : parsedHours % 12 === 0
-            ? 12
-            : (parsedHours % 12) + 12;
+          ? 12
+          : (parsedHours % 12) + 12;
 
       return `${String(normalizedHours).padStart(2, '0')}:${minutes}`;
     }
@@ -1089,9 +1100,21 @@ const toDigitsNumber = (value: string): number => {
   return digits ? Number(digits) : 0;
 };
 
+const getCurrentTimeValue = (): string => {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
 const mapEventDetailRecord = (record: Record<string, unknown>) => ({
   id: getFirstValue(record, ['EVENT_ID', 'EventId', 'EventID', 'Id', 'ID']),
-  eventName: getFirstValue(record, ['EName', 'EVENT_NAME', 'EventName', 'Name']),
+  eventName: getFirstValue(record, [
+    'EName',
+    'EVENT_NAME',
+    'EventName',
+    'Name',
+  ]),
   eventCause: getFirstValue(record, [
     'CAUSE_NAME',
     'EventCause',
@@ -1121,7 +1144,11 @@ const mapEventDetailRecord = (record: Record<string, unknown>) => ({
     ]),
   ),
   eventCity: getFirstValue(record, ['CITY_NAME', 'CityName', 'CITY']),
-  eventChannel: getFirstValue(record, ['CHANNEL_NAME', 'ChannelName', 'CHANNEL']),
+  eventChannel: getFirstValue(record, [
+    'CHANNEL_NAME',
+    'ChannelName',
+    'CHANNEL',
+  ]),
   panditJi: getFirstValue(record, ['PANDIT_NAME', 'PanditName', 'PANDITJI']),
   cityCode: getFirstValue(record, [
     'CITY_CODE',
@@ -1281,15 +1308,21 @@ export const AnnounceMasterContent = () => {
   const [donorOptions, setDonorOptions] = useState<DonorSearchResult[]>([]);
   const [showDonorModal, setShowDonorModal] = useState(false);
   const [isPincodeLocationLocked, setIsPincodeLocationLocked] = useState(false);
+  const [
+    validationErrors,
+    setValidationErrors,
+  ] = useState<AnnounceValidationErrors>({});
   const [isSaving, setIsSaving] = useState(false);
   const [showSaveResultModal, setShowSaveResultModal] = useState(false);
   const [saveRequestPayload, setSaveRequestPayload] = useState<unknown>(null);
   const [saveResultPayload, setSaveResultPayload] = useState<unknown>(null);
-  const [causeIdPendingDelete, setCauseIdPendingDelete] = useState<number | null>(
-    null,
-  );
+  const [causeIdPendingDelete, setCauseIdPendingDelete] = useState<
+    number | null
+  >(null);
   const lastDonorSearchKeyRef = useRef('');
   const donorSearchRequestIdRef = useRef(0);
+  const lastPersonalMobileSearchRef = useRef('');
+  const personalMobileSearchRequestIdRef = useRef(0);
   const pincodeRequestIdRef = useRef(0);
   const purposeOptionsRequestIdRef = useRef(0);
   const amountRequestIdRef = useRef(0);
@@ -1326,6 +1359,16 @@ export const AnnounceMasterContent = () => {
     field: K,
     value: AnnounceEventForm[K],
   ) => {
+    setValidationErrors(current => {
+      const nextErrors = { ...current };
+
+      if (field === 'eventName') {
+        delete nextErrors.eventName;
+      }
+
+      return nextErrors;
+    });
+
     setAnnounceEventForm(current => ({ ...current, [field]: value }));
   };
 
@@ -1333,6 +1376,31 @@ export const AnnounceMasterContent = () => {
     field: K,
     value: PersonalInfoForm[K],
   ) => {
+    setValidationErrors(current => {
+      const nextErrors = { ...current };
+      const fieldKey = field as AnnounceValidationField;
+
+      if (fieldKey in nextErrors) {
+        delete nextErrors[fieldKey];
+      }
+
+      if (field === 'announceInOtherName' && !value) {
+        delete nextErrors.announcedForName;
+      }
+
+      return nextErrors;
+    });
+
+    if (field === 'mobileNo' || field === 'whatsappNo') {
+      const normalizedMobile = String(value).replace(/\D/g, '').slice(0, 10);
+
+      setPersonalInfoForm(current => ({
+        ...current,
+        [field]: normalizedMobile,
+      }));
+      return;
+    }
+
     if (field === 'pincode') {
       const normalizedPincode = String(value).replace(/\D/g, '').slice(0, 6);
 
@@ -1350,6 +1418,57 @@ export const AnnounceMasterContent = () => {
     field: K,
     value: AnnounceDetailsForm[K],
   ) => {
+    setValidationErrors(current => {
+      const nextErrors = { ...current };
+
+      if (field === 'occasionType') {
+        delete nextErrors.occasionType;
+      }
+
+      if (field === 'paymentMode') {
+        delete nextErrors.paymentMode;
+        delete nextErrors.bankSelection;
+      }
+
+      if (field === 'howToDonate') {
+        delete nextErrors.howToDonate;
+      }
+
+      if (field === 'occasionDate') {
+        delete nextErrors.occasionDate;
+      }
+
+      if (field === 'occasionRemark') {
+        delete nextErrors.occasionRemark;
+      }
+
+      if (field === 'causeHead') {
+        delete nextErrors.causeHead;
+        delete nextErrors.causeHeadDate;
+        delete nextErrors.purpose;
+        delete nextErrors.announceAmount;
+      }
+
+      if (field === 'causeHeadDate') {
+        delete nextErrors.causeHeadDate;
+      }
+
+      if (field === 'purpose') {
+        delete nextErrors.purpose;
+        delete nextErrors.announceAmount;
+      }
+
+      if (field === 'motivatedAmount') {
+        delete nextErrors.motivatedAmount;
+      }
+
+      if (field === 'isMotivated' && !value) {
+        delete nextErrors.motivatedAmount;
+      }
+
+      return nextErrors;
+    });
+
     if (field === 'causeHead') {
       const nextCauseHead = String(value).trim();
 
@@ -1387,11 +1506,33 @@ export const AnnounceMasterContent = () => {
       return;
     }
 
+    if (field === 'paymentMode') {
+      const nextPaymentMode = String(value);
+
+      setAnnounceDetailsForm(current => ({
+        ...current,
+        paymentMode: nextPaymentMode,
+      }));
+
+      if (['Online', 'Pay-In-Slip'].includes(nextPaymentMode)) {
+        setActiveTab('bankDetails');
+      } else if (activeTab === 'bankDetails') {
+        setActiveTab('followUp');
+      }
+
+      return;
+    }
+
     setAnnounceDetailsForm(current => ({ ...current, [field]: value }));
   };
 
   const handleAmountChange = (value: string) => {
     const normalizedValue = value.replace(/[^\d.]/g, '');
+    setValidationErrors(current => {
+      const nextErrors = { ...current };
+      delete nextErrors.announceAmount;
+      return nextErrors;
+    });
     setAutoAmount(normalizedValue);
   };
 
@@ -1403,6 +1544,11 @@ export const AnnounceMasterContent = () => {
   };
 
   const handleQuantityChange = (nextQuantity: number) => {
+    setValidationErrors(current => {
+      const nextErrors = { ...current };
+      delete nextErrors.announceAmount;
+      return nextErrors;
+    });
     setAnnounceDetailsForm(current => ({
       ...current,
       quantity: Math.max(1, Number.isFinite(nextQuantity) ? nextQuantity : 1),
@@ -1441,7 +1587,8 @@ export const AnnounceMasterContent = () => {
         selectedCauseHead?.purposeId?.trim() ||
         announceDetailsForm.causeHead.trim(),
       purpose: announceDetailsForm.purpose,
-      purposeLabel: selectedPurpose?.label || announceDetailsForm.purpose.trim(),
+      purposeLabel:
+        selectedPurpose?.label || announceDetailsForm.purpose.trim(),
       yojnaId,
       quantity: Math.max(1, Number(announceDetailsForm.quantity) || 1),
       amount: causeAmount,
@@ -1454,9 +1601,16 @@ export const AnnounceMasterContent = () => {
       const nextCauses =
         editingCauseId === null
           ? [...current, nextCause]
-          : current.map(item => (item.id === editingCauseId ? nextCause : item));
+          : current.map(item =>
+              item.id === editingCauseId ? nextCause : item,
+            );
 
       return nextCauses;
+    });
+    setValidationErrors(current => {
+      const nextErrors = { ...current };
+      delete nextErrors.announceAmount;
+      return nextErrors;
     });
     setEditingCauseId(null);
     purposeOptionsRequestIdRef.current += 1;
@@ -1525,6 +1679,11 @@ export const AnnounceMasterContent = () => {
   };
 
   const handleToggleBank = (bankId: string) => {
+    setValidationErrors(current => {
+      const nextErrors = { ...current };
+      delete nextErrors.bankSelection;
+      return nextErrors;
+    });
     setSelectedBankIds(current =>
       current.includes(bankId)
         ? current.filter(id => id !== bankId)
@@ -1551,41 +1710,50 @@ export const AnnounceMasterContent = () => {
     setFollowUpItems(current => current.filter(item => item.id !== id));
   };
 
-  const applyDonorRecord = (
-    donorRecord: Record<string, unknown>,
-    fallbackSearchData: string,
-    nextSearchType?: DonorIdentificationForm['donorSearchType'],
-  ) => {
-    const resolvedDonorId =
-      getFirstValue(donorRecord, ['NGCode', 'DonorID', 'DonorId']) ||
-      fallbackSearchData;
-    const resolvedSearchType =
-      nextSearchType ?? donorIdentificationForm.donorSearchType;
+  const applyDonorRecord = useCallback(
+    (
+      donorRecord: Record<string, unknown>,
+      fallbackSearchData: string,
+      nextSearchType?: DonorIdentificationForm['donorSearchType'],
+    ) => {
+      const resolvedDonorId =
+        getFirstValue(donorRecord, ['NGCode', 'DonorID', 'DonorId']) ||
+        fallbackSearchData;
+      const resolvedSearchType =
+        nextSearchType ?? donorIdentificationForm.donorSearchType;
 
-    setDonorSearchError('');
-    lastDonorSearchKeyRef.current = `${resolvedSearchType}:${resolvedDonorId}`;
-    setDonorIdentificationForm(current => ({
-      ...current,
-      donorSearchType: resolvedSearchType,
-      donorId: resolvedDonorId,
-    }));
+      setDonorSearchError('');
+      lastDonorSearchKeyRef.current = `${resolvedSearchType}:${resolvedDonorId}`;
+      setDonorIdentificationForm(current => ({
+        ...current,
+        donorSearchType: resolvedSearchType,
+        donorId: resolvedDonorId,
+      }));
 
-    const donorPersonalInfo = mapDonorToPersonalInfo(donorRecord);
+      const donorPersonalInfo = mapDonorToPersonalInfo(donorRecord);
 
-    setPersonalInfoForm(current => ({
-      ...current,
-      ...Object.fromEntries(
-        Object.entries(donorPersonalInfo).filter(
-          ([, value]) => value !== undefined,
+      setPersonalInfoForm(current => ({
+        ...current,
+        ...Object.fromEntries(
+          Object.entries(donorPersonalInfo).filter(
+            ([, value]) => value !== undefined,
+          ),
         ),
-      ),
-    }));
-    setActiveTab('personal');
-  };
+      }));
+      setActiveTab('personal');
+    },
+    [donorIdentificationForm.donorSearchType],
+  );
 
-  const resetPersonalInfo = () => {
-    setPersonalInfoForm(createInitialPersonalInfoForm());
-  };
+  const resetPersonalInfo = useCallback(
+    (overrides?: Partial<PersonalInfoForm>) => {
+      setPersonalInfoForm({
+        ...createInitialPersonalInfoForm(),
+        ...overrides,
+      });
+    },
+    [],
+  );
 
   const handleSelectDonor = (donor: DonorSearchResult) => {
     applyDonorRecord(
@@ -1645,17 +1813,14 @@ export const AnnounceMasterContent = () => {
 
       for (const searchType of searchTypeOptions) {
         try {
-          response = await axiosInstance.get(
-            '/master/searchDonorData',
-            {
-              params: {
-                searchType,
-                searchData,
-                dataFlag: ContentTypes.DataFlag,
-              },
-              headers: createDirectApiHeaders(),
+          response = await axiosInstance.get('/master/searchDonorData', {
+            params: {
+              searchType,
+              searchData,
+              dataFlag: ContentTypes.DataFlag,
             },
-          );
+            headers: createDirectApiHeaders(),
+          });
           break;
         } catch (error) {
           lastError = error;
@@ -1719,6 +1884,71 @@ export const AnnounceMasterContent = () => {
     }
   };
 
+  const searchDonorByValue = useCallback(
+    async ({
+      searchType,
+      searchData,
+      onNoData,
+      onMultipleResults,
+    }: {
+      searchType: DonorIdentificationForm['donorSearchType'];
+      searchData: string;
+      onNoData?: () => void;
+      onMultipleResults?: (options: DonorSearchResult[]) => void;
+    }) => {
+      const searchTypeOptions =
+        donorSearchTypeCandidates[searchType] ??
+        donorSearchTypeCandidates.donorId;
+      let response = null;
+      let lastError: unknown = null;
+
+      for (const searchTypeOption of searchTypeOptions) {
+        try {
+          response = await axiosInstance.get('/master/searchDonorData', {
+            params: {
+              searchType: searchTypeOption,
+              searchData,
+              dataFlag: ContentTypes.DataFlag,
+            },
+            headers: createDirectApiHeaders(),
+          });
+          break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+
+      if (!response) {
+        throw lastError;
+      }
+
+      const donorRecords = extractDonorRecords(response.data);
+      const uniqueDonorOptions = donorRecords
+        .map(mapDonorSearchResult)
+        .filter(
+          (donor, index, currentDonors) =>
+            donor.donorId &&
+            currentDonors.findIndex(item => item.donorId === donor.donorId) ===
+              index,
+        );
+
+      if (searchType === 'mobile' && uniqueDonorOptions.length > 1) {
+        onMultipleResults?.(uniqueDonorOptions);
+        return;
+      }
+
+      if (donorRecords.length === 0) {
+        onNoData?.();
+        return;
+      }
+
+      setDonorOptions([]);
+      setShowDonorModal(false);
+      applyDonorRecord(donorRecords[0], searchData, searchType);
+    },
+    [applyDonorRecord],
+  );
+
   useEffect(() => {
     const searchData = donorIdentificationForm.donorId.trim();
 
@@ -1751,6 +1981,64 @@ export const AnnounceMasterContent = () => {
     donorIdentificationForm.donorId,
     donorIdentificationForm.donorSearchType,
   ]);
+
+  useEffect(() => {
+    const mobileNo = personalInfoForm.mobileNo.trim();
+
+    if (mobileNo.length < 10) {
+      lastPersonalMobileSearchRef.current = '';
+      personalMobileSearchRequestIdRef.current += 1;
+      return;
+    }
+
+    if (lastPersonalMobileSearchRef.current === mobileNo) {
+      return;
+    }
+
+    const requestId = personalMobileSearchRequestIdRef.current + 1;
+    personalMobileSearchRequestIdRef.current = requestId;
+
+    const timeoutId = window.setTimeout(() => {
+      lastPersonalMobileSearchRef.current = mobileNo;
+      setIsSearchingDonor(true);
+
+      void searchDonorByValue({
+        searchType: 'mobile',
+        searchData: mobileNo,
+        onNoData: () => {
+          if (requestId !== personalMobileSearchRequestIdRef.current) {
+            return;
+          }
+
+          resetPersonalInfo({ mobileNo });
+        },
+        onMultipleResults: options => {
+          if (requestId !== personalMobileSearchRequestIdRef.current) {
+            return;
+          }
+
+          setDonorOptions(options);
+          setShowDonorModal(true);
+        },
+      })
+        .catch(() => {
+          if (requestId !== personalMobileSearchRequestIdRef.current) {
+            return;
+          }
+
+          resetPersonalInfo({ mobileNo });
+        })
+        .finally(() => {
+          if (requestId === personalMobileSearchRequestIdRef.current) {
+            setIsSearchingDonor(false);
+          }
+        });
+    }, 600);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [personalInfoForm.mobileNo, resetPersonalInfo, searchDonorByValue]);
 
   useEffect(() => {
     const loadEventCauses = async () => {
@@ -1993,6 +2281,23 @@ export const AnnounceMasterContent = () => {
               matchedState?.value || location.state.trim() || current.state,
             district: location.district.trim() || current.district,
           }));
+          setValidationErrors(current => {
+            const nextErrors = { ...current };
+
+            if (location.country.trim() || 'India') {
+              delete nextErrors.country;
+            }
+
+            if (matchedState?.value || location.state.trim()) {
+              delete nextErrors.state;
+            }
+
+            if (location.district.trim()) {
+              delete nextErrors.district;
+            }
+
+            return nextErrors;
+          });
           setIsPincodeLocationLocked(
             Boolean(
               matchedState?.value ||
@@ -2156,7 +2461,8 @@ export const AnnounceMasterContent = () => {
       option => option.value === announceDetailsForm.causeHead,
     );
     const selectedCauseHeadPurposeId =
-      selectedCauseHead?.purposeId?.trim() || announceDetailsForm.causeHead.trim();
+      selectedCauseHead?.purposeId?.trim() ||
+      announceDetailsForm.causeHead.trim();
     const selectedPurpose = purposeOptions.find(
       option => option.value === announceDetailsForm.purpose,
     );
@@ -2184,8 +2490,10 @@ export const AnnounceMasterContent = () => {
       const shouldEnableAmountField = selectedPurposeAmount <= 1;
 
       setIsAmountEditable(shouldEnableAmountField);
-      setAutoAmount(current =>
-        current || (selectedPurposeAmount > 0 ? String(selectedPurposeAmount) : ''),
+      setAutoAmount(
+        current =>
+          current ||
+          (selectedPurposeAmount > 0 ? String(selectedPurposeAmount) : ''),
       );
       return;
     }
@@ -2235,7 +2543,14 @@ export const AnnounceMasterContent = () => {
     };
 
     void loadOperationAmount();
-  }, [announceDetailsForm.purpose, announceDetailsForm.quantity, currencyId, purposeOptions]);
+  }, [
+    announceDetailsForm.causeHead,
+    announceDetailsForm.purpose,
+    announceDetailsForm.quantity,
+    causeHeadOptions,
+    currencyId,
+    purposeOptions,
+  ]);
 
   useEffect(() => {
     const selectedPurpose = purposeOptions.find(
@@ -2372,6 +2687,7 @@ export const AnnounceMasterContent = () => {
     setDonorSearchError('');
     setDonorOptions([]);
     setShowDonorModal(false);
+    setValidationErrors({});
     setShowSaveResultModal(false);
     setSaveRequestPayload(null);
     setSaveResultPayload(null);
@@ -2429,7 +2745,8 @@ export const AnnounceMasterContent = () => {
   const effectiveCauseAmount =
     autoAmount.trim() || selectedPurposeOption?.amountValue?.trim() || '';
   const currentPurposeKey =
-    selectedPurposeOption?.yojnaId?.trim() || announceDetailsForm.purpose.trim();
+    selectedPurposeOption?.yojnaId?.trim() ||
+    announceDetailsForm.purpose.trim();
   const usedPurposeKeys = new Set(
     addedCauses
       .filter(cause => cause.id !== editingCauseId)
@@ -2453,8 +2770,8 @@ export const AnnounceMasterContent = () => {
     selectedPurposeQty === 0
       ? 'disabled'
       : selectedPurposeQty === 1
-        ? 'stepper'
-        : 'select';
+      ? 'stepper'
+      : 'select';
   const quantityOptions =
     quantityControlMode === 'select'
       ? buildQuantityOptions(selectedPurposeQty)
@@ -2464,8 +2781,173 @@ export const AnnounceMasterContent = () => {
     setShowSaveResultModal(false);
   };
 
+  const getTabForFieldError = (
+    field: AnnounceValidationField,
+  ): AnnouncerTabKey => {
+    switch (field) {
+      case 'salutation':
+      case 'announcerName':
+      case 'announcedForName':
+      case 'mobileNo':
+      case 'pincode':
+      case 'country':
+      case 'state':
+      case 'district':
+        return 'personal';
+      case 'eventName':
+        return 'announceEvent';
+      case 'bankSelection':
+        return 'bankDetails';
+      default:
+        return 'announceDetails';
+    }
+  };
+
+  const getPreferredValidationTab = (
+    errors: AnnounceValidationErrors,
+  ): AnnouncerTabKey | null => {
+    const errorFields = Object.keys(errors) as AnnounceValidationField[];
+
+    if (errorFields.length === 0) {
+      return null;
+    }
+
+    const currentTabHasError = errorFields.some(
+      field =>
+        field !== 'announceDate' && getTabForFieldError(field) === activeTab,
+    );
+
+    if (currentTabHasError) {
+      return activeTab;
+    }
+
+    const firstTabErrorField = errorFields.find(
+      field => field !== 'announceDate',
+    );
+
+    return firstTabErrorField ? getTabForFieldError(firstTabErrorField) : null;
+  };
+
+  const validateBeforeSave = (
+    causesForPayload: AddedAnnounceCause[],
+    announceAmount: number,
+  ) => {
+    const nextErrors: AnnounceValidationErrors = {};
+
+    if (!isValidDateValue(donorIdentificationForm.announceDate)) {
+      nextErrors.announceDate = 'Announce Date Not Valid.';
+    }
+
+    if (!announceDetailsForm.paymentMode.trim()) {
+      nextErrors.paymentMode = 'Please Fill Pay Mode.';
+    }
+
+    if (!personalInfoForm.announcerName.trim()) {
+      nextErrors.announcerName = 'Please Fill Announcer Name';
+    }
+
+    if (
+      personalInfoForm.announceInOtherName &&
+      !personalInfoForm.announcedForName.trim()
+    ) {
+      nextErrors.announcedForName = 'Please Fill Announcer In The Name Of';
+    }
+
+    if (!personalInfoForm.salutation.trim()) {
+      nextErrors.salutation = 'Please Select Salutation.';
+    }
+
+    if (!announceEventForm.eventName.trim()) {
+      nextErrors.eventName = 'Please Select Event Name.';
+    }
+
+    if (!personalInfoForm.country.trim()) {
+      nextErrors.country = 'Please select country.';
+    }
+
+    if (!personalInfoForm.pincode.trim()) {
+      nextErrors.pincode = 'Please enter pincode.';
+    }
+
+    if (!personalInfoForm.state.trim()) {
+      nextErrors.state = 'Please select state.';
+    }
+
+    if (!personalInfoForm.district.trim()) {
+      nextErrors.district = 'Please select district.';
+    }
+
+    if (!personalInfoForm.mobileNo.trim()) {
+      nextErrors.mobileNo = 'Please Enter Mobile No.';
+    } else if (personalInfoForm.mobileNo.trim().length !== 10) {
+      nextErrors.mobileNo = 'Please Enter Mobile No. only 10 digit';
+    }
+
+    if (!announceDetailsForm.occasionType.trim()) {
+      nextErrors.occasionType = 'Please Select In Memory / Occasion Type.';
+    }
+
+    if (!isValidDateValue(announceDetailsForm.occasionDate)) {
+      nextErrors.occasionDate = 'In Memory / Occassion Date Not Valid.';
+    }
+
+    if (!announceDetailsForm.occasionRemark.trim()) {
+      nextErrors.occasionRemark = 'Please Fill Remark.';
+    }
+
+    if (!announceDetailsForm.causeHead.trim()) {
+      nextErrors.causeHead = 'Please Select Cause Head.';
+    }
+
+    if (
+      announceDetailsForm.causeHead === '150' &&
+      !announceDetailsForm.causeHeadDate.trim()
+    ) {
+      nextErrors.causeHeadDate = 'Please Select Cause Head Date.';
+    }
+
+    if (!announceDetailsForm.purpose.trim()) {
+      nextErrors.purpose = 'Please Select Purpose.';
+    }
+
+    if (
+      announceDetailsForm.purpose.trim() &&
+      isAmountEditable &&
+      announceAmount <= 0
+    ) {
+      nextErrors.announceAmount = 'Please Fill Announce Amount';
+    }
+
+    if (!announceDetailsForm.howToDonate.trim()) {
+      nextErrors.howToDonate = 'Please Select How to donate.';
+    }
+
+    if (
+      announceDetailsForm.isMotivated &&
+      !announceDetailsForm.motivatedAmount.trim()
+    ) {
+      nextErrors.motivatedAmount = 'Please enter motivated amount.';
+    }
+
+    if (
+      ['Online', 'Pay-In-Slip'].includes(announceDetailsForm.paymentMode) &&
+      selectedBankIds.length === 0
+    ) {
+      nextErrors.bankSelection = 'Please select any one bank to message.';
+    }
+
+    return nextErrors;
+  };
+
   const handleSave = async () => {
     const currentUser = parseStoredUser();
+    const queryParams = new URLSearchParams(window.location.search);
+    const announceThroughParam = queryParams.get('ATHROUGH');
+    const queryStringBid = queryParams.get('BID');
+    const queryStringCrtObjectId =
+      queryParams.get('crtObjectId') || queryParams.get('crtobjectid');
+    const queryStringDReason = queryParams.get('DReason');
+    const queryStringThisCallId = queryParams.get('THISCALLID');
     const currentCauseForPayload =
       isCauseReadyToAdd && selectedPurposeOption
         ? {
@@ -2495,6 +2977,72 @@ export const AnnounceMasterContent = () => {
       (total, cause) => total + parseAmountValue(cause.amount),
       0,
     );
+    const nextErrors = validateBeforeSave(causesForPayload, announceAmount);
+
+    setValidationErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      const preferredTab = getPreferredValidationTab(nextErrors);
+
+      if (preferredTab && preferredTab !== activeTab) {
+        setActiveTab(preferredTab);
+      }
+
+      return;
+    }
+
+    const donorInstruction = toNullableText(
+      causesForPayload
+        .map(cause => cause.donorInstruction)
+        .filter(Boolean)
+        .join(', '),
+    );
+    const namePlate = toNullableText(
+      causesForPayload
+        .map(cause => cause.namePlateName)
+        .filter(Boolean)
+        .join(', '),
+    );
+    const dueDate =
+      formatDateForApi(announceDetailsForm.expectedDate) ||
+      formatDateForApi(followUpForm.date);
+    const dueTime =
+      normalizeApiTime(announceDetailsForm.expectedTime) ||
+      normalizeApiTime(followUpForm.time);
+    const currentTime = getCurrentTimeValue();
+    const selectedHowToDonateId = Number(
+      selectedHowToDonateOption?.value?.trim() ||
+        announceDetailsForm.howToDonate.trim() ||
+        0,
+    );
+    const selectedBankIdsValue = selectedBankIds.length
+      ? selectedBankIds.join(',')
+      : null;
+    const selectedDistrictCode = Number(
+      selectedDistrictOption?.districtCode?.trim() || 0,
+    );
+    const selectedStateCode = Number(
+      selectedStateOption?.stateCode?.trim() || 0,
+    );
+    const channelCode = Number(
+      selectedEventDetail?.channelCode?.trim() ||
+        selectedEventChannelDetail?.channelCode?.trim() ||
+        0,
+    );
+    const panditCode = Number(
+      selectedEventDetail?.panditCode?.trim() ||
+        selectedEventPanditDetail?.panditCode?.trim() ||
+        0,
+    );
+    const bhagCityCode = Number(
+      selectedEventDetail?.cityCode?.trim() ||
+        selectedEventCityDetail?.cityCode?.trim() ||
+        0,
+    );
+    const callingSadhakId = Number(currentUser.id || 0) || null;
+    const callingSadhakName = currentUser.username || null;
+    const ngCode = donorIdentificationForm.donorId.trim() || null;
+
     const payload = {
       annoucePurposeList: causesForPayload.map(cause => ({
         yojna_id: cause.yojnaId || '0',
@@ -2502,78 +3050,127 @@ export const AnnounceMasterContent = () => {
         amount: String(parseAmountValue(cause.amount) || 0),
         bhojan_date: formatDateForApi(cause.causeHeadDate) || '',
       })),
+      announce_id: 0,
       ashri: personalInfoForm.salutation || '',
-      ashri_oth:
-        personalInfoForm.announcedForName.trim() ||
-        (personalInfoForm.announceInOtherName ? personalInfoForm.announcerName.trim() : 'N.A.'),
+      ashri_oth: personalInfoForm.salutation || null,
       announcer_name: personalInfoForm.announcerName.trim(),
       announce_amount: announceAmount,
-      address1: '',
-      address2: '',
-      address3: '',
-      ph_no: 0,
+      address1: null,
+      address2: null,
+      address3: null,
+      ph_no: null,
       mob_no: personalInfoForm.mobileNo.trim(),
-      announce_through: 'CALLCENTER',
+      announce_through: announceThroughParam || 'CALLCENTER',
       announce_date: formatDateForApi(donorIdentificationForm.announceDate),
-      announce_time: null,
-      std_code: 0,
-      email_id: '',
-      purpose: Number(causesForPayload[0]?.yojnaId || 0),
-      due_date: formatDateForApi(followUpForm.date),
-      due_time: formatTimeForApi(followUpForm.time),
-      completed: 0,
-      remark1:
-        selectedHowToDonateOption?.label?.trim() ||
-        announceDetailsForm.howToDonate.trim(),
-      first_remark: toNullableText(announceDetailsForm.occasionRemark),
-      second_remark: toNullableText(
-        causesForPayload
-          .map(cause => cause.donorInstruction)
-          .filter(Boolean)
-          .join(', '),
-      ),
-      third_remark: toNullableText(
-        causesForPayload.map(cause => cause.namePlateName).filter(Boolean).join(', '),
-      ),
-      city_code: null,
-      district_code: Number(selectedDistrictOption?.districtCode?.trim() || 0),
-      state_code: Number(selectedStateOption?.stateCode?.trim() || 0),
-      remark2: announceDetailsForm.occasionRemark.trim(),
-      channel_code: Number(
-        selectedEventDetail?.channelCode?.trim() ||
-          selectedEventChannelDetail?.channelCode?.trim() ||
-          0,
-      ),
-      pandit_code: Number(
-        selectedEventDetail?.panditCode?.trim() ||
-          selectedEventPanditDetail?.panditCode?.trim() ||
-          0,
-      ),
-      bhag_city_code: Number(
-        selectedEventDetail?.cityCode?.trim() ||
-          selectedEventCityDetail?.cityCode?.trim() ||
-          0,
-      ),
+      announce_time: currentTime,
+      std_code: null,
+      email_id: currentUser.email || null,
+      purpose: Number(announceDetailsForm.causeHead.trim() || 0),
+      due_date: dueDate,
+      due_time: dueTime,
+      completed: '0',
+      first_date: '',
+      second_date: '',
+      third_date: '',
+      remark1: selectedHowToDonateId,
+      first_remark: null,
+      second_remark: donorInstruction,
+      third_remark: namePlate,
+      city_code: 0,
+      district_code: selectedDistrictCode,
+      state_code: selectedStateCode,
+      remark2: toNullableText(announceDetailsForm.occasionRemark),
+      channel_code: channelCode,
+      pandit_code: panditCode,
+      bhag_city_code: bhagCityCode || null,
+      oth_name: null,
+      mob_no_second: null,
+      mob_no_third: null,
       user_name: currentUser.username || '',
+      ash_code: toDigitsNumber(donorIdentificationForm.donorId.trim()),
       emp_code: Number(currentUser.empNum || 0),
       live: announceEventForm.liveType === 'live' ? 'Y' : 'N',
-      ash_event_id: selectedEventDetail?.id?.trim() || '0',
-      event_name: announceEventForm.eventName.trim(),
-      user_id: String(currentUser.id || ''),
+      provisional_no: null,
+      chk_prov: null,
+      rec_amount: 0,
+      rec_date: null,
+      allocate_date: null,
+      ash_event_id: selectedEventDetail?.id?.trim() || null,
+      event_ash_id: null,
+      event_name: announceEventForm.eventName.trim() || null,
+      audit_confirm: 'N',
+      user_id: Number(currentUser.id || 0),
+      audit_remark: null,
+      allocated_to: null,
+      followup_priority: donorIdentificationForm.urgentFollowup ? 1 : 0,
+      bank_code: null,
+      future_donor: null,
+      search_remark: null,
+      search_empname: null,
+      search_complete: null,
+      complete_userid: null,
+      complete_date: null,
+      landmark: null,
       cash_pickup: 'N',
-      other_type: personalInfoForm.announceInOtherName ? 1 : 0,
+      other_type: personalInfoForm.announceInOtherName ? 1 : null,
       currency_id: Number(currencyId || 0),
       cause_id: Number(causesForPayload[0]?.causeHeadPurposeId || 0),
-      ngcode: donorIdentificationForm.donorId.trim() || '0',
+      ngcode: ngCode,
+      msg_banks: selectedBankIdsValue,
       data_flag: ContentTypes.DataFlag,
-      fy_id: '21',
-      dmobilewhatsapp1: personalInfoForm.whatsappNo.trim(),
-      aadhar_number: '',
-      pan_number: '',
+      fy_id: 21,
+      crtobjectid: null,
+      last_call_no: null,
+      last_fp_remark: null,
+      last_call_date: null,
+      last_call_back_date: null,
+      last_remark: null,
+      fp_received: null,
+      fp_org_rec_no: null,
+      receive_id_by: null,
+      receive_head_by: null,
+      dmobile5: null,
+      dmobilewhatsapp1: personalInfoForm.whatsappNo.trim() || null,
+      dmobilewhatsapp2: null,
+      phoffice: null,
+      aadhar_number: null,
+      pan_number: null,
+      in_memory_occasion: toNullableText(announceDetailsForm.occasionType),
+      in_memocc_date:
+        formatDateForApi(announceDetailsForm.occasionDate) || null,
+      donor_instruction: donorInstruction,
+      name_plate: namePlate,
+      edit_user_id: null,
+      edit_user_name: null,
+      edit_datetime: null,
       pincode_code: Number(personalInfoForm.pincode.trim() || 0),
-      country_code: '22',
+      country_code: 91,
       pincode: personalInfoForm.pincode.trim(),
-      PostType: 'App',
+      calling_sadhak_id: callingSadhakId,
+      calling_sadhak_name: callingSadhakName,
+      daan_patra_no: null,
+      orderno: null,
+      pay_mode: announceDetailsForm.paymentMode || null,
+      docket_no: null,
+      route_code: null,
+      token_no: null,
+      no_followup_require: donorIdentificationForm.followupNotRequired
+        ? 'Y'
+        : 'N',
+      last_call_id: null,
+      faked: 'N',
+      discarded: 'N',
+      self_deposit: 'N',
+      send_sadhak: 'Y',
+      online_bank_id: selectedBankIds[0] || null,
+      motivated: announceDetailsForm.isMotivated,
+      motivated_amount: Number(announceDetailsForm.motivatedAmount || 0),
+      wfh_auto_id: null,
+      PostType: 'WebReact',
+      QueryString_BID: queryStringBid,
+      QueryString_crtObjectId: queryStringCrtObjectId,
+      QueryString_DReason: queryStringDReason,
+      QueryString_THISCALLID: queryStringThisCallId,
     };
 
     setIsSaving(true);
@@ -2607,23 +3204,25 @@ export const AnnounceMasterContent = () => {
 
       <div className="post d-flex flex-column-fluid" id="kt_post">
         <div id="kt_content_container" className="container-fluid py-6">
-          <div className="row g-6">
-            <div className="col-xl-4">
-              <DonorIdentificationCard
-                form={donorIdentificationForm}
-                isSearching={isSearchingDonor}
-                searchError={donorSearchError}
+          <div className="row g-6 justify-content-center">
+            <div className="col-12">
+              <AnnouncerPersonalDetailsCard
+                activeTab={activeTab}
+                donorIdentificationForm={donorIdentificationForm}
+                announceEventForm={announceEventForm}
+                personalInfoForm={personalInfoForm}
+                salutations={salutations}
+                stateOptions={stateOptions}
+                districtOptions={districtOptions}
                 donorOptions={donorOptions}
+                isSearchingDonor={isSearchingDonor}
+                donorSearchError={donorSearchError}
                 showDonorModal={showDonorModal}
-                onChange={handleDonorIdentificationChange}
-                onSelectDonor={handleSelectDonor}
-                onCloseDonorModal={handleCloseDonorModal}
-              />
-            </div>
-
-            <div className="col-xl-8">
-              <AnnounceEventCard
-                form={announceEventForm}
+                isPincodeLocationLocked={isPincodeLocationLocked}
+                validationErrors={validationErrors}
+                announceDetailsForm={announceDetailsForm}
+                addedCauses={addedCauses}
+                editingCauseId={editingCauseId}
                 eventOptions={eventOptions}
                 eventCauseOptions={eventCauseOptions}
                 eventCityOptions={eventCityOptions}
@@ -2631,43 +3230,32 @@ export const AnnounceMasterContent = () => {
                 panditOptions={panditOptions}
                 eventLoading={eventLoading}
                 eventError={eventError}
-                onChange={handleAnnounceEventChange}
-              />
-            </div>
-
-            <div className="col-12">
-            <AnnouncerPersonalDetailsCard
-              activeTab={activeTab}
-              personalInfoForm={personalInfoForm}
-              salutations={salutations}
-              stateOptions={stateOptions}
-              districtOptions={districtOptions}
-              isPincodeLocationLocked={isPincodeLocationLocked}
-              announceDetailsForm={announceDetailsForm}
-              addedCauses={addedCauses}
-              editingCauseId={editingCauseId}
-              occasionTypeOptions={occasionTypeOptions}
-              causeHeadOptions={causeHeadOptions}
-              purposeOptions={availablePurposeOptions}
-              howToDonateOptions={howToDonateOptions}
-              amount={autoAmount}
-              isAmountEditable={isAmountEditable}
-              quantityControlMode={quantityControlMode}
-              quantityOptions={quantityOptions}
-              isAddCauseDisabled={!isCauseReadyToAdd}
-              isSaving={isSaving}
-              onAmountChange={handleAmountChange}
-              onAddCause={handleAddCause}
-              onEditCause={handleEditCause}
-              onDeleteCause={handleDeleteCause}
-              onSave={handleSave}
-              followUpForm={followUpForm}
-              followUpItems={followUpItems}
+                occasionTypeOptions={occasionTypeOptions}
+                causeHeadOptions={causeHeadOptions}
+                purposeOptions={availablePurposeOptions}
+                howToDonateOptions={howToDonateOptions}
                 banks={banks}
                 bankLoading={bankLoading}
                 bankError={bankError}
                 selectedBankIds={selectedBankIds}
+                amount={autoAmount}
+                isAmountEditable={isAmountEditable}
+                quantityControlMode={quantityControlMode}
+                quantityOptions={quantityOptions}
+                isAddCauseDisabled={!isCauseReadyToAdd}
+                isSaving={isSaving}
+                onAmountChange={handleAmountChange}
+                onAddCause={handleAddCause}
+                onEditCause={handleEditCause}
+                onDeleteCause={handleDeleteCause}
+                onSave={handleSave}
+                onSelectDonor={handleSelectDonor}
+                onCloseDonorModal={handleCloseDonorModal}
+                followUpForm={followUpForm}
+                followUpItems={followUpItems}
                 onTabChange={setActiveTab}
+                onDonorIdentificationChange={handleDonorIdentificationChange}
+                onAnnounceEventChange={handleAnnounceEventChange}
                 onPersonalInfoChange={handlePersonalInfoChange}
                 onAnnounceDetailsChange={handleAnnounceDetailsChange}
                 onFollowUpChange={handleFollowUpChange}
@@ -2685,7 +3273,10 @@ export const AnnounceMasterContent = () => {
       {showSaveResultModal ? (
         <>
           <div className="modal fade show d-block" tabIndex={-1} role="dialog">
-            <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div
+              className="modal-dialog modal-dialog-centered modal-lg"
+              role="document"
+            >
               <div className="modal-content">
                 <div className="modal-header p-4">
                   <h4 className="modal-title">Create Announce Response</h4>
@@ -2710,28 +3301,32 @@ export const AnnounceMasterContent = () => {
                     </pre>
                   </div>
 
-                  {Array.isArray((saveResultPayload as { result?: unknown[] } | null)?.result) ? (
+                  {Array.isArray(
+                    (saveResultPayload as { result?: unknown[] } | null)
+                      ?.result,
+                  ) ? (
                     <div className="mb-5">
-                      {(saveResultPayload as { result: Array<Record<string, unknown>> }).result.map(
-                        (item, index) => (
-                          <div
-                            key={`${String(item.code ?? index)}-${index}`}
-                            className={`alert ${
-                              String(item.status || '').toLowerCase() === 'success'
-                                ? 'alert-success'
-                                : 'alert-danger'
-                            } py-3`}
-                          >
-                            <div className="fw-semibold">
-                              {String(item.msg || 'No message returned.')}
-                            </div>
-                            <div className="fs-8 mt-1 text-muted">
-                              Code: {String(item.code ?? '-')} | Status:{' '}
-                              {String(item.status ?? '-')}
-                            </div>
+                      {(saveResultPayload as {
+                        result: Array<Record<string, unknown>>;
+                      }).result.map((item, index) => (
+                        <div
+                          key={`${String(item.code ?? index)}-${index}`}
+                          className={`alert ${
+                            String(item.status || '').toLowerCase() ===
+                            'success'
+                              ? 'alert-success'
+                              : 'alert-danger'
+                          } py-3`}
+                        >
+                          <div className="fw-semibold">
+                            {String(item.msg || 'No message returned.')}
                           </div>
-                        ),
-                      )}
+                          <div className="fs-8 mt-1 text-muted">
+                            Code: {String(item.code ?? '-')} | Status:{' '}
+                            {String(item.status ?? '-')}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ) : null}
 

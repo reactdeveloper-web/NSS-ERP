@@ -116,8 +116,36 @@ export interface EventOption {
   districtCode?: string;
 }
 
+export type AnnounceValidationField =
+  | 'announceDate'
+  | 'salutation'
+  | 'announcerName'
+  | 'announcedForName'
+  | 'mobileNo'
+  | 'pincode'
+  | 'country'
+  | 'state'
+  | 'district'
+  | 'eventName'
+  | 'occasionType'
+  | 'occasionDate'
+  | 'occasionRemark'
+  | 'causeHead'
+  | 'causeHeadDate'
+  | 'purpose'
+  | 'paymentMode'
+  | 'announceAmount'
+  | 'howToDonate'
+  | 'motivatedAmount'
+  | 'bankSelection';
+
+export type AnnounceValidationErrors = Partial<
+  Record<AnnounceValidationField, string>
+>;
+
 export type AnnouncerTabKey =
   | 'personal'
+  | 'announceEvent'
   | 'announceDetails'
   | 'bankDetails'
   | 'followUp';

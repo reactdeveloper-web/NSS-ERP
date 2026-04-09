@@ -86,7 +86,7 @@ export const FloatingTimePicker = ({
       pickerRef.current?.destroy?.();
       pickerRef.current = null;
     };
-  }, [disabled, readOnly, onChange]);
+  }, [disabled, onChange, readOnly, value]);
 
   useEffect(() => {
     const picker = pickerRef.current;

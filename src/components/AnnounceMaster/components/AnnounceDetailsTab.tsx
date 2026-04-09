@@ -1,6 +1,11 @@
 import React from 'react';
 import { Select } from 'antd';
-import { AddedAnnounceCause, AnnounceDetailsForm, EventOption } from '../types';
+import {
+  AddedAnnounceCause,
+  AnnounceDetailsForm,
+  AnnounceValidationErrors,
+  EventOption,
+} from '../types';
 import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
 import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 
@@ -17,6 +22,7 @@ interface AnnounceDetailsTabProps {
   quantityControlMode: 'disabled' | 'stepper' | 'select';
   quantityOptions: { value: number; label: string }[];
   isAddCauseDisabled: boolean;
+  errors: AnnounceValidationErrors;
   onAmountChange: (value: string) => void;
   onChange: <K extends keyof AnnounceDetailsForm>(
     field: K,
@@ -41,6 +47,7 @@ export const AnnounceDetailsTab = ({
   quantityControlMode,
   quantityOptions,
   isAddCauseDisabled,
+  errors,
   onAmountChange,
   onChange,
   onAddCause,
@@ -57,32 +64,36 @@ export const AnnounceDetailsTab = ({
     value: string,
     options: { value: string; label: string }[],
     disabled = false,
+    error?: string,
   ) => (
-    <div
-      className={`form-floating ant-select-floating ${
-        value ? 'has-value' : ''
-      } ${disabled ? 'is-disabled' : ''}`}
-    >
-      <Select
-        id={id}
-        placeholder=""
-        showSearch
-        allowClear={!disabled}
-        disabled={disabled}
-        value={value || undefined}
-        onChange={nextValue => onChange(id, (nextValue as string) || '')}
-        optionFilterProp="label"
-        filterOption={(input, option) =>
-          String(option?.label ?? '')
-            .toLowerCase()
-            .includes(input.toLowerCase())
-        }
-        options={options.map(option => ({
-          value: option.value,
-          label: option.label,
-        }))}
-      />
-      <label htmlFor={id}>{label}</label>
+    <div>
+      <div
+        className={`form-floating ant-select-floating ${
+          value ? 'has-value' : ''
+        } ${disabled ? 'is-disabled' : ''} ${error ? 'has-error' : ''}`}
+      >
+        <Select
+          id={id}
+          placeholder=""
+          showSearch
+          allowClear={!disabled}
+          disabled={disabled}
+          value={value || undefined}
+          onChange={nextValue => onChange(id, (nextValue as string) || '')}
+          optionFilterProp="label"
+          filterOption={(input, option) =>
+            String(option?.label ?? '')
+              .toLowerCase()
+              .includes(input.toLowerCase())
+          }
+          options={options.map(option => ({
+            value: option.value,
+            label: option.label,
+          }))}
+        />
+        <label htmlFor={id}>{label}</label>
+      </div>
+      {error ? <div className="announce-master-field-error">{error}</div> : null}
     </div>
   );
 
@@ -153,11 +164,11 @@ export const AnnounceDetailsTab = ({
     );
 
   return (
-    <div>
-      <div className="text-muted fs-7 mb-4">
+    <div className="announce-master-panel">
+      <div className="announce-master-helper-text">
+        {' '}
         In Memory dropdown + Purpose fixed amount
       </div>
-
       <div className="row g-5">
         <div className="col-md-3">
           {renderFloatingSelect(
@@ -167,6 +178,8 @@ export const AnnounceDetailsTab = ({
             </>,
             form.occasionType,
             occasionTypeOptions,
+            false,
+            errors.occasionType,
           )}
         </div>
 
@@ -180,11 +193,16 @@ export const AnnounceDetailsTab = ({
             }
             value={form.occasionDate}
             onChange={value => onChange('occasionDate', value)}
+            error={errors.occasionDate}
           />
         </div>
 
         <div className="col-md-3">
-          <div className="form-floating ant-input-floating">
+          <div
+            className={`form-floating ant-input-floating ${
+              errors.occasionRemark ? 'has-error' : ''
+            }`}
+          >
             <input
               id="occasionRemark"
               type="text"
@@ -192,11 +210,17 @@ export const AnnounceDetailsTab = ({
               placeholder=" "
               value={form.occasionRemark}
               onChange={event => onChange('occasionRemark', event.target.value)}
+              aria-invalid={Boolean(errors.occasionRemark)}
             />
             <label htmlFor="occasionRemark">
               Remark <span className="text-danger">*</span>
             </label>
           </div>
+          {errors.occasionRemark ? (
+            <div className="announce-master-field-error">
+              {errors.occasionRemark}
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -211,6 +235,8 @@ export const AnnounceDetailsTab = ({
             </>,
             form.causeHead,
             causeHeadOptions,
+            false,
+            errors.causeHead,
           )}
         </div>
 
@@ -222,6 +248,8 @@ export const AnnounceDetailsTab = ({
             </>,
             form.purpose,
             purposeOptions,
+            false,
+            errors.purpose,
           )}
           <div className="text-muted fs-8 mt-2">
             Purpose amount fixed - amount auto calculate
@@ -273,7 +301,11 @@ export const AnnounceDetailsTab = ({
               : null}
 
             <div className="col-md-4">
-              <div className="form-floating ant-input-floating">
+              <div
+                className={`form-floating ant-input-floating ${
+                  errors.announceAmount ? 'has-error' : ''
+                }`}
+              >
                 <input
                   id="autoAmount"
                   type="text"
@@ -284,11 +316,17 @@ export const AnnounceDetailsTab = ({
                   value={amount}
                   readOnly={!isAmountEditable}
                   onChange={event => onAmountChange(event.target.value)}
+                  aria-invalid={Boolean(errors.announceAmount)}
                 />
                 <label htmlFor="autoAmount">
                   Amount (Auto) <span className="text-danger">*</span>
                 </label>
               </div>
+              {!isAmountEditable && errors.announceAmount ? (
+                <div className="announce-master-field-error">
+                  {errors.announceAmount}
+                </div>
+              ) : null}
               <div className="text-muted fs-8 mt-2">
                 {isAmountEditable
                   ? 'Manual amount allowed for selected purpose'
@@ -296,15 +334,16 @@ export const AnnounceDetailsTab = ({
               </div>
             </div>
             {['150'].includes(form.causeHead) ? (
-            <div className="col-md-4">
-              <FloatingDatePicker
-                id="causeHeadDate"
-                label="Cause Head Date"
-                value={form.causeHeadDate}
-                onChange={value => onChange('causeHeadDate', value)}
-              />
-            </div>
-          ) : null}
+              <div className="col-md-4">
+                <FloatingDatePicker
+                  id="causeHeadDate"
+                  label="Cause Head Date"
+                  value={form.causeHeadDate}
+                  onChange={value => onChange('causeHeadDate', value)}
+                  error={errors.causeHeadDate}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
         <div className="col-md-1">
@@ -352,49 +391,49 @@ export const AnnounceDetailsTab = ({
                     true,
                   )}
                 </div>
-<div className="col-md-5">
-          <div className="row g-5">
-                <div className="col-md-4">
-                  <div className="form-floating ant-input-floating">
-                    <input
-                      id={`quantity-${cause.id}`}
-                      type="text"
-                      className="form-control ant-input-floating-control"
-                      placeholder=" "
-                      value={cause.quantity}
-                      disabled
-                    />
-                    <label htmlFor={`quantity-${cause.id}`}>Quantity</label>
-                  </div>
-                </div>
+                <div className="col-md-5">
+                  <div className="row g-5">
+                    <div className="col-md-4">
+                      <div className="form-floating ant-input-floating">
+                        <input
+                          id={`quantity-${cause.id}`}
+                          type="text"
+                          className="form-control ant-input-floating-control"
+                          placeholder=" "
+                          value={cause.quantity}
+                          disabled
+                        />
+                        <label htmlFor={`quantity-${cause.id}`}>Quantity</label>
+                      </div>
+                    </div>
 
-                <div className="col-md-4">
-                  <div className="form-floating ant-input-floating">
-                    <input
-                      id={`autoAmount-${cause.id}`}
-                      type="text"
-                      className="form-control ant-input-floating-control form-control-solid"
-                      placeholder=" "
-                      value={cause.amount}
-                      readOnly
-                    />
-                    <label htmlFor={`autoAmount-${cause.id}`}>
-                      Amount (Auto)
-                    </label>
-                  </div>
-                </div>
+                    <div className="col-md-4">
+                      <div className="form-floating ant-input-floating">
+                        <input
+                          id={`autoAmount-${cause.id}`}
+                          type="text"
+                          className="form-control ant-input-floating-control form-control-solid"
+                          placeholder=" "
+                          value={cause.amount}
+                          readOnly
+                        />
+                        <label htmlFor={`autoAmount-${cause.id}`}>
+                          Amount (Auto)
+                        </label>
+                      </div>
+                    </div>
 
-                {cause.causeHead === '150' ? (
-                  <div className="col-md-4">
-                    <FloatingDatePicker
-                      id={`causeHeadDate-${cause.id}`}
-                      label="Cause Head Date"
-                      value={cause.causeHeadDate}
-                      disabled
-                    />
+                    {cause.causeHead === '150' ? (
+                      <div className="col-md-4">
+                        <FloatingDatePicker
+                          id={`causeHeadDate-${cause.id}`}
+                          label="Cause Head Date"
+                          value={cause.causeHeadDate}
+                          disabled
+                        />
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-                </div>
                 </div>
 
                 <div className="col-md-1 d-flex">
@@ -403,17 +442,16 @@ export const AnnounceDetailsTab = ({
                     type="button"
                     onClick={() => onEditCause(cause.id)}
                   >
-                   <i className='fa fa-pen  fs-5'></i>
+                    <i className="fa fa-pen  fs-5"></i>
                   </button>
                   <button
                     className="btn btn-light-danger  w-50 text-center"
                     type="button"
                     onClick={() => onDeleteCause(cause.id)}
                   >
-                    <i className='fa fa-trash  fs-5'></i>
+                    <i className="fa fa-trash  fs-5"></i>
                   </button>
                 </div>
-
               </div>
 
               {['162', '167', '168'].includes(cause.causeHead) ? (
@@ -463,12 +501,17 @@ export const AnnounceDetailsTab = ({
             'Payment Mode',
             form.paymentMode,
             [
+              { value: '', label: 'Select' },
               { value: 'Cash', label: 'Cash' },
-              { value: 'UPI', label: 'UPI' },
-              { value: 'NetBanking', label: 'NetBanking' },
               { value: 'Cheque', label: 'Cheque' },
-              { value: 'Card', label: 'Card' },
+              { value: 'DD', label: 'DD' },
+              { value: 'Money Order', label: 'Money Order' },
+              { value: 'Online', label: 'Online' },
+              { value: 'Pay-In-Slip', label: 'Pay-In-Slip' },
+              { value: 'Material', label: 'Material' },
             ],
+            false,
+            errors.paymentMode,
           )}
         </div>
 
@@ -478,6 +521,8 @@ export const AnnounceDetailsTab = ({
             'How To Donate',
             form.howToDonate,
             howToDonateOptions,
+            false,
+            errors.howToDonate,
           )}
         </div>
 
@@ -513,7 +558,11 @@ export const AnnounceDetailsTab = ({
 
         {form.isMotivated ? (
           <div className="col-md-3">
-            <div className="form-floating ant-input-floating">
+            <div
+              className={`form-floating ant-input-floating ${
+                errors.motivatedAmount ? 'has-error' : ''
+              }`}
+            >
               <input
                 id="motivatedAmount"
                 type="text"
@@ -523,11 +572,17 @@ export const AnnounceDetailsTab = ({
                 onChange={event =>
                   onChange('motivatedAmount', event.target.value)
                 }
+                aria-invalid={Boolean(errors.motivatedAmount)}
               />
               <label htmlFor="motivatedAmount">
                 Motivated Amount <span className="text-danger">*</span>
               </label>
             </div>
+            {errors.motivatedAmount ? (
+              <div className="announce-master-field-error">
+                {errors.motivatedAmount}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>

@@ -1,6 +1,10 @@
 import React from 'react';
 import { Select } from 'antd';
-import { AnnounceEventForm, EventOption } from '../types';
+import {
+  AnnounceEventForm,
+  AnnounceValidationErrors,
+  EventOption,
+} from '../types';
 import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
 import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 
@@ -13,6 +17,7 @@ interface AnnounceEventCardProps {
   panditOptions: EventOption[];
   eventLoading: boolean;
   eventError: string;
+  errors: AnnounceValidationErrors;
   onChange: <K extends keyof AnnounceEventForm>(
     field: K,
     value: AnnounceEventForm[K],
@@ -28,6 +33,7 @@ export const AnnounceEventCard = ({
   panditOptions,
   eventLoading,
   eventError,
+  errors,
   onChange,
 }: AnnounceEventCardProps) => {
   const renderFloatingSelect = (
@@ -40,43 +46,42 @@ export const AnnounceEventCard = ({
     options: EventOption[],
     disabled = false,
   ) => (
-    <div
-      className={`form-floating ant-select-floating ${
-        value ? 'has-value' : ''
-      } ${disabled ? 'is-disabled' : ''}`}
-    >
-      <Select
-        id={id}
-        placeholder=""
-        showSearch
-        allowClear={!disabled}
-        disabled={disabled}
-        value={value || undefined}
-        onChange={nextValue => onChange(id, (nextValue as string) || '')}
-        optionFilterProp="label"
-        filterOption={(input, option) =>
-          String(option?.label ?? '')
-            .toLowerCase()
-            .includes(input.toLowerCase())
-        }
-        options={options.map(option => ({
-          value: option.value,
-          label: option.label,
-        }))}
-      />
-      <label htmlFor={id}>{label}</label>
+    <div>
+      <div
+        className={`form-floating ant-select-floating ${
+          value ? 'has-value' : ''
+        } ${disabled ? 'is-disabled' : ''}`}
+      >
+        <Select
+          id={id}
+          placeholder=""
+          showSearch
+          allowClear={!disabled}
+          disabled={disabled}
+          value={value || undefined}
+          onChange={nextValue => onChange(id, (nextValue as string) || '')}
+          optionFilterProp="label"
+          filterOption={(input, option) =>
+            String(option?.label ?? '')
+              .toLowerCase()
+              .includes(input.toLowerCase())
+          }
+          options={options.map(option => ({
+            value: option.value,
+            label: option.label,
+          }))}
+        />
+        <label htmlFor={id}>{label}</label>
+      </div>
     </div>
   );
 
   return (
-    <div className="card card-flush h-xl-100">
-      <div className="card-header border-bottom mb-4">
-        <div className="card-title d-flex w-100 justify-content-between">
-          <h3 className="fw-bold mb-1">Announce Event</h3>
+    <>
+      <div className="announce-master-panel">
+        <div className="announce-master-helper-text">
+          Anounce Deatails: please fill Announce details.
         </div>
-      </div>
-
-      <div className="card-body pt-2">
         <div className="row g-5">
           <div className="col-md-2">
             {/* <label className="form-label fw-semibold">Live / NonLive</label> */}
@@ -137,6 +142,11 @@ export const AnnounceEventCard = ({
                   eventOptions,
                   eventLoading,
                 )}
+                {errors.eventName ? (
+                  <div className="announce-master-field-error">
+                    {errors.eventName}
+                  </div>
+                ) : null}
                 {eventError ? (
                   <div className="text-danger fs-8 mt-1">{eventError}</div>
                 ) : null}
@@ -248,6 +258,6 @@ export const AnnounceEventCard = ({
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
