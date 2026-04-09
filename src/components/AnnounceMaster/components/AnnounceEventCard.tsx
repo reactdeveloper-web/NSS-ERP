@@ -1,6 +1,8 @@
 import React from 'react';
 import { Select } from 'antd';
 import { AnnounceEventForm, EventOption } from '../types';
+import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
+import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 
 interface AnnounceEventCardProps {
   form: AnnounceEventForm;
@@ -152,66 +154,40 @@ export const AnnounceEventCard = ({
           </div>
 
           <div className="col-md-2">
-            <div className="form-floating ant-input-floating">
-              <input
-                id="eventFromDate"
-                type="date"
-                className="form-control ant-input-floating-control"
-                placeholder=" "
-                value={form.eventFromDate}
-                onChange={event =>
-                  onChange('eventFromDate', event.target.value)
-                }
-              />
-              <label htmlFor="eventFromDate">From Date</label>
-            </div>
+            <FloatingDatePicker
+              id="eventFromDate"
+              label="From Date"
+              value={form.eventFromDate}
+              onChange={value => onChange('eventFromDate', value)}
+            />
           </div>
           <div className="col-md-2">
-            <div className="form-floating ant-input-floating">
-              <input
-                id="eventToDate"
-                type="date"
-                className="form-control ant-input-floating-control"
-                placeholder=" "
-                value={form.eventToDate}
-                onChange={event => onChange('eventToDate', event.target.value)}
-              />
-              <label htmlFor="eventToDate">To Date</label>
-            </div>
+            <FloatingDatePicker
+              id="eventToDate"
+              label="To Date"
+              value={form.eventToDate}
+              onChange={value => onChange('eventToDate', value)}
+            />
           </div>
 
           <div className="col-md-4">
             {/* <label className="form-label fw-semibold">Event Time Range</label> */}
             <div className="row g-3">
               <div className="col-6">
-                <div className="form-floating ant-input-floating">
-                  <input
-                    id="eventFromTime"
-                    type="time"
-                    className="form-control ant-input-floating-control"
-                    placeholder=" "
-                    value={form.eventFromTime}
-                    onChange={event =>
-                      onChange('eventFromTime', event.target.value)
-                    }
-                  />
-                  <label htmlFor="eventFromTime">From Time</label>
-                </div>
+                <FloatingTimePicker
+                  id="eventFromTime"
+                  label="From Time"
+                  value={form.eventFromTime}
+                  onChange={value => onChange('eventFromTime', value)}
+                />
               </div>
               <div className="col-6">
-                <div className="form-floating ant-input-floating">
-                  <input
-                    id="eventToTime"
-                    type="time"
-                    className="form-control ant-input-floating-control"
-                    placeholder=" "
-                    value={form.eventToTime}
-                    onChange={event =>
-                      onChange('eventToTime', event.target.value)
-                    }
-                  />
-                  <label htmlFor="eventToTime">To Time</label>
-                </div>
+                <FloatingTimePicker
+                  id="eventToTime"
+                  label="To Time"
+                  value={form.eventToTime}
+                  onChange={value => onChange('eventToTime', value)}
+                />
               </div>
             </div>
           </div>

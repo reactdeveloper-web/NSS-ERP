@@ -14,6 +14,7 @@ import { AnnounceEventCard } from './components/AnnounceEventCard';
 import { AnnouncerPersonalDetailsCard } from './components/AnnouncerPersonalDetailsCard';
 import { DonorIdentificationCard } from './components/DonorIdentificationCard';
 import {
+  AddedAnnounceCause,
   AnnouncerTabKey,
   AnnounceDetailsForm,
   AnnounceEventForm,
@@ -547,6 +548,99 @@ const extractYojnaOptions = (payload: unknown): EventOption[] => {
     );
 };
 
+const extractHowToDonateOptions = (payload: unknown): EventOption[] => {
+  if (Array.isArray(payload)) {
+    const scalarOptions = payload
+      .filter(
+        (item): item is string | number =>
+          typeof item === 'string' || typeof item === 'number',
+      )
+      .map(item => {
+        const normalizedValue = String(item).trim();
+
+        return {
+          value: normalizedValue,
+          label: normalizedValue,
+        };
+      })
+      .filter((option, index, currentOptions) => {
+        return (
+          option.value !== '' &&
+          currentOptions.findIndex(item => item.value === option.value) ===
+            index
+        );
+      });
+
+    if (scalarOptions.length > 0) {
+      return scalarOptions;
+    }
+  }
+
+  const howToDonateRecords = extractArrayPayload(payload);
+
+  return howToDonateRecords
+    .map(record => {
+      const value = getFirstValue(record, [
+        'id',
+        'Id',
+        'ID',
+        'code',
+        'Code',
+        'CODE',
+        'HOW_TO_DONATE_ID',
+        'HowToDonateId',
+        'HOWTODONATEID',
+        'RemarkId',
+        'REMARK_ID',
+        'REMARKID',
+        'MasterId',
+        'MASTER_ID',
+        'Value',
+        'value',
+        'Name',
+        'name',
+        'Text',
+        'text',
+        'Remark',
+        'remark',
+        'RemarkName',
+        'REMARK_NAME',
+        'REMARKNAME',
+      ]);
+      const label = getFirstValue(record, [
+        'name',
+        'Name',
+        'NAME',
+        'Text',
+        'text',
+        'label',
+        'Label',
+        'LABEL',
+        'Remark',
+        'remark',
+        'RemarkName',
+        'REMARK_NAME',
+        'REMARKNAME',
+        'HOW_TO_DONATE_NAME',
+        'HowToDonateName',
+        'HOWTODONATENAME',
+        'Value',
+        'value',
+      ]);
+
+      return {
+        value: value || label,
+        label: label || value,
+      };
+    })
+    .filter(
+      (option, index, currentOptions) =>
+        option.value.trim() !== '' &&
+        option.label.trim() !== '' &&
+        currentOptions.findIndex(item => item.value === option.value) === index,
+    );
+};
+
 const extractCurrencyId = (payload: unknown): string => {
   const currencyRecords = extractArrayPayload(payload);
 
@@ -617,6 +711,23 @@ const parseAmountValue = (value: string): number => {
 
   return Number.isFinite(parsedValue) ? parsedValue : 0;
 };
+
+const createEmptyCauseFields = (): Pick<
+  AnnounceDetailsForm,
+  | 'causeHead'
+  | 'causeHeadDate'
+  | 'namePlateName'
+  | 'donorInstruction'
+  | 'purpose'
+  | 'quantity'
+> => ({
+  causeHead: '',
+  causeHeadDate: '',
+  namePlateName: '',
+  donorInstruction: '',
+  purpose: '',
+  quantity: 1,
+});
 
 const buildQuantityOptions = (
   baseQuantity: number,
@@ -735,6 +846,16 @@ const extractDistrictOptions = (payload: unknown): EventOption[] => {
         'DISTRICT',
         'Name',
         'Text',
+      ]),
+      districtCode: getFirstValue(record, [
+        'District_Code',
+        'DistrictCode',
+        'DISTRICT_CODE',
+        'district_code',
+        'districtCode',
+        'DistrictId',
+        'DISTRICTID',
+        'Code',
       ]),
     }))
     .filter(
@@ -918,6 +1039,56 @@ const normalizeApiTime = (value: unknown): string => {
   return '';
 };
 
+const formatDateForApi = (value: string): string | null => {
+  const normalizedDate = normalizeApiDate(value);
+
+  if (!normalizedDate) {
+    return null;
+  }
+
+  const [year, month, day] = normalizedDate.split('-');
+  return `${day}/${month}/${year}`;
+};
+
+const formatTimeForApi = (value: string): string | null => {
+  const normalizedTime = normalizeApiTime(value);
+
+  if (!normalizedTime) {
+    return null;
+  }
+
+  const [rawHours, minutes] = normalizedTime.split(':');
+  const parsedHours = Number(rawHours);
+
+  if (!Number.isFinite(parsedHours)) {
+    return null;
+  }
+
+  const period = parsedHours >= 12 ? 'PM' : 'AM';
+  const displayHours = parsedHours % 12 || 12;
+
+  return `${displayHours}:${minutes} ${period}`;
+};
+
+const parseStoredUser = (): Partial<IUser> => {
+  try {
+    const userJson = localStorage.getItem('user');
+    return userJson ? (JSON.parse(userJson) as Partial<IUser>) : {};
+  } catch {
+    return {};
+  }
+};
+
+const toNullableText = (value: string): string | null => {
+  const normalizedValue = value.trim();
+  return normalizedValue ? normalizedValue : null;
+};
+
+const toDigitsNumber = (value: string): number => {
+  const digits = value.replace(/\D/g, '');
+  return digits ? Number(digits) : 0;
+};
+
 const mapEventDetailRecord = (record: Record<string, unknown>) => ({
   id: getFirstValue(record, ['EVENT_ID', 'EventId', 'EventID', 'Id', 'ID']),
   eventName: getFirstValue(record, ['EName', 'EVENT_NAME', 'EventName', 'Name']),
@@ -952,6 +1123,26 @@ const mapEventDetailRecord = (record: Record<string, unknown>) => ({
   eventCity: getFirstValue(record, ['CITY_NAME', 'CityName', 'CITY']),
   eventChannel: getFirstValue(record, ['CHANNEL_NAME', 'ChannelName', 'CHANNEL']),
   panditJi: getFirstValue(record, ['PANDIT_NAME', 'PanditName', 'PANDITJI']),
+  cityCode: getFirstValue(record, [
+    'CITY_CODE',
+    'CityCode',
+    'CityID',
+    'CityId',
+    'BhagCityCode',
+    'BHAG_CITY_CODE',
+  ]),
+  channelCode: getFirstValue(record, [
+    'CHANNEL_CODE',
+    'ChannelCode',
+    'ChannelID',
+    'ChannelId',
+  ]),
+  panditCode: getFirstValue(record, [
+    'PANDIT_CODE',
+    'PanditCode',
+    'PanditID',
+    'PanditId',
+  ]),
   eventLocation: getFirstValue(record, [
     'FULL_ADDRESS',
     'FullAddress',
@@ -1063,6 +1254,9 @@ export const AnnounceMasterContent = () => {
   const [occasionTypeOptions, setOccasionTypeOptions] = useState<EventOption[]>(
     [],
   );
+  const [howToDonateOptions, setHowToDonateOptions] = useState<EventOption[]>(
+    [],
+  );
   const [stateOptions, setStateOptions] = useState<EventOption[]>([]);
   const [districtOptions, setDistrictOptions] = useState<EventOption[]>([]);
   const [causeHeadOptions, setCauseHeadOptions] = useState<EventOption[]>([]);
@@ -1079,12 +1273,21 @@ export const AnnounceMasterContent = () => {
   const [currencyId, setCurrencyId] = useState('');
   const [autoAmount, setAutoAmount] = useState('');
   const [isAmountEditable, setIsAmountEditable] = useState(false);
+  const [addedCauses, setAddedCauses] = useState<AddedAnnounceCause[]>([]);
+  const [editingCauseId, setEditingCauseId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<AnnouncerTabKey>('personal');
   const [isSearchingDonor, setIsSearchingDonor] = useState(false);
   const [donorSearchError, setDonorSearchError] = useState('');
   const [donorOptions, setDonorOptions] = useState<DonorSearchResult[]>([]);
   const [showDonorModal, setShowDonorModal] = useState(false);
   const [isPincodeLocationLocked, setIsPincodeLocationLocked] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSaveResultModal, setShowSaveResultModal] = useState(false);
+  const [saveRequestPayload, setSaveRequestPayload] = useState<unknown>(null);
+  const [saveResultPayload, setSaveResultPayload] = useState<unknown>(null);
+  const [causeIdPendingDelete, setCauseIdPendingDelete] = useState<number | null>(
+    null,
+  );
   const lastDonorSearchKeyRef = useRef('');
   const donorSearchRequestIdRef = useRef(0);
   const pincodeRequestIdRef = useRef(0);
@@ -1160,6 +1363,12 @@ export const AnnounceMasterContent = () => {
         ...current,
         causeHead: nextCauseHead,
         causeHeadDate: nextCauseHead === '150' ? current.causeHeadDate : '',
+        namePlateName: ['162', '167', '168'].includes(nextCauseHead)
+          ? current.namePlateName
+          : '',
+        donorInstruction: ['162', '167', '168'].includes(nextCauseHead)
+          ? current.donorInstruction
+          : '',
         purpose: '',
         quantity: 1,
       }));
@@ -1198,6 +1407,121 @@ export const AnnounceMasterContent = () => {
       ...current,
       quantity: Math.max(1, Number.isFinite(nextQuantity) ? nextQuantity : 1),
     }));
+  };
+
+  const handleAddCause = () => {
+    const selectedCauseHead = causeHeadOptions.find(
+      option => option.value === announceDetailsForm.causeHead,
+    );
+    const selectedPurpose = purposeOptions.find(
+      option => option.value === announceDetailsForm.purpose,
+    );
+    const yojnaId =
+      selectedPurpose?.yojnaId?.trim() || announceDetailsForm.purpose.trim();
+    const causeAmount =
+      autoAmount.trim() || selectedPurpose?.amountValue?.trim() || '';
+
+    if (
+      !announceDetailsForm.causeHead.trim() ||
+      !announceDetailsForm.purpose.trim() ||
+      !yojnaId ||
+      !causeAmount ||
+      (announceDetailsForm.causeHead === '150' &&
+        !announceDetailsForm.causeHeadDate.trim())
+    ) {
+      return;
+    }
+
+    const nextCause: AddedAnnounceCause = {
+      id: editingCauseId ?? Date.now(),
+      causeHead: announceDetailsForm.causeHead,
+      causeHeadLabel:
+        selectedCauseHead?.label || announceDetailsForm.causeHead.trim(),
+      causeHeadPurposeId:
+        selectedCauseHead?.purposeId?.trim() ||
+        announceDetailsForm.causeHead.trim(),
+      purpose: announceDetailsForm.purpose,
+      purposeLabel: selectedPurpose?.label || announceDetailsForm.purpose.trim(),
+      yojnaId,
+      quantity: Math.max(1, Number(announceDetailsForm.quantity) || 1),
+      amount: causeAmount,
+      causeHeadDate: announceDetailsForm.causeHeadDate,
+      namePlateName: announceDetailsForm.namePlateName.trim(),
+      donorInstruction: announceDetailsForm.donorInstruction.trim(),
+    };
+
+    setAddedCauses(current => {
+      const nextCauses =
+        editingCauseId === null
+          ? [...current, nextCause]
+          : current.map(item => (item.id === editingCauseId ? nextCause : item));
+
+      return nextCauses;
+    });
+    setEditingCauseId(null);
+    purposeOptionsRequestIdRef.current += 1;
+    amountRequestIdRef.current += 1;
+    setCurrencyId('');
+    setPurposeOptions([]);
+    setAutoAmount('');
+    setIsAmountEditable(false);
+    setAnnounceDetailsForm(current => ({
+      ...current,
+      ...createEmptyCauseFields(),
+    }));
+  };
+
+  const handleEditCause = (causeId: number) => {
+    const cause = addedCauses.find(item => item.id === causeId);
+
+    if (!cause) {
+      return;
+    }
+
+    setEditingCauseId(causeId);
+    setAutoAmount(cause.amount);
+    setAnnounceDetailsForm(current => ({
+      ...current,
+      causeHead: cause.causeHead,
+      causeHeadDate: cause.causeHeadDate,
+      namePlateName: cause.namePlateName,
+      donorInstruction: cause.donorInstruction,
+      purpose: cause.purpose,
+      quantity: cause.quantity,
+    }));
+  };
+
+  const handleDeleteCause = (causeId: number) => {
+    setCauseIdPendingDelete(causeId);
+  };
+
+  const handleCloseDeleteCauseModal = () => {
+    setCauseIdPendingDelete(null);
+  };
+
+  const handleConfirmDeleteCause = () => {
+    if (causeIdPendingDelete === null) {
+      return;
+    }
+
+    const causeId = causeIdPendingDelete;
+    setAddedCauses(current => current.filter(item => item.id !== causeId));
+
+    if (editingCauseId === causeId) {
+      setEditingCauseId(null);
+      purposeOptionsRequestIdRef.current += 1;
+      amountRequestIdRef.current += 1;
+      setCurrencyId('');
+      setPurposeOptions([]);
+      setAutoAmount('');
+      setIsAmountEditable(false);
+      setAnnounceDetailsForm(current => ({
+        ...current,
+        ...createEmptyCauseFields(),
+      }));
+    }
+
+    setCauseIdPendingDelete(null);
   };
 
   const handleToggleBank = (bankId: string) => {
@@ -1537,11 +1861,8 @@ export const AnnounceMasterContent = () => {
     const loadOccasionTypes = async () => {
       try {
         const response = await axiosInstance.get(
-          '/master/GetOccasionMaster',
+          '/crm/GetOccasionMaster?DataFlag=GANGOTRI',
           {
-            params: {
-              DataFlag: ContentTypes.DataFlag,
-            },
             headers: createDirectApiHeaders(),
           },
         );
@@ -1553,6 +1874,25 @@ export const AnnounceMasterContent = () => {
     };
 
     void loadOccasionTypes();
+  }, []);
+
+  useEffect(() => {
+    const loadHowToDonateOptions = async () => {
+      try {
+        const response = await axiosInstance.get(
+          'crm/GetAnnounceRemarkMasterHowToDonate',
+          {
+            headers: createDirectApiHeaders(),
+          },
+        );
+
+        setHowToDonateOptions(extractHowToDonateOptions(response.data));
+      } catch (error) {
+        setHowToDonateOptions([]);
+      }
+    };
+
+    void loadHowToDonateOptions();
   }, []);
 
   useEffect(() => {
@@ -2032,6 +2372,13 @@ export const AnnounceMasterContent = () => {
     setDonorSearchError('');
     setDonorOptions([]);
     setShowDonorModal(false);
+    setShowSaveResultModal(false);
+    setSaveRequestPayload(null);
+    setSaveResultPayload(null);
+    setIsSaving(false);
+    setCauseIdPendingDelete(null);
+    setAddedCauses([]);
+    setEditingCauseId(null);
     setIsPincodeLocationLocked(false);
     lastDonorSearchKeyRef.current = '';
     donorSearchRequestIdRef.current += 1;
@@ -2041,10 +2388,67 @@ export const AnnounceMasterContent = () => {
   const selectedPurposeOption = purposeOptions.find(
     option => option.value === announceDetailsForm.purpose,
   );
+  const selectedCauseHeadOption = causeHeadOptions.find(
+    option => option.value === announceDetailsForm.causeHead,
+  );
+  const selectedHowToDonateOption = howToDonateOptions.find(
+    option => option.value === announceDetailsForm.howToDonate,
+  );
+  const selectedStateOption = stateOptions.find(
+    option =>
+      option.value === personalInfoForm.state ||
+      option.label === personalInfoForm.state,
+  );
+  const selectedDistrictOption = districtOptions.find(
+    option =>
+      option.value === personalInfoForm.district ||
+      option.label === personalInfoForm.district,
+  );
+  const selectedEventDetail = eventDetails.find(
+    option => option.eventName === announceEventForm.eventName,
+  );
+  const selectedEventCityDetail = eventDetails.find(
+    option =>
+      option.eventCity === announceEventForm.eventCity &&
+      option.cityCode?.trim() !== '',
+  );
+  const selectedEventChannelDetail = eventDetails.find(
+    option =>
+      option.eventChannel === announceEventForm.eventChannel &&
+      option.channelCode?.trim() !== '',
+  );
+  const selectedEventPanditDetail = eventDetails.find(
+    option =>
+      option.panditJi === announceEventForm.panditJi &&
+      option.panditCode?.trim() !== '',
+  );
   const selectedPurposeQty = Math.max(
     0,
     Number(selectedPurposeOption?.qtyValue?.trim() || 1),
   );
+  const effectiveCauseAmount =
+    autoAmount.trim() || selectedPurposeOption?.amountValue?.trim() || '';
+  const currentPurposeKey =
+    selectedPurposeOption?.yojnaId?.trim() || announceDetailsForm.purpose.trim();
+  const usedPurposeKeys = new Set(
+    addedCauses
+      .filter(cause => cause.id !== editingCauseId)
+      .map(cause => cause.yojnaId),
+  );
+  const availablePurposeOptions = purposeOptions.filter(option => {
+    const optionKey = option.yojnaId?.trim() || option.value.trim();
+
+    return optionKey === '' || !usedPurposeKeys.has(optionKey);
+  });
+  const isCauseReadyToAdd =
+    announceDetailsForm.causeHead.trim() !== '' &&
+    announceDetailsForm.purpose.trim() !== '' &&
+    currentPurposeKey !== '' &&
+    !usedPurposeKeys.has(currentPurposeKey) &&
+    Math.max(1, Number(announceDetailsForm.quantity) || 1) > 0 &&
+    effectiveCauseAmount !== '' &&
+    (announceDetailsForm.causeHead !== '150' ||
+      announceDetailsForm.causeHeadDate.trim() !== '');
   const quantityControlMode: 'disabled' | 'stepper' | 'select' =
     selectedPurposeQty === 0
       ? 'disabled'
@@ -2055,6 +2459,144 @@ export const AnnounceMasterContent = () => {
     quantityControlMode === 'select'
       ? buildQuantityOptions(selectedPurposeQty)
       : [];
+
+  const handleCloseSaveResultModal = () => {
+    setShowSaveResultModal(false);
+  };
+
+  const handleSave = async () => {
+    const currentUser = parseStoredUser();
+    const currentCauseForPayload =
+      isCauseReadyToAdd && selectedPurposeOption
+        ? {
+            id: Date.now(),
+            causeHead: announceDetailsForm.causeHead,
+            causeHeadLabel: selectedCauseHeadOption?.label || '',
+            causeHeadPurposeId:
+              selectedCauseHeadOption?.purposeId?.trim() ||
+              announceDetailsForm.causeHead.trim(),
+            purpose: announceDetailsForm.purpose,
+            purposeLabel:
+              selectedPurposeOption.label || announceDetailsForm.purpose,
+            yojnaId:
+              selectedPurposeOption.yojnaId?.trim() ||
+              announceDetailsForm.purpose.trim(),
+            quantity: Math.max(1, Number(announceDetailsForm.quantity) || 1),
+            amount: autoAmount.trim(),
+            causeHeadDate: announceDetailsForm.causeHeadDate,
+            namePlateName: announceDetailsForm.namePlateName.trim(),
+            donorInstruction: announceDetailsForm.donorInstruction.trim(),
+          }
+        : null;
+    const causesForPayload = currentCauseForPayload
+      ? [...addedCauses, currentCauseForPayload]
+      : addedCauses;
+    const announceAmount = causesForPayload.reduce(
+      (total, cause) => total + parseAmountValue(cause.amount),
+      0,
+    );
+    const payload = {
+      annoucePurposeList: causesForPayload.map(cause => ({
+        yojna_id: cause.yojnaId || '0',
+        qty: String(Math.max(1, Number(cause.quantity) || 1)),
+        amount: String(parseAmountValue(cause.amount) || 0),
+        bhojan_date: formatDateForApi(cause.causeHeadDate) || '',
+      })),
+      ashri: personalInfoForm.salutation || '',
+      ashri_oth:
+        personalInfoForm.announcedForName.trim() ||
+        (personalInfoForm.announceInOtherName ? personalInfoForm.announcerName.trim() : 'N.A.'),
+      announcer_name: personalInfoForm.announcerName.trim(),
+      announce_amount: announceAmount,
+      address1: '',
+      address2: '',
+      address3: '',
+      ph_no: 0,
+      mob_no: personalInfoForm.mobileNo.trim(),
+      announce_through: 'CALLCENTER',
+      announce_date: formatDateForApi(donorIdentificationForm.announceDate),
+      announce_time: null,
+      std_code: 0,
+      email_id: '',
+      purpose: Number(causesForPayload[0]?.yojnaId || 0),
+      due_date: formatDateForApi(followUpForm.date),
+      due_time: formatTimeForApi(followUpForm.time),
+      completed: 0,
+      remark1:
+        selectedHowToDonateOption?.label?.trim() ||
+        announceDetailsForm.howToDonate.trim(),
+      first_remark: toNullableText(announceDetailsForm.occasionRemark),
+      second_remark: toNullableText(
+        causesForPayload
+          .map(cause => cause.donorInstruction)
+          .filter(Boolean)
+          .join(', '),
+      ),
+      third_remark: toNullableText(
+        causesForPayload.map(cause => cause.namePlateName).filter(Boolean).join(', '),
+      ),
+      city_code: null,
+      district_code: Number(selectedDistrictOption?.districtCode?.trim() || 0),
+      state_code: Number(selectedStateOption?.stateCode?.trim() || 0),
+      remark2: announceDetailsForm.occasionRemark.trim(),
+      channel_code: Number(
+        selectedEventDetail?.channelCode?.trim() ||
+          selectedEventChannelDetail?.channelCode?.trim() ||
+          0,
+      ),
+      pandit_code: Number(
+        selectedEventDetail?.panditCode?.trim() ||
+          selectedEventPanditDetail?.panditCode?.trim() ||
+          0,
+      ),
+      bhag_city_code: Number(
+        selectedEventDetail?.cityCode?.trim() ||
+          selectedEventCityDetail?.cityCode?.trim() ||
+          0,
+      ),
+      user_name: currentUser.username || '',
+      emp_code: Number(currentUser.empNum || 0),
+      live: announceEventForm.liveType === 'live' ? 'Y' : 'N',
+      ash_event_id: selectedEventDetail?.id?.trim() || '0',
+      event_name: announceEventForm.eventName.trim(),
+      user_id: String(currentUser.id || ''),
+      cash_pickup: 'N',
+      other_type: personalInfoForm.announceInOtherName ? 1 : 0,
+      currency_id: Number(currencyId || 0),
+      cause_id: Number(causesForPayload[0]?.causeHeadPurposeId || 0),
+      ngcode: donorIdentificationForm.donorId.trim() || '0',
+      data_flag: ContentTypes.DataFlag,
+      fy_id: '21',
+      dmobilewhatsapp1: personalInfoForm.whatsappNo.trim(),
+      aadhar_number: '',
+      pan_number: '',
+      pincode_code: Number(personalInfoForm.pincode.trim() || 0),
+      country_code: '22',
+      pincode: personalInfoForm.pincode.trim(),
+      PostType: 'App',
+    };
+
+    setIsSaving(true);
+    setSaveRequestPayload(payload);
+
+    try {
+      const response = await axiosInstance.post('CRM/CreateAnnounce', payload, {
+        headers: createDirectApiHeaders(),
+      });
+
+      setSaveResultPayload(response.data);
+      setShowSaveResultModal(true);
+    } catch (error) {
+      const errorPayload = axios.isAxiosError(error)
+        ? error.response?.data || { message: error.message }
+        : { message: 'Failed to save announce.' };
+
+      setSaveResultPayload(errorPayload);
+      setShowSaveResultModal(true);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div
@@ -2102,14 +2644,23 @@ export const AnnounceMasterContent = () => {
               districtOptions={districtOptions}
               isPincodeLocationLocked={isPincodeLocationLocked}
               announceDetailsForm={announceDetailsForm}
+              addedCauses={addedCauses}
+              editingCauseId={editingCauseId}
               occasionTypeOptions={occasionTypeOptions}
               causeHeadOptions={causeHeadOptions}
-              purposeOptions={purposeOptions}
+              purposeOptions={availablePurposeOptions}
+              howToDonateOptions={howToDonateOptions}
               amount={autoAmount}
               isAmountEditable={isAmountEditable}
               quantityControlMode={quantityControlMode}
               quantityOptions={quantityOptions}
+              isAddCauseDisabled={!isCauseReadyToAdd}
+              isSaving={isSaving}
               onAmountChange={handleAmountChange}
+              onAddCause={handleAddCause}
+              onEditCause={handleEditCause}
+              onDeleteCause={handleDeleteCause}
+              onSave={handleSave}
               followUpForm={followUpForm}
               followUpItems={followUpItems}
                 banks={banks}
@@ -2130,6 +2681,138 @@ export const AnnounceMasterContent = () => {
           </div>
         </div>
       </div>
+
+      {showSaveResultModal ? (
+        <>
+          <div className="modal fade show d-block" tabIndex={-1} role="dialog">
+            <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
+              <div className="modal-content">
+                <div className="modal-header p-4">
+                  <h4 className="modal-title">Create Announce Response</h4>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-icon btn-active-color-primary"
+                    aria-label="Close"
+                    onClick={handleCloseSaveResultModal}
+                  >
+                    <i className="ki-duotone ki-cross fs-1">
+                      <span className="path1"></span>
+                      <span className="path2"></span>
+                    </i>
+                  </button>
+                </div>
+
+                <div className="modal-body">
+                  <div className="bg-light-primary rounded p-4 mb-5">
+                    <div className="fw-bold mb-2">Request Payload</div>
+                    <pre className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
+                      {JSON.stringify(saveRequestPayload, null, 2)}
+                    </pre>
+                  </div>
+
+                  {Array.isArray((saveResultPayload as { result?: unknown[] } | null)?.result) ? (
+                    <div className="mb-5">
+                      {(saveResultPayload as { result: Array<Record<string, unknown>> }).result.map(
+                        (item, index) => (
+                          <div
+                            key={`${String(item.code ?? index)}-${index}`}
+                            className={`alert ${
+                              String(item.status || '').toLowerCase() === 'success'
+                                ? 'alert-success'
+                                : 'alert-danger'
+                            } py-3`}
+                          >
+                            <div className="fw-semibold">
+                              {String(item.msg || 'No message returned.')}
+                            </div>
+                            <div className="fs-8 mt-1 text-muted">
+                              Code: {String(item.code ?? '-')} | Status:{' '}
+                              {String(item.status ?? '-')}
+                            </div>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  ) : null}
+
+                  <div className="bg-light rounded p-4">
+                    <div className="fw-bold mb-2">Raw Response</div>
+                    <pre className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
+                      {JSON.stringify(saveResultPayload, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleCloseSaveResultModal}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="modal-backdrop fade show"
+            onClick={handleCloseSaveResultModal}
+          />
+        </>
+      ) : null}
+
+      {causeIdPendingDelete !== null ? (
+        <>
+          <div className="modal fade show d-block" tabIndex={-1} role="dialog">
+            <div className="modal-dialog modal-dialog-centered" role="document">
+              <div className="modal-content">
+                <div className="modal-header p-4">
+                  <h4 className="modal-title">Confirm Delete</h4>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-icon btn-active-color-primary"
+                    aria-label="Close"
+                    onClick={handleCloseDeleteCauseModal}
+                  >
+                    <i className="ki-duotone ki-cross fs-1">
+                      <span className="path1"></span>
+                      <span className="path2"></span>
+                    </i>
+                  </button>
+                </div>
+
+                <div className="modal-body">
+                  <p className="mb-0">
+                    Kya aap is added cause ko delete karna chahte hain?
+                  </p>
+                </div>
+
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-light"
+                    onClick={handleCloseDeleteCauseModal}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={handleConfirmDeleteCause}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            className="modal-backdrop fade show"
+            onClick={handleCloseDeleteCauseModal}
+          />
+        </>
+      ) : null}
     </div>
   );
 };

@@ -44,6 +44,8 @@ export interface AnnounceDetailsForm {
   occasionRemark: string;
   causeHead: string;
   causeHeadDate: string;
+  namePlateName: string;
+  donorInstruction: string;
   purpose: string;
   quantity: number;
   paymentMode: string;
@@ -52,6 +54,21 @@ export interface AnnounceDetailsForm {
   expectedTime: string;
   isMotivated: boolean;
   motivatedAmount: string;
+}
+
+export interface AddedAnnounceCause {
+  id: number;
+  causeHead: string;
+  causeHeadLabel: string;
+  causeHeadPurposeId: string;
+  purpose: string;
+  purposeLabel: string;
+  yojnaId: string;
+  quantity: number;
+  amount: string;
+  causeHeadDate: string;
+  namePlateName: string;
+  donorInstruction: string;
 }
 
 export interface FollowUpForm {
@@ -96,6 +113,7 @@ export interface EventOption {
   qtyValue?: string;
   amountValue?: string;
   stateCode?: string;
+  districtCode?: string;
 }
 
 export type AnnouncerTabKey =

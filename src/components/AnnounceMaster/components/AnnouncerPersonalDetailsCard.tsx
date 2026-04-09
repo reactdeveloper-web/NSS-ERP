@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
+  AddedAnnounceCause,
   AnnouncerTabKey,
   AnnounceDetailsForm,
   DepositBank,
@@ -22,9 +23,12 @@ interface AnnouncerPersonalDetailsCardProps {
   districtOptions: EventOption[];
   isPincodeLocationLocked: boolean;
   announceDetailsForm: AnnounceDetailsForm;
+  addedCauses: AddedAnnounceCause[];
+  editingCauseId: number | null;
   occasionTypeOptions: EventOption[];
   causeHeadOptions: EventOption[];
   purposeOptions: EventOption[];
+  howToDonateOptions: EventOption[];
   followUpForm: FollowUpForm;
   followUpItems: FollowUpItem[];
   banks: DepositBank[];
@@ -35,7 +39,13 @@ interface AnnouncerPersonalDetailsCardProps {
   isAmountEditable: boolean;
   quantityControlMode: 'disabled' | 'stepper' | 'select';
   quantityOptions: { value: number; label: string }[];
+  isAddCauseDisabled: boolean;
+  isSaving: boolean;
   onAmountChange: (value: string) => void;
+  onAddCause: () => void;
+  onEditCause: (causeId: number) => void;
+  onDeleteCause: (causeId: number) => void;
+  onSave: () => void;
   onTabChange: (tab: AnnouncerTabKey) => void;
   onPersonalInfoChange: <K extends keyof PersonalInfoForm>(
     field: K,
@@ -87,9 +97,12 @@ export const AnnouncerPersonalDetailsCard = ({
   districtOptions,
   isPincodeLocationLocked,
   announceDetailsForm,
+  addedCauses,
+  editingCauseId,
   occasionTypeOptions,
   causeHeadOptions,
   purposeOptions,
+  howToDonateOptions,
   followUpForm,
   followUpItems,
   banks,
@@ -100,7 +113,13 @@ export const AnnouncerPersonalDetailsCard = ({
   isAmountEditable,
   quantityControlMode,
   quantityOptions,
+  isAddCauseDisabled,
+  isSaving,
   onAmountChange,
+  onAddCause,
+  onEditCause,
+  onDeleteCause,
+  onSave,
   onTabChange,
   onPersonalInfoChange,
   onAnnounceDetailsChange,
@@ -193,15 +212,22 @@ export const AnnouncerPersonalDetailsCard = ({
           >
             <AnnounceDetailsTab
               form={announceDetailsForm}
+              addedCauses={addedCauses}
+              editingCauseId={editingCauseId}
               occasionTypeOptions={occasionTypeOptions}
               causeHeadOptions={causeHeadOptions}
               purposeOptions={purposeOptions}
+              howToDonateOptions={howToDonateOptions}
               amount={amount}
               isAmountEditable={isAmountEditable}
               quantityControlMode={quantityControlMode}
               quantityOptions={quantityOptions}
+              isAddCauseDisabled={isAddCauseDisabled}
               onAmountChange={onAmountChange}
+              onAddCause={onAddCause}
               onChange={onAnnounceDetailsChange}
+              onEditCause={onEditCause}
+              onDeleteCause={onDeleteCause}
               onQuantityChange={onQuantityChange}
             />
           </div>
@@ -238,8 +264,13 @@ export const AnnouncerPersonalDetailsCard = ({
 
       <div className="card-body pt-2">
         <div className="d-flex flex-wrap gap-3">
-          <button className="btn btn-primary" type="button">
-            Save
+          <button
+            className="btn btn-primary"
+            type="button"
+            onClick={onSave}
+            disabled={isSaving}
+          >
+            {isSaving ? 'Saving...' : 'Save'}
           </button>
           <button className="btn btn-light" type="button" onClick={onReset}>
             Reset
