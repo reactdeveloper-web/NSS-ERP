@@ -119,7 +119,7 @@ export const PersonalInfoTab = ({
         </div>
 
         <div className="col-lg-3 col-md-6">
-          <label className="announce-master-checkbox">
+          <label className="announce-master-checkbox form-check m-0 p-0">
             <input
               className="form-check-input"
               type="checkbox"

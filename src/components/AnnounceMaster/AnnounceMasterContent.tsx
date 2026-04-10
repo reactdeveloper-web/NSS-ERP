@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { ContentTypes } from 'src/constants/content';
+import { masterApiHeaders } from 'src/utils/masterApiHeaders';
+import { masterApiPaths } from 'src/utils/masterApiPaths';
 import axiosInstance from 'src/redux/interceptor';
 import { AnnounceMasterNav } from './AnnounceMasterNav';
 import {
@@ -73,20 +75,6 @@ const getMappedValue = (
   }
 
   return undefined;
-};
-
-const createDirectApiHeaders = (): Record<string, string> => {
-  const headers: Record<string, string> = {
-    APIKey: 'NSSAPI4SANSTHANUAT',
-    'Content-Type': 'application/json',
-  };
-  const token = localStorage.getItem('accessToken');
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  return headers;
 };
 
 const normalizeStateValue = (value: string): string => {
@@ -1223,7 +1211,7 @@ const mapBankRecord = (
 ): DepositBank => ({
   id:
     getFirstValue(bankRecord, ['ID', 'Id', 'BankId', 'DepositBankId']) ||
-    `bank-${index}`,
+    `${index}`,
   bankName: getFirstValue(bankRecord, [
     'FullName',
     'BankName',
@@ -1275,6 +1263,7 @@ export const AnnounceMasterContent = () => {
   const [eventDetails, setEventDetails] = useState<
     ReturnType<typeof mapEventDetailRecord>[]
   >([]);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [eventLoading, setEventLoading] = useState(false);
   const [eventError, setEventError] = useState('');
   const [eventCauseOptions, setEventCauseOptions] = useState<EventOption[]>([]);
@@ -1319,6 +1308,9 @@ export const AnnounceMasterContent = () => {
   const [causeIdPendingDelete, setCauseIdPendingDelete] = useState<
     number | null
   >(null);
+  const donorSearchValueRef = useRef('');
+  const donorSearchTypeRef =
+    useRef<DonorIdentificationForm['donorSearchType']>('donorId');
   const lastDonorSearchKeyRef = useRef('');
   const donorSearchRequestIdRef = useRef(0);
   const lastPersonalMobileSearchRef = useRef('');
@@ -1338,6 +1330,9 @@ export const AnnounceMasterContent = () => {
     }
 
     if (field === 'donorSearchType') {
+      donorSearchTypeRef.current =
+        value as DonorIdentificationForm['donorSearchType'];
+      donorSearchValueRef.current = '';
       lastDonorSearchKeyRef.current = '';
       donorSearchRequestIdRef.current += 1;
       setIsSearchingDonor(false);
@@ -1350,6 +1345,11 @@ export const AnnounceMasterContent = () => {
         donorId: '',
       }));
       return;
+    }
+
+    if (field === 'donorId') {
+      donorSearchValueRef.current = String(value);
+      donorSearchTypeRef.current = donorIdentificationForm.donorSearchType;
     }
 
     setDonorIdentificationForm(current => ({ ...current, [field]: value }));
@@ -1773,6 +1773,7 @@ export const AnnounceMasterContent = () => {
     liveType: AnnounceEventForm['liveType'],
     eventName = '',
   ) => {
+    setSelectedEventId(null);
     setAnnounceEventForm(current => ({
       ...current,
       liveType,
@@ -1813,13 +1814,13 @@ export const AnnounceMasterContent = () => {
 
       for (const searchType of searchTypeOptions) {
         try {
-          response = await axiosInstance.get('/master/searchDonorData', {
+          response = await axiosInstance.get(masterApiPaths.searchDonorData, {
             params: {
               searchType,
               searchData,
               dataFlag: ContentTypes.DataFlag,
             },
-            headers: createDirectApiHeaders(),
+            headers: masterApiHeaders(),
           });
           break;
         } catch (error) {
@@ -1904,13 +1905,13 @@ export const AnnounceMasterContent = () => {
 
       for (const searchTypeOption of searchTypeOptions) {
         try {
-          response = await axiosInstance.get('/master/searchDonorData', {
+          response = await axiosInstance.get(masterApiPaths.searchDonorData, {
             params: {
               searchType: searchTypeOption,
               searchData,
               dataFlag: ContentTypes.DataFlag,
             },
-            headers: createDirectApiHeaders(),
+            headers: masterApiHeaders(),
           });
           break;
         } catch (error) {
@@ -2043,12 +2044,15 @@ export const AnnounceMasterContent = () => {
   useEffect(() => {
     const loadEventCauses = async () => {
       try {
-        const response = await axiosInstance.get('CRM/GetAnnounceCauses', {
-          params: {
-            DataFlag: ContentTypes.DataFlag,
-            Operation: 'EDIT',
+        const response = await axiosInstance.get(
+          masterApiPaths.getAnnounceCauses,
+          {
+            params: {
+              DataFlag: ContentTypes.DataFlag,
+              Operation: 'EDIT',
+            },
           },
-        });
+        );
 
         setEventCauseOptions(extractAnnounceCauseOptions(response.data));
       } catch (error) {
@@ -2065,13 +2069,16 @@ export const AnnounceMasterContent = () => {
       setEventError('');
 
       try {
-        const response = await axiosInstance.get('/master/getEventDetails', {
-          params: {
-            dataflag: ContentTypes.DataFlag,
-            IsLive: announceEventForm.liveType === 'live' ? 'Y' : 'N',
-            Operation: 'EDIT',
+        const response = await axiosInstance.get(
+          masterApiPaths.getEventDetails,
+          {
+            params: {
+              dataflag: ContentTypes.DataFlag,
+              IsLive: announceEventForm.liveType === 'live' ? 'Y' : 'N',
+              Operation: 'EDIT',
+            },
           },
-        });
+        );
 
         const records = extractArrayPayload(response.data).map(
           mapEventDetailRecord,
@@ -2116,6 +2123,7 @@ export const AnnounceMasterContent = () => {
 
   useEffect(() => {
     if (!announceEventForm.eventName) {
+      setSelectedEventId(null);
       resetEventSelectionFields(announceEventForm.liveType);
       return;
     }
@@ -2125,8 +2133,11 @@ export const AnnounceMasterContent = () => {
     );
 
     if (!selectedEvent) {
+      setSelectedEventId(null);
       return;
     }
+
+    setSelectedEventId(selectedEvent.id || null);
 
     setAnnounceEventForm(current => ({
       ...current,
@@ -2149,9 +2160,12 @@ export const AnnounceMasterContent = () => {
     const loadOccasionTypes = async () => {
       try {
         const response = await axiosInstance.get(
-          '/crm/GetOccasionMaster?DataFlag=GANGOTRI',
+          masterApiPaths.getOccasionMaster,
           {
-            headers: createDirectApiHeaders(),
+            params: {
+              DataFlag: ContentTypes.DataFlag,
+            },
+            headers: masterApiHeaders(),
           },
         );
 
@@ -2168,9 +2182,9 @@ export const AnnounceMasterContent = () => {
     const loadHowToDonateOptions = async () => {
       try {
         const response = await axiosInstance.get(
-          'crm/GetAnnounceRemarkMasterHowToDonate',
+          masterApiPaths.getHowToDonateMaster,
           {
-            headers: createDirectApiHeaders(),
+            headers: masterApiHeaders(),
           },
         );
 
@@ -2186,13 +2200,16 @@ export const AnnounceMasterContent = () => {
   useEffect(() => {
     const loadStateOptions = async () => {
       try {
-        const response = await axiosInstance.get('/master/GetStatesByCountry', {
-          params: {
-            countryCode: 22,
-            DataFlag: ContentTypes.DataFlag,
+        const response = await axiosInstance.get(
+          masterApiPaths.getStatesByCountry,
+          {
+            params: {
+              countryCode: 22,
+              DataFlag: ContentTypes.DataFlag,
+            },
+            headers: masterApiHeaders(),
           },
-          headers: createDirectApiHeaders(),
-        });
+        );
 
         setStateOptions(extractStateOptions(response.data));
       } catch (error) {
@@ -2216,13 +2233,16 @@ export const AnnounceMasterContent = () => {
 
     const loadDistrictOptions = async () => {
       try {
-        const response = await axiosInstance.get('/master/GetDistrictByState', {
-          params: {
-            stateCode,
-            DataFlag: ContentTypes.DataFlag,
+        const response = await axiosInstance.get(
+          masterApiPaths.getDistrictByState,
+          {
+            params: {
+              stateCode,
+              DataFlag: ContentTypes.DataFlag,
+            },
+            headers: masterApiHeaders(),
           },
-          headers: createDirectApiHeaders(),
-        });
+        );
 
         setDistrictOptions(extractDistrictOptions(response.data));
       } catch (error) {
@@ -2249,7 +2269,7 @@ export const AnnounceMasterContent = () => {
       const loadLocationByPincode = async () => {
         try {
           const response = await axiosInstance.post(
-            '/master/GetStateAndDistrictByPinCode',
+            masterApiPaths.getStateAndDistrictByPinCode,
             null,
             {
               params: {
@@ -2257,7 +2277,7 @@ export const AnnounceMasterContent = () => {
                 dataFlag: ContentTypes.DataFlag,
                 pincode: normalizedPincode,
               },
-              headers: createDirectApiHeaders(),
+              headers: masterApiHeaders(),
             },
           );
 
@@ -2326,12 +2346,12 @@ export const AnnounceMasterContent = () => {
     const loadCauseHeadOptions = async () => {
       try {
         const response = await axiosInstance.get(
-          '/master/GetPurposeByDataFlag',
+          masterApiPaths.getPurposeByDataFlag,
           {
             params: {
               DataFlag: ContentTypes.DataFlag,
             },
-            headers: createDirectApiHeaders(),
+            headers: masterApiHeaders(),
           },
         );
 
@@ -2371,13 +2391,13 @@ export const AnnounceMasterContent = () => {
     const loadPurposeOptions = async () => {
       try {
         const currencyResponse = await axiosInstance.get(
-          '/master/GetCurrencyByCountry',
+          masterApiPaths.getCurrencyByCountry,
           {
             params: {
               countryCode: 22,
               DataFlag: ContentTypes.DataFlag,
             },
-            headers: createDirectApiHeaders(),
+            headers: masterApiHeaders(),
           },
         );
 
@@ -2403,14 +2423,14 @@ export const AnnounceMasterContent = () => {
         setCurrencyId(nextCurrencyId);
 
         const response = await axiosInstance.get(
-          '/master/GetYojnaByPurposeAndCurrency',
+          masterApiPaths.getYojnaByPurposeAndCurrency,
           {
             params: {
               DataFlag: ContentTypes.DataFlag,
               CurrencyId: nextCurrencyId,
               PurposeId: purposeId,
             },
-            headers: createDirectApiHeaders(),
+            headers: masterApiHeaders(),
           },
         );
 
@@ -2517,14 +2537,14 @@ export const AnnounceMasterContent = () => {
     const loadOperationAmount = async () => {
       try {
         const response = await axiosInstance.get(
-          '/master/GetOperationAmountBYQty',
+          masterApiPaths.getOperationAmountByQty,
           {
             params: {
               DataFlag: ContentTypes.DataFlag,
               CurrencyId: currencyId,
               qty: quantity,
             },
-            headers: createDirectApiHeaders(),
+            headers: masterApiHeaders(),
           },
         );
 
@@ -2576,33 +2596,13 @@ export const AnnounceMasterContent = () => {
     const loadSalutations = async () => {
       const requestConfigs = [
         {
-          url: 'master/GetSalutations',
           params: {
             Data_Flag: ContentTypes.DataFlag,
           },
         },
         {
-          url: 'master/GetSalutations',
           params: {
             dataflag: ContentTypes.DataFlag,
-          },
-        },
-        {
-          url: 'master/GetSalutations',
-          params: {
-            Data_Flag: ContentTypes.DataFlag,
-          },
-        },
-        {
-          url: 'master/GetSalutations',
-          params: {
-            dataflag: ContentTypes.DataFlag,
-          },
-        },
-        {
-          url: 'master/GetSalutations',
-          params: {
-            Data_Flag: ContentTypes.DataFlag,
           },
         },
       ];
@@ -2613,7 +2613,7 @@ export const AnnounceMasterContent = () => {
 
         for (const config of requestConfigs) {
           try {
-            response = await axiosInstance.get(config.url, {
+            response = await axiosInstance.get(masterApiPaths.getSalutations, {
               params: config.params,
             });
             break;
@@ -2641,11 +2641,14 @@ export const AnnounceMasterContent = () => {
       setBankError('');
 
       try {
-        const response = await axiosInstance.get('/master/GetDepositBanks', {
-          params: {
-            dataflag: ContentTypes.DataFlag,
+        const response = await axiosInstance.get(
+          masterApiPaths.getDepositBanks,
+          {
+            params: {
+              dataflag: ContentTypes.DataFlag,
+            },
           },
-        });
+        );
 
         const bankRecords = extractArrayPayload(response.data);
         setBanks(
@@ -3039,10 +3042,161 @@ export const AnnounceMasterContent = () => {
         selectedEventCityDetail?.cityCode?.trim() ||
         0,
     );
-    const callingSadhakId = Number(currentUser.id || 0) || null;
-    const callingSadhakName = currentUser.username || null;
+    const employeeCode = Number(currentUser.empNum || 0) || null;
+    const donorSearchValue = donorSearchValueRef.current.trim();
+    const donorSearchType = donorSearchTypeRef.current;
+    const searchedEmailId =
+      donorSearchType === 'email' && donorSearchValue
+        ? donorSearchValue
+        : null;
+    const searchedAadharNumber =
+      donorSearchType === 'aadhaar' && donorSearchValue
+        ? donorSearchValue
+        : null;
+    const searchedPanNumber =
+      donorSearchType === 'pan' && donorSearchValue
+        ? donorSearchValue
+        : null;
+    const callingSadhakId = employeeCode;
+    const callingSadhakName =
+      (currentUser as Partial<IUser> & { empName?: string }).empName ||
+      currentUser.username ||
+      null;
     const ngCode = donorIdentificationForm.donorId.trim() || null;
 
+    /*
+      CreateAnnounce payload reference
+      Source: https://deverp.narayanseva.org/erp/CRM/CreateAnnounce
+
+      {
+        "annoucePurposeList": [
+          {
+            "yojna_id": "9",
+            "qty": "1",
+            "amount": "5000.0",
+            "bhojan_date": ""
+          }
+        ],
+        "announce_id": 0,
+        "ashri": "Shri",
+        "ashri_oth": null,
+        "announcer_name": "Rahul Suthar",
+        "announce_amount": 5000,
+        "address1": "Sector 14",
+        "address2": "Near Temple",
+        "address3": "Udaipur",
+        "ph_no": "0294-123456",
+        "mob_no": "9876543210",
+        "announce_through": "Phone",
+        "announce_date": "2026-04-08",
+        "announce_time": "10:30",
+        "std_code": "0294",
+        "email_id": "rahul@example.com",
+        "purpose": 1,
+        "due_date": "2026-04-15",
+        "due_time": "11:00",
+        "completed": "0",
+        "first_date": "",
+        "second_date": "",
+        "third_date": "",
+        "remark1": 0,
+        "first_remark": null,
+        "second_remark": null,
+        "third_remark": null,
+        "city_code": 0,
+        "district_code": 10,
+        "state_code": 8,
+        "remark2": null,
+        "channel_code": 0,
+        "pandit_code": 0,
+        "bhag_city_code": null,
+        "oth_name": null,
+        "mob_no_second": null,
+        "mob_no_third": null,
+        "user_name": "",
+        "ash_code": 0,
+        "emp_code": 8729,
+        "live": "L",
+        "provisional_no": null,
+        "chk_prov": null,
+        "rec_amount": 0,
+        "rec_date": null,
+        "allocate_date": null,
+        "ash_event_id": null,
+        "event_ash_id": 0,
+        "event_name": null,
+        "audit_confirm": "N",
+        "user_id": 1,
+        "audit_remark": null,
+        "allocated_to": null,
+        "followup_priority": 0,
+        "bank_code": null,
+        "future_donor": null,
+        "search_remark": null,
+        "search_empname": null,
+        "search_complete": null,
+        "complete_userid": null,
+        "complete_date": null,
+        "landmark": "Near School",
+        "cash_pickup": "N",
+        "other_type": null,
+        "currency_id": 4,
+        "cause_id": 1,
+        "ngcode": null,
+        "msg_banks": null,
+        "data_flag": "GANGOTRI",
+        "fy_id": 21,
+        "crtobjectid": "null",
+        "last_call_no": null,
+        "last_fp_remark": null,
+        "last_call_date": null,
+        "last_call_back_date": null,
+        "last_remark": null,
+        "fp_received": null,
+        "fp_org_rec_no": null,
+        "receive_id_by": null,
+        "receive_head_by": null,
+        "dmobile5": null,
+        "dmobilewhatsapp1": null,
+        "dmobilewhatsapp2": null,
+        "phoffice": null,
+        "aadhar_number": null,
+        "pan_number": null,
+        "in_memory_occasion": null,
+        "in_memocc_date": null,
+        "donor_instruction": null,
+        "name_plate": null,
+        "edit_user_id": null,
+        "edit_user_name": null,
+        "edit_datetime": null,
+        "pincode_code": 313001,
+        "country_code": 91,
+        "pincode": "313001",
+        "calling_sadhak_id": null,
+        "calling_sadhak_name": null,
+        "daan_patra_no": null,
+        "orderno": null,
+        "pay_mode": "Cash",
+        "docket_no": null,
+        "route_code": null,
+        "token_no": null,
+        "no_followup_require": "N",
+        "last_call_id": null,
+        "faked": "N",
+        "discarded": "N",
+        "self_deposit": "N",
+        "send_sadhak": "Y",
+        "online_bank_id": null,
+        "motivated": false,
+        "motivated_amount": 0,
+        "wfh_auto_id": null,
+        "PostType": "WebReact",
+        "QueryString_BID": null,
+        "QueryString_crtObjectId": null,
+        "QueryString_DReason": null,
+        "QueryString_THISCALLID": null
+      }
+    */
     const payload = {
       annoucePurposeList: causesForPayload.map(cause => ({
         yojna_id: cause.yojnaId || '0',
@@ -3064,7 +3218,7 @@ export const AnnounceMasterContent = () => {
       announce_date: formatDateForApi(donorIdentificationForm.announceDate),
       announce_time: currentTime,
       std_code: null,
-      email_id: currentUser.email || null,
+      email_id: searchedEmailId,
       purpose: Number(announceDetailsForm.causeHead.trim() || 0),
       due_date: dueDate,
       due_time: dueTime,
@@ -3088,15 +3242,15 @@ export const AnnounceMasterContent = () => {
       mob_no_third: null,
       user_name: currentUser.username || '',
       ash_code: toDigitsNumber(donorIdentificationForm.donorId.trim()),
-      emp_code: Number(currentUser.empNum || 0),
+      emp_code: employeeCode || 0,
       live: announceEventForm.liveType === 'live' ? 'Y' : 'N',
       provisional_no: null,
       chk_prov: null,
       rec_amount: 0,
       rec_date: null,
       allocate_date: null,
-      ash_event_id: selectedEventDetail?.id?.trim() || null,
-      event_ash_id: null,
+      ash_event_id: selectedEventId,
+      event_ash_id: selectedEventId,
       event_name: announceEventForm.eventName.trim() || null,
       audit_confirm: 'N',
       user_id: Number(currentUser.id || 0),
@@ -3133,8 +3287,8 @@ export const AnnounceMasterContent = () => {
       dmobilewhatsapp1: personalInfoForm.whatsappNo.trim() || null,
       dmobilewhatsapp2: null,
       phoffice: null,
-      aadhar_number: null,
-      pan_number: null,
+      aadhar_number: searchedAadharNumber,
+      pan_number: searchedPanNumber,
       in_memory_occasion: toNullableText(announceDetailsForm.occasionType),
       in_memocc_date:
         formatDateForApi(announceDetailsForm.occasionDate) || null,
@@ -3177,9 +3331,13 @@ export const AnnounceMasterContent = () => {
     setSaveRequestPayload(payload);
 
     try {
-      const response = await axiosInstance.post('CRM/CreateAnnounce', payload, {
-        headers: createDirectApiHeaders(),
-      });
+      const response = await axiosInstance.post(
+        masterApiPaths.createAnnounce,
+        payload,
+        {
+          headers: masterApiHeaders(),
+        },
+      );
 
       setSaveResultPayload(response.data);
       setShowSaveResultModal(true);

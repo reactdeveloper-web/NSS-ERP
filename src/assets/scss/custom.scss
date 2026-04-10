@@ -156,7 +156,7 @@ iframe {
 }
 
 /* Container smooth height */
-.tab-content {
+.announce-master-card .tab-content {
   position: relative;
   overflow: hidden;
 }
@@ -173,28 +173,58 @@ iframe {
 }
 
 /* Base */
-.tab-pane {
-  transition: all 0.35s ease;
+.announce-master-card .tab-content > .tab-pane {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  visibility: hidden;
+  pointer-events: none;
   opacity: 0;
-  transform: translateX(40px);
+  transform: translateX(0);
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
 }
 
 /* Active tab */
-.tab-pane.active.show {
+.announce-master-card .tab-content > .tab-pane.active.show {
+  position: relative;
+  visibility: visible;
+  pointer-events: auto;
   opacity: 1;
   transform: translateX(0);
+  transition-delay: 0s;
 }
 
-/* Slide left (Previous) */
-.tab-pane.slide-left {
-  transform: translateX(-40px);
-  opacity: 0;
+.announce-master-card .tab-content > .tab-pane.active.show.fade-left {
+  animation: announce-tab-fade-left 0.35s ease;
 }
 
-/* Slide right (Next) */
-.tab-pane.slide-right {
-  transform: translateX(40px);
-  opacity: 0;
+.announce-master-card .tab-content > .tab-pane.active.show.fade-right {
+  animation: announce-tab-fade-right 0.35s ease;
+}
+
+@keyframes announce-tab-fade-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes announce-tab-fade-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Smooth buttons feel */
@@ -596,8 +626,6 @@ iframe {
 
 .announce-master-checkbox .form-check-input {
   margin: 0;
-  width: 1.35rem;
-  height: 1.35rem;
   border-radius: 6px;
   border-color: #d9e2ec;
   box-shadow: none;

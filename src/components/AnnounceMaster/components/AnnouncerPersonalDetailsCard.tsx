@@ -156,6 +156,7 @@ export const AnnouncerPersonalDetailsCard = ({
   onReset,
 }: AnnouncerPersonalDetailsCardProps) => {
   const tabsRef = useRef<HTMLUListElement | null>(null);
+  const previousActiveTabRef = useRef<AnnouncerTabKey>(activeTab);
   const showBankDetailsTab = ['Online', 'Pay-In-Slip'].includes(
     announceDetailsForm.paymentMode,
   );
@@ -223,6 +224,25 @@ export const AnnouncerPersonalDetailsCard = ({
       title: 'Please fill follow up details',
     },
   ];
+
+  const previousActiveTab = previousActiveTabRef.current;
+  const currentTabIndex = tabs.findIndex(tab => tab.key === activeTab);
+  const previousTabIndex = tabs.findIndex(tab => tab.key === previousActiveTab);
+  const tabAnimationClass =
+    previousTabIndex === -1 || currentTabIndex === previousTabIndex
+      ? ''
+      : currentTabIndex > previousTabIndex
+        ? 'fade-right'
+        : 'fade-left';
+
+  useEffect(() => {
+    previousActiveTabRef.current = activeTab;
+  }, [activeTab]);
+
+  const getTabPaneClassName = (tabKey: AnnouncerTabKey) =>
+    `tab-pane fade ${
+      activeTab === tabKey ? `active show ${tabAnimationClass}`.trim() : ''
+    }`.trim();
 
   return (
     <div className="card announce-master-card">
@@ -298,11 +318,7 @@ export const AnnouncerPersonalDetailsCard = ({
         </ul>
 
         <div className="tab-content">
-          <div
-            className={`tab-pane fade ${
-              activeTab === 'personal' ? 'active show' : ''
-            }`}
-          >
+          <div className={getTabPaneClassName('personal')}>
             <PersonalInfoTab
               form={personalInfoForm}
               salutations={salutations}
@@ -314,11 +330,7 @@ export const AnnouncerPersonalDetailsCard = ({
             />
           </div>
 
-          <div
-            className={`tab-pane fade ${
-              activeTab === 'announceEvent' ? 'active show' : ''
-            }`}
-          >
+          <div className={getTabPaneClassName('announceEvent')}>
             <AnnounceEventCard
               form={announceEventForm}
               eventOptions={eventOptions}
@@ -333,11 +345,7 @@ export const AnnouncerPersonalDetailsCard = ({
             />
           </div>
 
-          <div
-            className={`tab-pane fade ${
-              activeTab === 'announceDetails' ? 'active show' : ''
-            }`}
-          >
+          <div className={getTabPaneClassName('announceDetails')}>
             <AnnounceDetailsTab
               form={announceDetailsForm}
               addedCauses={addedCauses}
@@ -362,11 +370,7 @@ export const AnnouncerPersonalDetailsCard = ({
           </div>
 
           {showBankDetailsTab ? (
-            <div
-              className={`tab-pane fade ${
-                activeTab === 'bankDetails' ? 'active show' : ''
-              }`}
-            >
+            <div className={getTabPaneClassName('bankDetails')}>
               <BankDetailsTab
                 banks={banks}
                 isLoading={bankLoading}
@@ -378,11 +382,7 @@ export const AnnouncerPersonalDetailsCard = ({
             </div>
           ) : null}
 
-          <div
-            className={`tab-pane fade ${
-              activeTab === 'followUp' ? 'active show' : ''
-            }`}
-          >
+          <div className={getTabPaneClassName('followUp')}>
             <FollowUpTab
               form={followUpForm}
               items={followUpItems}
