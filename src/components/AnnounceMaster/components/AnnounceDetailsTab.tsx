@@ -22,6 +22,7 @@ interface AnnounceDetailsTabProps {
   quantityControlMode: 'disabled' | 'stepper' | 'select';
   quantityOptions: { value: number; label: string }[];
   isAddCauseDisabled: boolean;
+  isViewMode?: boolean;
   errors: AnnounceValidationErrors;
   onAmountChange: (value: string) => void;
   onChange: <K extends keyof AnnounceDetailsForm>(
@@ -47,6 +48,7 @@ export const AnnounceDetailsTab = ({
   quantityControlMode,
   quantityOptions,
   isAddCauseDisabled,
+  isViewMode = false,
   errors,
   onAmountChange,
   onChange,
@@ -93,7 +95,9 @@ export const AnnounceDetailsTab = ({
         />
         <label htmlFor={id}>{label}</label>
       </div>
-      {error ? <div className="announce-master-field-error">{error}</div> : null}
+      {error ? (
+        <div className="announce-master-field-error">{error}</div>
+      ) : null}
     </div>
   );
 
@@ -178,7 +182,7 @@ export const AnnounceDetailsTab = ({
             </>,
             form.occasionType,
             occasionTypeOptions,
-            false,
+            isViewMode,
             errors.occasionType,
           )}
         </div>
@@ -193,6 +197,8 @@ export const AnnounceDetailsTab = ({
             }
             value={form.occasionDate}
             onChange={value => onChange('occasionDate', value)}
+            disabled={isViewMode}
+            readOnly={isViewMode}
             error={errors.occasionDate}
           />
         </div>
@@ -209,6 +215,7 @@ export const AnnounceDetailsTab = ({
               className="form-control ant-input-floating-control"
               placeholder=" "
               value={form.occasionRemark}
+              disabled={isViewMode}
               onChange={event => onChange('occasionRemark', event.target.value)}
               aria-invalid={Boolean(errors.occasionRemark)}
             />
@@ -235,7 +242,7 @@ export const AnnounceDetailsTab = ({
             </>,
             form.causeHead,
             causeHeadOptions,
-            false,
+            isViewMode,
             errors.causeHead,
           )}
         </div>
@@ -248,7 +255,7 @@ export const AnnounceDetailsTab = ({
             </>,
             form.purpose,
             purposeOptions,
-            false,
+            isViewMode,
             errors.purpose,
           )}
           <div className="text-muted fs-8 mt-2">
@@ -265,7 +272,9 @@ export const AnnounceDetailsTab = ({
                     <button
                       className="btn btn-light quantity-input-btn"
                       type="button"
-                      disabled={quantityControlMode === 'disabled'}
+                      disabled={
+                        quantityControlMode === 'disabled' || isViewMode
+                      }
                       onClick={() => onQuantityChange(form.quantity - 1)}
                     >
                       -
@@ -277,7 +286,9 @@ export const AnnounceDetailsTab = ({
                       value={form.quantity}
                       inputMode="numeric"
                       placeholder=" "
-                      disabled={quantityControlMode === 'disabled'}
+                      disabled={
+                        quantityControlMode === 'disabled' || isViewMode
+                      }
                       onChange={event =>
                         onQuantityChange(Number(event.target.value) || 1)
                       }
@@ -285,7 +296,9 @@ export const AnnounceDetailsTab = ({
                     <button
                       className="btn btn-light quantity-input-btn"
                       type="button"
-                      disabled={quantityControlMode === 'disabled'}
+                      disabled={
+                        quantityControlMode === 'disabled' || isViewMode
+                      }
                       onClick={() => onQuantityChange(form.quantity + 1)}
                     >
                       +
@@ -297,7 +310,7 @@ export const AnnounceDetailsTab = ({
             ) : null}
 
             {quantityControlMode === 'select'
-              ? renderQuantityField(form.quantity, false, onQuantityChange)
+              ? renderQuantityField(form.quantity, isViewMode, onQuantityChange)
               : null}
 
             <div className="col-md-4">
@@ -314,7 +327,8 @@ export const AnnounceDetailsTab = ({
                   }`}
                   placeholder=" "
                   value={amount}
-                  readOnly={!isAmountEditable}
+                  readOnly={!isAmountEditable || isViewMode}
+                  disabled={isViewMode}
                   onChange={event => onAmountChange(event.target.value)}
                   aria-invalid={Boolean(errors.announceAmount)}
                 />
@@ -337,9 +351,11 @@ export const AnnounceDetailsTab = ({
               <div className="col-md-4">
                 <FloatingDatePicker
                   id="causeHeadDate"
-                  label="Cause Head Date"
+                  label="Bhojan Miti Date"
                   value={form.causeHeadDate}
                   onChange={value => onChange('causeHeadDate', value)}
+                  disabled={isViewMode}
+                  readOnly={isViewMode}
                   error={errors.causeHeadDate}
                 />
               </div>
@@ -350,7 +366,7 @@ export const AnnounceDetailsTab = ({
           <button
             className="btn btn-primary fs-6 px-0 w-100"
             type="button"
-            disabled={isAddCauseDisabled}
+            disabled={isAddCauseDisabled || isViewMode}
             onClick={onAddCause}
           >
             {editingCauseId === null ? 'Add Cause' : 'Update Cause'}
@@ -427,7 +443,7 @@ export const AnnounceDetailsTab = ({
                       <div className="col-md-4">
                         <FloatingDatePicker
                           id={`causeHeadDate-${cause.id}`}
-                          label="Cause Head Date"
+                          label="Bhojan Miti Date"
                           value={cause.causeHeadDate}
                           disabled
                         />
@@ -440,6 +456,7 @@ export const AnnounceDetailsTab = ({
                   <button
                     className="btn btn-light-primary text-center w-50"
                     type="button"
+                    disabled={isViewMode}
                     onClick={() => onEditCause(cause.id)}
                   >
                     <i className="fa fa-pen  fs-5"></i>
@@ -447,6 +464,7 @@ export const AnnounceDetailsTab = ({
                   <button
                     className="btn btn-light-danger  w-50 text-center"
                     type="button"
+                    disabled={isViewMode}
                     onClick={() => onDeleteCause(cause.id)}
                   >
                     <i className="fa fa-trash  fs-5"></i>
@@ -510,7 +528,7 @@ export const AnnounceDetailsTab = ({
               { value: 'Pay-In-Slip', label: 'Pay-In-Slip' },
               { value: 'Material', label: 'Material' },
             ],
-            false,
+            isViewMode,
             errors.paymentMode,
           )}
         </div>
@@ -521,7 +539,7 @@ export const AnnounceDetailsTab = ({
             'How To Donate',
             form.howToDonate,
             howToDonateOptions,
-            false,
+            isViewMode,
             errors.howToDonate,
           )}
         </div>
@@ -532,6 +550,8 @@ export const AnnounceDetailsTab = ({
             label="Expected Donation Date"
             value={form.expectedDate}
             onChange={value => onChange('expectedDate', value)}
+            disabled={isViewMode}
+            readOnly={isViewMode}
           />
         </div>
 
@@ -541,6 +561,7 @@ export const AnnounceDetailsTab = ({
             label="Expected Donation Time"
             value={form.expectedTime}
             onChange={value => onChange('expectedTime', value)}
+            disabled={isViewMode}
           />
         </div>
 
@@ -550,6 +571,7 @@ export const AnnounceDetailsTab = ({
               className="form-check-input"
               type="checkbox"
               checked={form.isMotivated}
+              disabled={isViewMode}
               onChange={event => onChange('isMotivated', event.target.checked)}
             />
             <span className="form-check-label fw-semibold">Motivated</span>
@@ -569,6 +591,7 @@ export const AnnounceDetailsTab = ({
                 className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.motivatedAmount}
+                disabled={isViewMode}
                 onChange={event =>
                   onChange('motivatedAmount', event.target.value)
                 }
@@ -596,6 +619,7 @@ export const AnnounceDetailsTab = ({
                 className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.namePlateName}
+                disabled={isViewMode}
                 onChange={event =>
                   onChange('namePlateName', event.target.value)
                 }
@@ -611,6 +635,7 @@ export const AnnounceDetailsTab = ({
                 className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.donorInstruction}
+                disabled={isViewMode}
                 onChange={event =>
                   onChange('donorInstruction', event.target.value)
                 }

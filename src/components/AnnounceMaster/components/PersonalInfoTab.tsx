@@ -17,6 +17,7 @@ interface PersonalInfoTabProps {
   stateOptions: { value: string; label: string }[];
   districtOptions: { value: string; label: string }[];
   isPincodeLocationLocked: boolean;
+  isViewMode?: boolean;
   errors: AnnounceValidationErrors;
   onChange: <K extends keyof PersonalInfoForm>(
     field: K,
@@ -30,6 +31,7 @@ export const PersonalInfoTab = ({
   stateOptions,
   districtOptions,
   isPincodeLocationLocked,
+  isViewMode = false,
   errors,
   onChange,
 }: PersonalInfoTabProps) => {
@@ -72,7 +74,7 @@ export const PersonalInfoTab = ({
                 label="Salutation"
                 value={form.salutation}
                 options={salutationOptions}
-                disabled={form.salutationLocked}
+                disabled={form.salutationLocked || isViewMode}
                 onChange={value => onChange('salutation', value)}
                 error={errors.salutation}
               />
@@ -87,6 +89,7 @@ export const PersonalInfoTab = ({
                 }
                 value={form.announcerName}
                 onChange={value => onChange('announcerName', value)}
+                disabled={isViewMode}
                 error={errors.announcerName}
               />
             </div>
@@ -104,6 +107,7 @@ export const PersonalInfoTab = ({
             }
             value={form.mobileNo}
             onChange={value => onChange('mobileNo', value)}
+            disabled={isViewMode}
             error={errors.mobileNo}
           />
         </div>
@@ -115,6 +119,7 @@ export const PersonalInfoTab = ({
             label="WhatsApp No."
             value={form.whatsappNo}
             onChange={value => onChange('whatsappNo', value)}
+            disabled={isViewMode}
           />
         </div>
 
@@ -124,6 +129,7 @@ export const PersonalInfoTab = ({
               className="form-check-input"
               type="checkbox"
               checked={form.announceInOtherName}
+              disabled={isViewMode}
               onChange={event =>
                 onChange('announceInOtherName', event.target.checked)
               }
@@ -134,18 +140,33 @@ export const PersonalInfoTab = ({
         {form.announceInOtherName ? (
           <>
             <div className="col-lg-3 col-md-6">
-              <FloatingInputField
-                id="announcedForName"
-                label={
-                  <>
-                    Announcer In The Name Of{' '}
-                    <span className="text-danger">*</span>
-                  </>
-                }
-                value={form.announcedForName}
-                onChange={value => onChange('announcedForName', value)}
-                error={errors.announcedForName}
-              />
+              <div className="row g-4">
+                <div className="col-lg-4">
+                  <FloatingSelectField
+                    id="salutationOther"
+                    label="Salutation"
+                    value={form.otherSalutation}
+                    options={salutationOptions}
+                    disabled={isViewMode}
+                    onChange={value => onChange('otherSalutation', value)}
+                  />
+                </div>
+                <div className="col-lg-8">
+                  <FloatingInputField
+                    id="announcedForName"
+                    label={
+                      <>
+                        Announcer In The Name Of{' '}
+                        <span className="text-danger">*</span>
+                      </>
+                    }
+                    value={form.announcedForName}
+                    onChange={value => onChange('announcedForName', value)}
+                    disabled={isViewMode}
+                    error={errors.announcedForName}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="col-lg-3 col-md-6">
@@ -154,6 +175,7 @@ export const PersonalInfoTab = ({
                 label="Relation"
                 value={form.relationName}
                 onChange={value => onChange('relationName', value)}
+                disabled={isViewMode}
               />
             </div>
           </>
@@ -163,6 +185,7 @@ export const PersonalInfoTab = ({
           <PincodeField
             value={form.pincode}
             onChange={value => onChange('pincode', value)}
+            disabled={isViewMode}
             error={errors.pincode}
           />
         </div>
@@ -171,6 +194,7 @@ export const PersonalInfoTab = ({
           <CountryField
             value={form.country}
             onChange={value => onChange('country', value)}
+            disabled={isViewMode}
             error={errors.country}
           />
         </div>
@@ -179,7 +203,7 @@ export const PersonalInfoTab = ({
           <StateField
             value={form.state}
             options={stateSelectOptions}
-            disabled={form.stateLocked || isPincodeLocationLocked}
+            disabled={form.stateLocked || isPincodeLocationLocked || isViewMode}
             onChange={value => onChange('state', value)}
             error={errors.state}
           />
@@ -189,7 +213,7 @@ export const PersonalInfoTab = ({
           <DistrictField
             value={form.district}
             options={districtSelectOptions}
-            disabled={isPincodeLocationLocked}
+            disabled={isPincodeLocationLocked || isViewMode}
             onChange={value => onChange('district', value)}
             error={errors.district}
           />
