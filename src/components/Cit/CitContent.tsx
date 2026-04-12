@@ -81,24 +81,16 @@ export const CitContent = () => {
       className="content d-flex flex-column flex-column-fluid"
       id="kt_content"
     >
-      <div className="toolbar" id="kt_toolbar">
-        <div
-          id="kt_toolbar_container"
-          className="container-fluid d-flex flex-stack"
-        >
-          <div className="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
-            <h1 className="d-flex align-items-center text-dark fw-bolder fs-3 my-1">
-              Call Center Ticket
-            </h1>
-          </div>
-        </div>
-      </div>
-
       <div className="post d-flex flex-column-fluid" id="kt_post">
         <div id="kt_content_container" className="container-fluid py-6">
           <div className="card mb-8">
             <div className="card-header">
-              <h3 className="card-title">Ticket Details</h3>
+              <div className="card-title">
+                <div className="d-flex align-items-center gap-4 flex-wrap">
+                  <h3 className="fw-bold mb-0">Ticket Details</h3>
+                  <span className="text-muted fs-6">CIT Form</span>
+                </div>
+              </div>
             </div>
 
             <div className="card-body">
@@ -155,15 +147,19 @@ export const CitContent = () => {
                 </div>
               </div>
 
-              <div className="d-flex justify-content-between pt-5 px-0">
-                <label className="form-check form-check-solid">
+              <div className="separator separator-dashed my-6"></div>
+
+              <div className="d-flex justify-content-between pt-1 px-0 flex-wrap gap-4">
+                <label className="form-check form-check-custom form-check-solid">
                   <input
                     className="form-check-input"
                     type="checkbox"
                     checked={completed}
                     onChange={event => setCompleted(event.target.checked)}
                   />
-                  <span className="form-check-label fw-bold">Completed</span>
+                  <span className="form-check-label fw-semibold">
+                    Completed
+                  </span>
                 </label>
 
                 <div className="d-flex gap-3">
@@ -171,7 +167,7 @@ export const CitContent = () => {
                     Save
                   </button>
                   <button
-                    className="btn btn-danger"
+                    className="btn btn-light-danger"
                     type="button"
                     onClick={handleReset}
                   >

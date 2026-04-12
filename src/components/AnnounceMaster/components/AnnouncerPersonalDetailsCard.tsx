@@ -62,7 +62,7 @@ interface AnnouncerPersonalDetailsCardProps {
   quantityOptions: { value: number; label: string }[];
   isAddCauseDisabled: boolean;
   isSaving: boolean;
-  isViewMode: boolean;
+  isViewMode?: boolean;
   onAmountChange: (value: string) => void;
   onAddCause: () => void;
   onEditCause: (causeId: number) => void;
@@ -96,7 +96,7 @@ interface AnnouncerPersonalDetailsCardProps {
   onAddFollowUp: () => void;
   onRemoveFollowUp: (id: number) => void;
   onReset: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 }
 
 export const AnnouncerPersonalDetailsCard = ({
@@ -140,7 +140,7 @@ export const AnnouncerPersonalDetailsCard = ({
   quantityOptions,
   isAddCauseDisabled,
   isSaving,
-  isViewMode,
+  isViewMode = false,
   onAmountChange,
   onAddCause,
   onEditCause,
@@ -507,7 +507,7 @@ export const AnnouncerPersonalDetailsCard = ({
             <button
               className="btn announce-master-btn announce-master-btn-cancel"
               type="button"
-              onClick={onCancel}
+              onClick={onCancel ?? onReset}
             >
               Cancel
             </button>

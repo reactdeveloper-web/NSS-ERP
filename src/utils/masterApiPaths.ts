@@ -14,4 +14,5 @@ export const masterApiPaths = {
   getSalutations: 'master/GetSalutations',
   getDepositBanks: '/master/GetDepositBanks',
   createAnnounce: 'CRM/CreateAnnounce',
+  updateAnnounce: 'CRM/UpdateAnnounce',
 } as const;

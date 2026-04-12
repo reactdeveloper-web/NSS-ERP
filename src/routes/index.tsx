@@ -20,6 +20,7 @@ const ResetPassword = lazy(
 const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
+const CitPage = lazy(() => import('src/pages/cit/CitPage'));
 
 const ProfileMasterPage = lazy(
   () => import('src/pages/MyProfilePage/ProfileMasterPage'),
@@ -59,6 +60,7 @@ export const Routes = () => {
                 path={PATH.ANNOUNCE_MASTER}
                 component={AnnounceMasterPage}
               />
+              <Route exact path={PATH.CIT} component={CitPage} />
 
               {/* Error routes */}
               <Route component={NotFoundPage} />

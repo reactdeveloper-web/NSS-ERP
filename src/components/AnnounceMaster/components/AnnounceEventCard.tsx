@@ -82,11 +82,10 @@ export const AnnounceEventCard = ({
     <>
       <div className="announce-master-panel">
         <div className="announce-master-helper-text">
-          Anounce Deatails: please fill Announce details.
+          Announcement details: please fill in the announcement details.
         </div>
         <div className="row g-5">
           <div className="col-md-2">
-            {/* <label className="form-label fw-semibold">Live / NonLive</label> */}
             <div
               className="btn-group w-100"
               role="group"
@@ -136,7 +135,6 @@ export const AnnounceEventCard = ({
             </div>
           </div>
           <div className="col-md-6">
-            {/* <label className="form-label fw-semibold">Event Date Range</label> */}
             <div className="row g-3">
               <div className="col-md-6">
                 {renderFloatingSelect(
