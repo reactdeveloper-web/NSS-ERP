@@ -26,8 +26,6 @@ const _Login = (props: Props) => {
 
   const onFinish = async formData => {
     try {
-      //console.log('hello',formData);
-      //setLoading(true);
       await login(formData);
     } catch (error) {
       message.error(error.message);

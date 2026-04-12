@@ -2375,7 +2375,8 @@ export const AnnounceMasterContent = () => {
             },
             headers: masterApiHeaders(),
           },
-        );
+          headers: createDirectApiHeaders(),
+        });
 
         setOccasionTypeOptions(extractOccasionOptions(response.data));
       } catch (error) {

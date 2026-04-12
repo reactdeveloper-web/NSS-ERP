@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import { Menu, Grid } from 'antd';
 import { NavLink } from 'react-router-dom';
-import { LeftMenu } from './LeftMenu';
-import { RightMenu } from './RightMenu';
-import { Drawer, Button } from 'antd';
 import { connect, ConnectedProps } from 'react-redux';
 import { logout } from 'src/components/Auth/Auth.thunks';
-import { PATH } from 'src/constants/paths';
 import { APP_MENU_ITEMS } from 'src/constants/appMenu';
 import { IMAGEPATH } from 'src/constants/img-paths';
 

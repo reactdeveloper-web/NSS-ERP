@@ -1,5 +1,3 @@
-/* eslint-disable eqeqeq */
-/* eslint-disable prettier/prettier */
 import axios from 'axios';
 import { URL } from 'src/constants/urls';
 import * as actions from './Auth.actions';
@@ -41,11 +39,10 @@ export const login = (payload: ReqLogin) => async dispatch => {
     const res = await axiosInstance.post(`/login/UserLogin`, payload);
     const allUsers = res.data;
     let user = allUsers.userData;
-    //console.log('login',allUsers);
     if (
       allUsers.userData.status === 'Success' &&
       user &&
-      user.empNum == payload.username
+      user.empNum === payload.username
     ) {
       dispatch(actions.loginSuccess(user));
       // ✅ store tokens
@@ -141,6 +138,7 @@ export const register = (payload: ReqLogin) => async dispatch => {
     return dispatch(actions.registerFailed());
   }
 };
+
 export const logout = () => async dispatch => {
   dispatch(actions.logoutSuccess());
   dispatch(
