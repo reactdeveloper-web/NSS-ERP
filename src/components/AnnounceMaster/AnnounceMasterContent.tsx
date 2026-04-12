@@ -2374,7 +2374,7 @@ export const AnnounceMasterContent = () => {
               DataFlag: ContentTypes.DataFlag,
             },
             headers: masterApiHeaders(),
-          }
+          },
         );
 
         setOccasionTypeOptions(extractOccasionOptions(response.data));
@@ -2393,7 +2393,7 @@ export const AnnounceMasterContent = () => {
           masterApiPaths.getHowToDonateMaster,
           {
             headers: masterApiHeaders(),
-          }
+          },
         );
 
         setHowToDonateOptions(extractHowToDonateOptions(response.data));
