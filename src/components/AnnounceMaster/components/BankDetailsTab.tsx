@@ -5,7 +5,9 @@ interface BankDetailsTabProps {
   banks: DepositBank[];
   isLoading: boolean;
   error: string;
+  validationError?: string;
   selectedBankIds: string[];
+  isViewMode?: boolean;
   onToggleBank: (bankId: string) => void;
 }
 
@@ -13,7 +15,9 @@ export const BankDetailsTab = ({
   banks,
   isLoading,
   error,
+  validationError,
   selectedBankIds,
+  isViewMode = false,
   onToggleBank,
 }: BankDetailsTabProps) => {
   return (
@@ -67,6 +71,7 @@ export const BankDetailsTab = ({
                           className="form-check-input"
                           type="checkbox"
                           checked={selectedBankIds.includes(bank.id)}
+                          disabled={isViewMode}
                           onChange={() => onToggleBank(bank.id)}
                         />
                       </div>
@@ -86,6 +91,11 @@ export const BankDetailsTab = ({
       <div className="text-muted fs-8 mt-3">
         Selected banks count: <strong>{selectedBankIds.length}</strong>
       </div>
+      {validationError ? (
+        <div className="announce-master-field-error mt-2">
+          {validationError}
+        </div>
+      ) : null}
     </div>
   );
 };

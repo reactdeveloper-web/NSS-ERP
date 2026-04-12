@@ -81,10 +81,16 @@ export const forgot = (payload: ReqForgot) => async dispatch => {
       Emp_Num: payload.userid,
       Data_Flag: ContentTypes.DataFlag,
     };
+
+    console.log('FINAL PAYLOAD', addPayload);
+
     const res = await axiosInstance.post(
       `/login/ForgotPasswordRequest`,
       addPayload,
     );
+
+    console.log('API RESPONSE', res.data);
+
     if (res.data?.result === true) {
       dispatch(
         setAlert({

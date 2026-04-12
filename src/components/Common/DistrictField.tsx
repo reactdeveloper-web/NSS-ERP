@@ -9,6 +9,7 @@ interface DistrictFieldProps {
   options: FloatingSelectOption[];
   disabled?: boolean;
   onChange: (value: string) => void;
+  error?: string;
 }
 
 export const DistrictField = ({
@@ -16,6 +17,7 @@ export const DistrictField = ({
   options,
   disabled = false,
   onChange,
+  error,
 }: DistrictFieldProps) => (
   <FloatingSelectField
     id="district"
@@ -24,5 +26,6 @@ export const DistrictField = ({
     options={options}
     disabled={disabled}
     onChange={onChange}
+    error={error}
   />
 );

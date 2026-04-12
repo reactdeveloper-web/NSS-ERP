@@ -9,6 +9,7 @@ interface StateFieldProps {
   options: FloatingSelectOption[];
   disabled?: boolean;
   onChange: (value: string) => void;
+  error?: string;
 }
 
 export const StateField = ({
@@ -16,6 +17,7 @@ export const StateField = ({
   options,
   disabled = false,
   onChange,
+  error,
 }: StateFieldProps) => (
   <FloatingSelectField
     id="state"
@@ -24,5 +26,6 @@ export const StateField = ({
     options={options}
     disabled={disabled}
     onChange={onChange}
+    error={error}
   />
 );

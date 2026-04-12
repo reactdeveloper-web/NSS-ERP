@@ -50,7 +50,9 @@
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
     "start": "npm run dev",
-    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider SASS_SILENCE_DEPRECATIONS=legacy-js-api react-scripts build"
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider SASS_SILENCE_DEPRECATIONS=legacy-js-api react-scripts build",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,scss,css}\" \".eslintrc\" \".prettierrc\" \"package.json\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,scss,css}\" \".eslintrc\" \".prettierrc\" \"package.json\""
   },
   "browserslist": {
     "production": [

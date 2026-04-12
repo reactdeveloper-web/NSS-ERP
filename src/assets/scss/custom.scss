@@ -156,7 +156,7 @@ iframe {
 }
 
 /* Container smooth height */
-.tab-content {
+.announce-master-card .tab-content {
   position: relative;
   overflow: hidden;
 }
@@ -173,38 +173,64 @@ iframe {
 }
 
 /* Base */
-.tab-pane {
-  transition: all 0.35s ease;
+.announce-master-card .tab-content > .tab-pane {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  visibility: hidden;
+  pointer-events: none;
   opacity: 0;
-  transform: translateX(40px);
+  transform: translateX(0);
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
 }
 
 /* Active tab */
-.tab-pane.active.show {
+.announce-master-card .tab-content > .tab-pane.active.show {
+  position: relative;
+  visibility: visible;
+  pointer-events: auto;
   opacity: 1;
   transform: translateX(0);
+  transition-delay: 0s;
 }
 
-/* Slide left (Previous) */
-.tab-pane.slide-left {
-  transform: translateX(-40px);
-  opacity: 0;
+.announce-master-card .tab-content > .tab-pane.active.show.fade-left {
+  animation: announce-tab-fade-left 0.35s ease;
 }
 
-/* Slide right (Next) */
-.tab-pane.slide-right {
-  transform: translateX(40px);
-  opacity: 0;
+.announce-master-card .tab-content > .tab-pane.active.show.fade-right {
+  animation: announce-tab-fade-right 0.35s ease;
+}
+
+@keyframes announce-tab-fade-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes announce-tab-fade-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Smooth buttons feel */
 #prevTabBtn,
 #nextTabBtn {
   min-width: 120px;
-}
-
-.card .card-header {
-  min-height: 56px;
 }
 
 .form-floating {
@@ -257,14 +283,18 @@ iframe {
 }
 
 .form-floating.ant-select-floating .ant-select-selector {
-  min-height: 3.1rem !important;
-  height: 3.1rem !important;
+  min-height: 3.5rem !important;
+  height: 3.5rem !important;
   padding: 0.75rem 1rem !important;
   border-color: #e1e3ea !important;
   border-radius: 0.475rem !important;
   box-shadow: none !important;
   display: flex;
   align-items: center;
+}
+
+.form-floating.ant-select-floating.has-error .ant-select-selector {
+  border-color: #f1416c !important;
 }
 
 .form-floating.ant-select-floating .ant-select-selection-placeholder,
@@ -279,6 +309,12 @@ iframe {
   color: #a1a5b7 !important;
 }
 
+.form-floating.ant-select-floating
+  .ant-select.ant-select-open
+  .ant-select-selection-item {
+  color: #a1a5b7;
+}
+
 .form-floating.ant-select-floating .ant-select-arrow {
   inset-inline-end: 14px !important;
 }
@@ -291,7 +327,7 @@ iframe {
 .form-floating.ant-select-floating.has-value > label,
 .form-floating.ant-select-floating:focus-within > label {
   opacity: 1;
-  transform: scale(0.8) translateY(-0.9rem) translateX(0.15rem);
+  transform: scale(0.9) translateY(-0.9rem) translateX(0.15rem);
   background: #fff;
   padding: 0px 8px 0px 8px;
   height: auto;
@@ -333,6 +369,12 @@ iframe {
 .form-floating.ant-input-floating
   > .form-control.ant-input-floating-control.form-control-solid {
   background-color: #f5f8fa;
+}
+
+.form-floating.ant-input-floating.has-error
+  > .form-control.ant-input-floating-control,
+.quantity-floating.has-error .quantity-input-group.ant-input-floating-control {
+  border-color: #f1416c;
 }
 
 .form-floating.ant-input-floating > label {

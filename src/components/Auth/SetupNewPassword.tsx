@@ -88,16 +88,16 @@ const ResetPassword = () => {
                     </Form.Item>
 
                     <img
+                      alt={showNew ? 'Hide password' : 'Show password'}
                       src={showNew ? IMAGEPATH.EYE_OPEN : IMAGEPATH.EYE_CLOSE}
-                      alt=""
                       onClick={() => setShowNew(!showNew)}
                       className="position-absolute end-0 me-2 top-0 mt-4"
                       style={{ cursor: 'pointer' }}
                     />
 
                     <img
-                      src={IMAGEPATH.PASSWORD}
                       alt=""
+                      src={IMAGEPATH.PASSWORD}
                       className="position-absolute start-0 ms-2 top-0 mt-4"
                     />
                   </div>
@@ -130,18 +130,18 @@ const ResetPassword = () => {
                     </Form.Item>
 
                     <img
+                      alt={showConfirm ? 'Hide password' : 'Show password'}
                       src={
                         showConfirm ? IMAGEPATH.EYE_OPEN : IMAGEPATH.EYE_CLOSE
                       }
-                      alt=""
                       onClick={() => setShowConfirm(!showConfirm)}
                       className="position-absolute end-0 me-2 top-0 mt-4"
                       style={{ cursor: 'pointer' }}
                     />
 
                     <img
-                      src={IMAGEPATH.PASSWORD}
                       alt=""
+                      src={IMAGEPATH.PASSWORD}
                       className="position-absolute start-0 ms-2 top-0 mt-4"
                     />
                   </div>
