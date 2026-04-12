@@ -34,3 +34,7 @@ export const registerSuccess = payload => ({
 export const registerFailed = () => ({
   type: types.REGISTER_FAILED,
 });
+
+export const setupPasswordSuccess = () => ({
+  type: 'SETUP_PASSWORD_SUCCESS',
+});

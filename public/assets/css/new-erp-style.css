@@ -1,0 +1,312 @@
+.h100vh {
+    height: 96vh;
+}
+
+body.newErp {
+    background-color: #f5f8fa !important;
+}
+
+body.newErp .pageContent_ {
+    margin: 65px 0 0;
+    padding: 0;
+    background: none !important;
+}
+
+body.newErp h2.heading {
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1cb8a1;
+    sss
+}
+
+body.newErp h2.heading .iDark_ {
+    color: #28166f;
+}
+
+body.newErp .inputSeachIcon {
+    position: relative;
+}
+
+body.newErp .inputSeachIcon input {
+    padding-left: 35px;
+    /* space for the icon */
+}
+
+body.newErp .inputSeachIcon::before {
+    content: "\F52A";
+    /* Unicode for bi-justify */
+    font-family: "bootstrap-icons";
+    /* required for icons */
+    font-size: 18px;
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #555;
+    /* icon color */
+}
+
+/*Login New Style Start*/
+.erpInputBg {
+    position: relative;
+}
+
+.erpInputBg .form-control {
+    padding-left: 42px;
+}
+
+.erpInputBg .form-control~img {
+    position: absolute;
+    top: 12px;
+    left: 10px;
+}
+
+.loginTabs ul.nav li label {
+    background-color: rgba(245, 248, 250, .8);
+    border-radius: .475rem;
+    transition: all .2s ease, background-color .2s ease;
+    color: #181c32;
+    font-weight: 500;
+    padding: .65rem 1rem;
+    cursor: pointer
+}
+
+.loginTabs ul.nav li:hover label,
+.loginTabs ul.nav li input[type=radio]:checked+label {
+    background-color: #009ef7;
+    transition: all .2s ease, background-color .2s ease;
+    color: #ffffff;
+}
+
+.loginTabs ul.nav li input[type=radio] {
+    display: none;
+}
+
+.loginError {
+    background-color: #fff5f8;
+    color: #f1416c;
+    transition: all .2s ease, background-color .2s ease;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    position: relative;
+    border-radius: 10px;
+}
+
+.loginError::before {
+    content: "\F335";
+    display: inline-block;
+    font-family: bootstrap-icons !important;
+    font-style: normal;
+    font-weight: 400 !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    vertical-align: -.125em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0 5px;
+    font-size: 20px;
+}
+
+/*Login New Style End*/
+
+body.newErp .header-fixed .header {
+    box-shadow: 0 10px 30px 0 rgba(82, 63, 105, .05);
+    padding: 10px;
+}
+
+body.newErp .header-fixed .header .logo_ {
+    margin: 0
+}
+
+body.newErp .header-fixed .header .logo_ img {
+    height: 42px;
+}
+
+body.newErp .f24 {
+    font-size: 1.125rem;
+    color: #28166f;
+    font-weight: 400;
+    margin: 0;
+    padding: 0;
+    text-align: left
+}
+
+.card.moduleBox:hover {
+    background: #28166f;
+    transition: all .3s ease-in-out;
+}
+
+.card.moduleBox .f24 {
+    transform: translateY(4px);
+    transition: all .3s ease-in-out;
+}
+
+.card.moduleBox:hover .f24 {
+    color: #ffffff;
+    transition: all .3s ease-in-out;
+    transform: translateY(0);
+}
+
+.card.moduleBox input[type=image] {
+    width: 100%;
+    height: auto
+}
+
+
+/**Searching Forward Css**/
+
+body.newErp .card .card-header {
+    min-height: inherit
+}
+
+body.newErp .headH3 {
+    font-size: 20px;
+    text-align: center;
+    font-weight: 600;
+    color: #28166f;
+    margin: 0;
+}
+
+body.newErp table td,
+body.newErp table td:first-child,
+body.newErp table td:last-child {
+    padding: .75rem;
+    padding-top: 0;
+    padding-bottom: 1rem;
+}
+
+body.newErp table td .labelFont14 {
+    font-size: 12px;
+    font-weight: 600;
+    color: #7e8299 !important;
+    display: block;
+    margin: 0;
+    padding: 5px;
+}
+
+body.newErp .nowrapText {
+    white-space: nowrap
+}
+
+
+body.newErp table td .form-control {
+    border: 1px solid #e4e6ef;
+    background: #ffffff
+}
+
+body.newErp table td .form-control.dateCalender input[type=text],
+body.newErp .basicSearchForm .form-control.dateCalender input[type=text] {
+    border: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: none !important;
+    padding: 0;
+    margin: 0;
+}
+
+body.newErp table td .form-control.dateCalender input[type=image],
+body.newErp .basicSearchForm .form-control.dateCalender input[type=image] {
+    position: absolute;
+    right: 10px;
+    left: auto !important;
+    top: 0px !important;
+}
+
+body.newErp table td div {
+    padding: 0
+}
+
+.iframe-container {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.5s ease;
+    border: none;
+    width: 100%;
+    max-height: 600px;
+    padding: 0 !important
+}
+
+.iframe-container iframe {
+    border: none;
+    width: 100%;
+    height: 600px;
+    padding: 0 !important
+}
+
+.iframe-container.open {
+    max-height: 600px;
+    /* slightly larger than iframe height */
+}
+
+body.newErp table.fixed-grid {
+    border-collapse: collapse;
+    width: 100%;
+    display: block;
+    max-height: calc(100vh - 440px);
+    /* table scroll height */
+    overflow-y: auto;
+    /* scroll bar */
+    border: none;
+}
+
+body.newErp table.fixed-grid tbody tr:first-child {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #28166f !important;
+    color: #ffffff !important;
+}
+
+body.newErp table.fixed-grid tbody tr:first-child th {
+    padding: 5px 5px;
+    line-height: 16px;
+    /* word-break: keep-all;
+            word-wrap: break-word;*/
+}
+
+body.newErp table.fixed-grid tbody td {
+    padding: 5px !important;
+    font-size: 12px;
+}
+
+/*body.newErp table.fixed-grid tbody td span {
+            padding: 0 !important;
+            line-height: normal;
+            word-break: keep-all;
+            word-wrap: break-word;
+        }*/
+
+body.newErp table.fixed-grid tbody td {
+    width: 200px;
+}
+
+body.newErp table.fixed-grid tbody td:first-child {
+    width: 100px;
+}
+
+body.newErp table.fixed-grid tbody td:last-child {
+    width: 250px;
+}
+
+.basicSearchForm .form-group .fa {
+    position: absolute;
+    left: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1cb8a1;
+}
+
+body.newErp table td .form-control.dateCalender div,
+body.newErp .basicSearchForm .form-control.dateCalender div {
+    padding: 2px !important
+}
+
+#modalIframe {
+    height: 85vh;
+}

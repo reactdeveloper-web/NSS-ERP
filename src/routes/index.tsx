@@ -14,14 +14,17 @@ const DashboardPage = lazy(
 // ---> Auth pages
 const LoginPage = lazy(() => import('src/pages/AuthPages/LoginPage'));
 const ForgotPage = lazy(() => import('src/pages/AuthPages/ForgotPage'));
+const ResetPassword = lazy(
+  () => import('src/pages/AuthPages/SetupNewPassword'),
+);
 const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
+const CitPage = lazy(() => import('src/pages/cit/CitPage'));
 
 const ProfileMasterPage = lazy(
   () => import('src/pages/MyProfilePage/ProfileMasterPage'),
 );
-
 
 // ---> Error pages
 const NotFoundPage = lazy(() => import('src/pages/ErrorPages/404Pages'));
@@ -51,12 +54,13 @@ export const Routes = () => {
               <Route exact path={PATH.LOGIN} component={LoginPage} />
               <Route exact path={PATH.PROFILE} component={ProfileMasterPage} />
               <Route exact path={PATH.FORGOT} component={ForgotPage} />
+              <Route path={PATH.RESET_PASSWORD} component={ResetPassword} />
               <Route
                 exact
                 path={PATH.ANNOUNCE_MASTER}
                 component={AnnounceMasterPage}
               />
-              
+              <Route exact path={PATH.CIT} component={CitPage} />
 
               {/* Error routes */}
               <Route component={NotFoundPage} />

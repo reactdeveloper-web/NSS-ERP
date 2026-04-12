@@ -26,6 +26,10 @@
 }
 .login-form-register-link-wrapper {
   float: right;
+  width: 100%;
+  a {
+    color: #2a2b6b;
+  }
 }
 .site-form-item-icon {
   svg {

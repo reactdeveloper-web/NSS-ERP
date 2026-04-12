@@ -5,6 +5,7 @@ import { FollowUpForm, FollowUpItem } from '../types';
 interface FollowUpTabProps {
   form: FollowUpForm;
   items: FollowUpItem[];
+  isViewMode?: boolean;
   onChange: <K extends keyof FollowUpForm>(
     field: K,
     value: FollowUpForm[K],
@@ -16,6 +17,7 @@ interface FollowUpTabProps {
 export const FollowUpTab = ({
   form,
   items,
+  isViewMode = false,
   onChange,
   onAdd,
   onRemove,
@@ -35,7 +37,8 @@ export const FollowUpTab = ({
         id={id}
         placeholder=""
         showSearch
-        allowClear
+        allowClear={!isViewMode}
+        disabled={isViewMode}
         value={value || undefined}
         onChange={nextValue => onChange(id, (nextValue as string) || '')}
         optionFilterProp="label"
@@ -74,6 +77,7 @@ export const FollowUpTab = ({
                 className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.date}
+                disabled={isViewMode}
                 onChange={event => onChange('date', event.target.value)}
               />
               <label htmlFor="followupDate">Follow-up Date</label>
@@ -88,6 +92,7 @@ export const FollowUpTab = ({
                 className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.time}
+                disabled={isViewMode}
                 onChange={event => onChange('time', event.target.value)}
               />
               <label htmlFor="followupTime">Follow-up Time</label>
@@ -124,6 +129,7 @@ export const FollowUpTab = ({
                 className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.note}
+                disabled={isViewMode}
                 onChange={event => onChange('note', event.target.value)}
               />
               <label htmlFor="followupNote">Follow-up Note</label>
@@ -134,6 +140,7 @@ export const FollowUpTab = ({
             <button
               className="btn btn-primary w-100"
               type="button"
+              disabled={isViewMode}
               onClick={onAdd}
             >
               Add Follow-up
@@ -166,6 +173,7 @@ export const FollowUpTab = ({
                       <button
                         className="btn btn-sm btn-light-danger"
                         type="button"
+                        disabled={isViewMode}
                         onClick={() => onRemove(item.id)}
                       >
                         Remove

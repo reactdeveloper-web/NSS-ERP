@@ -17,6 +17,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 interface Props extends ConnectedProps<typeof connector> {}
 
 const _Login = (props: Props) => {
+  const [showPassword, setShowPassword] = useState(false);
   //  eslint-disable-next-line
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('NSS');
@@ -135,17 +136,24 @@ const _Login = (props: Props) => {
                       ]}
                     >
                       <Input
-                        className="form-control fs-5 fw-normal ps-10"
-                        type="password"
-                        name="password"
+                        className="form-control fs-5 fw-normal ps-10 pe-10"
+                        type={showPassword ? 'text' : 'password'} // ⭐ toggle here
                         placeholder="Enter your Password"
                       />
                     </Form.Item>
+
+                    {/* RIGHT EYE ICON (CLICKABLE) */}
                     <img
-                      src={IMAGEPATH.EYE}
-                      alt=""
+                      src={
+                        showPassword ? IMAGEPATH.EYE_OPEN : IMAGEPATH.EYE_CLOSE
+                      }
+                      alt="toggle password"
+                      onClick={() => setShowPassword(!showPassword)} // ⭐ toggle click
+                      style={{ cursor: 'pointer' }}
                       className="position-absolute end-0 me-2 top-0 mt-4"
                     />
+
+                    {/* LEFT LOCK ICON */}
                     <img
                       src={IMAGEPATH.PASSWORD}
                       alt=""
@@ -177,7 +185,7 @@ const _Login = (props: Props) => {
                         to={PATH.FORGOT}
                         className="login-form-register-link"
                       >
-                        Forgot Password
+                        Forgot Password?
                       </Link>
                     </div>
                   </div>

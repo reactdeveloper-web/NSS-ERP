@@ -8,6 +8,7 @@ import { connect, ConnectedProps } from 'react-redux';
 import { logout } from 'src/components/Auth/Auth.thunks';
 import { PATH } from 'src/constants/paths';
 import { APP_MENU_ITEMS } from 'src/constants/appMenu';
+import { IMAGEPATH } from 'src/constants/img-paths';
 
 const { useBreakpoint } = Grid;
 
@@ -53,11 +54,7 @@ const _AppAside = (props: Props) => {
       >
         {/* <!--begin::Logo--> */}
         <a href="../../demo1/dist/index.html">
-          <img
-            alt="Logo"
-            src="assets/media/logos/logo-1-dark.svg"
-            className="h-25px logo"
-          />
+          <img alt="Logo" src={IMAGEPATH.LOGO} className="h-35px logo" />
         </a>
         {/* <!--end::Logo--> */}
         {/* <!--begin::Aside toggler--> */}
@@ -94,6 +91,58 @@ const _AppAside = (props: Props) => {
         {/* <!--end::Aside toggler--> */}
       </div>
       {/* <!--end::Brand--> */}
+
+      {/* <!--begin::Aside menu--> */}
+      <div className="aside-menu flex-column-fluid">
+        {/* <!--begin::Aside Menu--> */}
+        <div
+          className="hover-scroll-overlay-y my-5 my-lg-5"
+          id="kt_aside_menu_wrapper"
+          data-kt-scroll="true"
+          data-kt-scroll-activate="{default: false, lg: true}"
+          data-kt-scroll-height="auto"
+          data-kt-scroll-dependencies="#kt_aside_logo, #kt_aside_footer"
+          data-kt-scroll-wrappers="#kt_aside_menu"
+          data-kt-scroll-offset="0"
+        >
+          {/* <!--begin::Menu--> */}
+          <div
+            className="menu menu-column menu-title-gray-800 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-500"
+            id="#kt_aside_menu"
+            data-kt-menu="true"
+          >
+            <div
+              data-kt-menu-trigger="click"
+              className="menu-item menu-accordion"
+            >
+              <ul className="ps-0 mb-0">
+                {APP_MENU_ITEMS.map(item => (
+                  <li
+                    key={item.key}
+                    className="menu-item"
+                    data-submenu={item.label}
+                  >
+                    <NavLink
+                      exact
+                      className="menu-link"
+                      activeClassName="active"
+                      to={item.path}
+                    >
+                      <span className="menu-icon">
+                        <i className={item.iconClass}></i>
+                      </span>
+                      <span className="menu-title">{item.label}</span>
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          {/* <!--end::Menu--> */}
+        </div>
+        {/* <!--end::Aside Menu--> */}
+      </div>
+      {/* <!--end::Aside menu--> */}
 
       {/* <!--begin::Aside menu--> */}
       <div className="aside-menu flex-column-fluid">

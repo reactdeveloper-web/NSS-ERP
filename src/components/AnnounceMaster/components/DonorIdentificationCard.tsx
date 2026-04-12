@@ -113,9 +113,7 @@ export const DonorIdentificationCard = ({
 
             <div className="col-md-12 position-relative">
               <div className="d-flex gap-3">
-                <div
-                  className="d-flex"
-                >
+                <div className="d-flex">
                   {renderFloatingSelect(
                     'donorSearchType',
                     'Search By',
@@ -151,7 +149,7 @@ export const DonorIdentificationCard = ({
                 ) : null}
               </div>
               {searchError ? (
-                <div className="text-danger fs-7 mt-2 position-absolute end-0 top-75 me-2">
+                <div className="text-danger fs-7 pt-3 position-absolute end-0 top-75 me-2">
                   {searchError}
                 </div>
               ) : null}

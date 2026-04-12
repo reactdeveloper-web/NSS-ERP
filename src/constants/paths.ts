@@ -2,7 +2,9 @@ export const PATH = {
   HOME: '/',
   DASHBOARD: '/dashboard',
   LOGIN: '/login',
-  ANNOUNCE_MASTER: '/announce-master',
+  ANNOUNCE_MASTER: '/announcement',
+  CIT: '/cit',
   FORGOT: '/forgot',
   PROFILE: '/profile',
+  RESET_PASSWORD: '/reset-password',
 };

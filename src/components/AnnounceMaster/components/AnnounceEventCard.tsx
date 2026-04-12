@@ -1,6 +1,12 @@
 import React from 'react';
 import { Select } from 'antd';
-import { AnnounceEventForm, EventOption } from '../types';
+import {
+  AnnounceEventForm,
+  AnnounceValidationErrors,
+  EventOption,
+} from '../types';
+import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
+import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 
 interface AnnounceEventCardProps {
   form: AnnounceEventForm;
@@ -11,6 +17,8 @@ interface AnnounceEventCardProps {
   panditOptions: EventOption[];
   eventLoading: boolean;
   eventError: string;
+  isViewMode?: boolean;
+  errors: AnnounceValidationErrors;
   onChange: <K extends keyof AnnounceEventForm>(
     field: K,
     value: AnnounceEventForm[K],
@@ -26,6 +34,8 @@ export const AnnounceEventCard = ({
   panditOptions,
   eventLoading,
   eventError,
+  isViewMode = false,
+  errors,
   onChange,
 }: AnnounceEventCardProps) => {
   const renderFloatingSelect = (
@@ -38,46 +48,44 @@ export const AnnounceEventCard = ({
     options: EventOption[],
     disabled = false,
   ) => (
-    <div
-      className={`form-floating ant-select-floating ${
-        value ? 'has-value' : ''
-      } ${disabled ? 'is-disabled' : ''}`}
-    >
-      <Select
-        id={id}
-        placeholder=""
-        showSearch
-        allowClear={!disabled}
-        disabled={disabled}
-        value={value || undefined}
-        onChange={nextValue => onChange(id, (nextValue as string) || '')}
-        optionFilterProp="label"
-        filterOption={(input, option) =>
-          String(option?.label ?? '')
-            .toLowerCase()
-            .includes(input.toLowerCase())
-        }
-        options={options.map(option => ({
-          value: option.value,
-          label: option.label,
-        }))}
-      />
-      <label htmlFor={id}>{label}</label>
+    <div>
+      <div
+        className={`form-floating ant-select-floating ${
+          value ? 'has-value' : ''
+        } ${disabled ? 'is-disabled' : ''}`}
+      >
+        <Select
+          id={id}
+          placeholder=""
+          showSearch
+          allowClear={!disabled}
+          disabled={disabled}
+          value={value || undefined}
+          onChange={nextValue => onChange(id, (nextValue as string) || '')}
+          optionFilterProp="label"
+          filterOption={(input, option) =>
+            String(option?.label ?? '')
+              .toLowerCase()
+              .includes(input.toLowerCase())
+          }
+          options={options.map(option => ({
+            value: option.value,
+            label: option.label,
+          }))}
+        />
+        <label htmlFor={id}>{label}</label>
+      </div>
     </div>
   );
 
   return (
-    <div className="card card-flush h-xl-100">
-      <div className="card-header border-bottom mb-4">
-        <div className="card-title d-flex w-100 justify-content-between">
-          <h3 className="fw-bold mb-1">Announce Event</h3>
+    <>
+      <div className="announce-master-panel">
+        <div className="announce-master-helper-text">
+          Announcement details: please fill in the announcement details.
         </div>
-      </div>
-
-      <div className="card-body pt-2">
         <div className="row g-5">
           <div className="col-md-2">
-            {/* <label className="form-label fw-semibold">Live / NonLive</label> */}
             <div
               className="btn-group w-100"
               role="group"
@@ -90,6 +98,7 @@ export const AnnounceEventCard = ({
                 id="btnLive"
                 autoComplete="off"
                 checked={form.liveType === 'live'}
+                disabled={isViewMode}
                 onChange={() => onChange('liveType', 'live')}
               />
               <label
@@ -110,6 +119,7 @@ export const AnnounceEventCard = ({
                 id="btnNonLive"
                 autoComplete="off"
                 checked={form.liveType === 'nonLive'}
+                disabled={isViewMode}
                 onChange={() => onChange('liveType', 'nonLive')}
               />
               <label
@@ -125,7 +135,6 @@ export const AnnounceEventCard = ({
             </div>
           </div>
           <div className="col-md-6">
-            {/* <label className="form-label fw-semibold">Event Date Range</label> */}
             <div className="row g-3">
               <div className="col-md-6">
                 {renderFloatingSelect(
@@ -133,8 +142,13 @@ export const AnnounceEventCard = ({
                   'Event Name',
                   form.eventName,
                   eventOptions,
-                  eventLoading,
+                  eventLoading || isViewMode,
                 )}
+                {errors.eventName ? (
+                  <div className="announce-master-field-error">
+                    {errors.eventName}
+                  </div>
+                ) : null}
                 {eventError ? (
                   <div className="text-danger fs-8 mt-1">{eventError}</div>
                 ) : null}
@@ -146,72 +160,54 @@ export const AnnounceEventCard = ({
                   'Event Cause',
                   form.eventCause,
                   eventCauseOptions,
+                  isViewMode,
                 )}
               </div>
             </div>
           </div>
 
           <div className="col-md-2">
-            <div className="form-floating ant-input-floating">
-              <input
-                id="eventFromDate"
-                type="date"
-                className="form-control ant-input-floating-control"
-                placeholder=" "
-                value={form.eventFromDate}
-                onChange={event =>
-                  onChange('eventFromDate', event.target.value)
-                }
-              />
-              <label htmlFor="eventFromDate">From Date</label>
-            </div>
+            <FloatingDatePicker
+              id="eventFromDate"
+              label="From Date"
+              value={form.eventFromDate}
+              disabled
+              readOnly
+              onChange={value => onChange('eventFromDate', value)}
+            />
           </div>
           <div className="col-md-2">
-            <div className="form-floating ant-input-floating">
-              <input
-                id="eventToDate"
-                type="date"
-                className="form-control ant-input-floating-control"
-                placeholder=" "
-                value={form.eventToDate}
-                onChange={event => onChange('eventToDate', event.target.value)}
-              />
-              <label htmlFor="eventToDate">To Date</label>
-            </div>
+            <FloatingDatePicker
+              id="eventToDate"
+              label="To Date"
+              value={form.eventToDate}
+              disabled
+              readOnly
+              onChange={value => onChange('eventToDate', value)}
+            />
           </div>
 
           <div className="col-md-4">
-            {/* <label className="form-label fw-semibold">Event Time Range</label> */}
             <div className="row g-3">
               <div className="col-6">
-                <div className="form-floating ant-input-floating">
-                  <input
-                    id="eventFromTime"
-                    type="time"
-                    className="form-control ant-input-floating-control"
-                    placeholder=" "
-                    value={form.eventFromTime}
-                    onChange={event =>
-                      onChange('eventFromTime', event.target.value)
-                    }
-                  />
-                  <label htmlFor="eventFromTime">From Time</label>
-                </div>
+                <FloatingTimePicker
+                  id="eventFromTime"
+                  label="From Time"
+                  value={form.eventFromTime}
+                  disabled
+                  readOnly
+                  onChange={value => onChange('eventFromTime', value)}
+                />
               </div>
               <div className="col-6">
-                <div className="form-floating ant-input-floating">
-                  <input
-                    id="eventToTime"
-                    type="time"
-                    className="form-control ant-input-floating-control"
-                    placeholder=" "
-                    value={form.eventToTime}
-                    onChange={event =>
-                      onChange('eventToTime', event.target.value)
-                    }
-                  />
-                  <label htmlFor="eventToTime">To Time</label>
-                </div>
+                <FloatingTimePicker
+                  id="eventToTime"
+                  label="To Time"
+                  value={form.eventToTime}
+                  disabled
+                  readOnly
+                  onChange={value => onChange('eventToTime', value)}
+                />
               </div>
             </div>
           </div>
@@ -222,6 +218,7 @@ export const AnnounceEventCard = ({
               'Event City',
               form.eventCity,
               eventCityOptions,
+              true,
             )}
           </div>
 
@@ -231,6 +228,7 @@ export const AnnounceEventCard = ({
               'Channel',
               form.eventChannel,
               eventChannelOptions,
+              true,
             )}
           </div>
 
@@ -240,6 +238,7 @@ export const AnnounceEventCard = ({
               'Pandit Ji',
               form.panditJi,
               panditOptions,
+              true,
             )}
           </div>
 
@@ -251,6 +250,7 @@ export const AnnounceEventCard = ({
                 className="form-control form-control-solid ant-input-floating-control"
                 placeholder=" "
                 value={form.eventLocation}
+                disabled
                 readOnly
               />
               <label htmlFor="eventLocation">Location / Venue (Display)</label>
@@ -272,6 +272,6 @@ export const AnnounceEventCard = ({
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
