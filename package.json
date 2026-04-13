@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "homepage": ".",
   "private": true,
-  "proxy": "https://deverp.narayanseva.org",
+  "proxy": "https://d23605ra7slvxy.cloudfront.net",
   "dependencies": {
     "@ant-design/icons": "4.5.0",
     "antd": "4.13.1",
