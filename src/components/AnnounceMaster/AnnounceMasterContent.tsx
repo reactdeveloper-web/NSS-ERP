@@ -2919,6 +2919,15 @@ export const AnnounceMasterContent = () => {
     pincodeRequestIdRef.current += 1;
   };
 
+  const handleCancel = useCallback(() => {
+    if (window.history.length > 1) {
+      history.goBack();
+      return;
+    }
+
+    openAnnouncementListing();
+  }, [history, openAnnouncementListing]);
+
   useEffect(() => {
     if (isListingMode) {
       loadAnnouncementListing();
@@ -3614,6 +3623,7 @@ export const AnnounceMasterContent = () => {
                 onAddFollowUp={handleAddFollowUp}
                 onRemoveFollowUp={handleRemoveFollowUp}
                 onReset={handleReset}
+                onCancel={handleCancel}
               />
             </div>
           </div>

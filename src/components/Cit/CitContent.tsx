@@ -7,6 +7,7 @@ import {
   TicketFollowUpItem,
   TicketFollowUpTab,
 } from './components/TicketFollowUpTab';
+import { PageToolbar } from '../Common/PageToolbar';
 
 type CitTabKey = 'cit' | 'followup';
 
@@ -81,6 +82,7 @@ export const CitContent = () => {
       className="content d-flex flex-column flex-column-fluid"
       id="kt_content"
     >
+      <PageToolbar title="National Gangotri" description="Call Center Ticket" />
       <div className="post d-flex flex-column-fluid" id="kt_post">
         <div id="kt_content_container" className="container-fluid py-6">
           <div className="card mb-8">
