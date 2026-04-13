@@ -1,5 +1,4 @@
 import React from 'react';
-import { Select } from 'antd';
 import {
   AddedAnnounceCause,
   AnnounceDetailsForm,
@@ -7,6 +6,8 @@ import {
   EventOption,
 } from '../types';
 import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
+import { FloatingInputField } from 'src/components/Common/FloatingInputField';
+import { FloatingSelectField } from 'src/components/Common/FloatingSelectField';
 import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 
 interface AnnounceDetailsTabProps {
@@ -57,50 +58,6 @@ export const AnnounceDetailsTab = ({
   onDeleteCause,
   onQuantityChange,
 }: AnnounceDetailsTabProps) => {
-  const renderFloatingSelect = (
-    id: keyof Pick<
-      AnnounceDetailsForm,
-      'occasionType' | 'causeHead' | 'purpose' | 'paymentMode' | 'howToDonate'
-    >,
-    label: React.ReactNode,
-    value: string,
-    options: { value: string; label: string }[],
-    disabled = false,
-    error?: string,
-  ) => (
-    <div>
-      <div
-        className={`form-floating ant-select-floating ${
-          value ? 'has-value' : ''
-        } ${disabled ? 'is-disabled' : ''} ${error ? 'has-error' : ''}`}
-      >
-        <Select
-          id={id}
-          placeholder=""
-          showSearch
-          allowClear={!disabled}
-          disabled={disabled}
-          value={value || undefined}
-          onChange={nextValue => onChange(id, (nextValue as string) || '')}
-          optionFilterProp="label"
-          filterOption={(input, option) =>
-            String(option?.label ?? '')
-              .toLowerCase()
-              .includes(input.toLowerCase())
-          }
-          options={options.map(option => ({
-            value: option.value,
-            label: option.label,
-          }))}
-        />
-        <label htmlFor={id}>{label}</label>
-      </div>
-      {error ? (
-        <div className="announce-master-field-error">{error}</div>
-      ) : null}
-    </div>
-  );
-
   const renderQuantityField = (
     quantity: number,
     disabled: boolean,
@@ -108,26 +65,17 @@ export const AnnounceDetailsTab = ({
   ) =>
     quantityControlMode === 'select' ? (
       <div className="col-md-4">
-        <div
-          className={`form-floating ant-select-floating ${
-            quantity ? 'has-value' : ''
-          } ${disabled ? 'is-disabled' : ''}`}
-        >
-          <Select
-            id="quantity"
-            placeholder=""
-            disabled={disabled}
-            value={quantity || undefined}
-            onChange={nextValue =>
-              onQuantityInputChange?.(Number(nextValue) || 1)
-            }
-            options={quantityOptions.map(option => ({
-              value: option.value,
-              label: option.label,
-            }))}
-          />
-          <label htmlFor="quantity">Quantity</label>
-        </div>
+        <FloatingSelectField
+          id="quantity"
+          label="Quantity"
+          value={String(quantity || '')}
+          options={quantityOptions.map(option => ({
+            value: String(option.value),
+            label: option.label,
+          }))}
+          disabled={disabled}
+          onChange={value => onQuantityInputChange?.(Number(value) || 1)}
+        />
       </div>
     ) : (
       <div className="col-md-2">
@@ -175,16 +123,19 @@ export const AnnounceDetailsTab = ({
       </div>
       <div className="row g-5">
         <div className="col-md-3">
-          {renderFloatingSelect(
-            'occasionType',
-            <>
+          <FloatingSelectField
+            id="occasionType"
+            label={
+              <>
               In Memory / Occasion Type <span className="text-danger">*</span>
-            </>,
-            form.occasionType,
-            occasionTypeOptions,
-            isViewMode,
-            errors.occasionType,
-          )}
+              </>
+            }
+            value={form.occasionType}
+            options={occasionTypeOptions}
+            disabled={isViewMode}
+            onChange={value => onChange('occasionType', value)}
+            error={errors.occasionType}
+          />
         </div>
 
         <div className="col-md-2">
@@ -204,30 +155,18 @@ export const AnnounceDetailsTab = ({
         </div>
 
         <div className="col-md-3">
-          <div
-            className={`form-floating ant-input-floating ${
-              errors.occasionRemark ? 'has-error' : ''
-            }`}
-          >
-            <input
-              id="occasionRemark"
-              type="text"
-              className="form-control ant-input-floating-control"
-              placeholder=" "
-              value={form.occasionRemark}
-              disabled={isViewMode}
-              onChange={event => onChange('occasionRemark', event.target.value)}
-              aria-invalid={Boolean(errors.occasionRemark)}
-            />
-            <label htmlFor="occasionRemark">
+          <FloatingInputField
+            id="occasionRemark"
+            label={
+              <>
               Remark <span className="text-danger">*</span>
-            </label>
-          </div>
-          {errors.occasionRemark ? (
-            <div className="announce-master-field-error">
-              {errors.occasionRemark}
-            </div>
-          ) : null}
+              </>
+            }
+            value={form.occasionRemark}
+            onChange={value => onChange('occasionRemark', value)}
+            disabled={isViewMode}
+            error={errors.occasionRemark}
+          />
         </div>
       </div>
 
@@ -235,29 +174,35 @@ export const AnnounceDetailsTab = ({
 
       <div className="row g-5">
         <div className="col-md-3">
-          {renderFloatingSelect(
-            'causeHead',
-            <>
+          <FloatingSelectField
+            id="causeHead"
+            label={
+              <>
               Cause Head <span className="text-danger">*</span>
-            </>,
-            form.causeHead,
-            causeHeadOptions,
-            isViewMode,
-            errors.causeHead,
-          )}
+              </>
+            }
+            value={form.causeHead}
+            options={causeHeadOptions}
+            disabled={isViewMode}
+            onChange={value => onChange('causeHead', value)}
+            error={errors.causeHead}
+          />
         </div>
 
         <div className="col-md-3">
-          {renderFloatingSelect(
-            'purpose',
-            <>
+          <FloatingSelectField
+            id="purpose"
+            label={
+              <>
               Purpose <span className="text-danger">*</span>
-            </>,
-            form.purpose,
-            purposeOptions,
-            isViewMode,
-            errors.purpose,
-          )}
+              </>
+            }
+            value={form.purpose}
+            options={purposeOptions}
+            disabled={isViewMode}
+            onChange={value => onChange('purpose', value)}
+            error={errors.purpose}
+          />
           <div className="text-muted fs-8 mt-2">
             Purpose amount fixed - amount auto calculate
           </div>
@@ -314,28 +259,22 @@ export const AnnounceDetailsTab = ({
               : null}
 
             <div className="col-md-4">
-              <div
-                className={`form-floating ant-input-floating ${
-                  errors.announceAmount ? 'has-error' : ''
-                }`}
-              >
-                <input
-                  id="autoAmount"
-                  type="text"
-                  className={`form-control ant-input-floating-control ${
-                    isAmountEditable ? '' : 'form-control-solid'
-                  }`}
-                  placeholder=" "
-                  value={amount}
-                  readOnly={!isAmountEditable || isViewMode}
-                  disabled={isViewMode}
-                  onChange={event => onAmountChange(event.target.value)}
-                  aria-invalid={Boolean(errors.announceAmount)}
-                />
-                <label htmlFor="autoAmount">
+              <FloatingInputField
+                id="autoAmount"
+                label={
+                  <>
                   Amount (Auto) <span className="text-danger">*</span>
-                </label>
-              </div>
+                  </>
+                }
+                value={amount}
+                onChange={onAmountChange}
+                readOnly={!isAmountEditable || isViewMode}
+                disabled={isViewMode}
+                className={`form-control ant-input-floating-control ${
+                  isAmountEditable ? '' : 'form-control-solid'
+                }`}
+                error={errors.announceAmount}
+              />
               {!isAmountEditable && errors.announceAmount ? (
                 <div className="announce-master-field-error">
                   {errors.announceAmount}
@@ -380,63 +319,60 @@ export const AnnounceDetailsTab = ({
             <div className="card border-0 mb-5" key={cause.id}>
               <div className="row g-5">
                 <div className="col-md-3">
-                  {renderFloatingSelect(
-                    'causeHead',
-                    <>
+                  <FloatingSelectField
+                    id={`causeHead-${cause.id}`}
+                    label={
+                      <>
                       Cause Head <span className="text-danger">*</span>
-                    </>,
-                    cause.causeHead,
-                    causeHeadOptions,
-                    true,
-                  )}
+                      </>
+                    }
+                    value={cause.causeHead}
+                    options={causeHeadOptions}
+                    disabled
+                    onChange={() => undefined}
+                  />
                 </div>
 
                 <div className="col-md-3">
-                  {renderFloatingSelect(
-                    'purpose',
-                    <>
+                  <FloatingSelectField
+                    id={`purpose-${cause.id}`}
+                    label={
+                      <>
                       Purpose <span className="text-danger">*</span>
-                    </>,
-                    cause.purpose,
-                    [
+                      </>
+                    }
+                    value={cause.purpose}
+                    options={[
                       {
                         value: cause.purpose,
                         label: cause.purposeLabel,
                       },
-                    ],
-                    true,
-                  )}
+                    ]}
+                    disabled
+                    onChange={() => undefined}
+                  />
                 </div>
                 <div className="col-md-5">
                   <div className="row g-5">
                     <div className="col-md-4">
-                      <div className="form-floating ant-input-floating">
-                        <input
-                          id={`quantity-${cause.id}`}
-                          type="text"
-                          className="form-control ant-input-floating-control"
-                          placeholder=" "
-                          value={cause.quantity}
-                          disabled
-                        />
-                        <label htmlFor={`quantity-${cause.id}`}>Quantity</label>
-                      </div>
+                      <FloatingInputField
+                        id={`quantity-${cause.id}`}
+                        label="Quantity"
+                        value={String(cause.quantity)}
+                        onChange={() => undefined}
+                        disabled
+                      />
                     </div>
 
                     <div className="col-md-4">
-                      <div className="form-floating ant-input-floating">
-                        <input
-                          id={`autoAmount-${cause.id}`}
-                          type="text"
-                          className="form-control ant-input-floating-control form-control-solid"
-                          placeholder=" "
-                          value={cause.amount}
-                          readOnly
-                        />
-                        <label htmlFor={`autoAmount-${cause.id}`}>
-                          Amount (Auto)
-                        </label>
-                      </div>
+                      <FloatingInputField
+                        id={`autoAmount-${cause.id}`}
+                        label="Amount (Auto)"
+                        value={cause.amount}
+                        onChange={() => undefined}
+                        readOnly
+                        className="form-control ant-input-floating-control form-control-solid"
+                      />
                     </div>
 
                     {cause.causeHead === '150' ? (
@@ -475,19 +411,13 @@ export const AnnounceDetailsTab = ({
               {['162', '167', '168'].includes(cause.causeHead) ? (
                 <div className="row g-5 mt-1">
                   <div className="col-md-3">
-                    <div className="form-floating ant-input-floating">
-                      <input
-                        id={`namePlateName-${cause.id}`}
-                        type="text"
-                        className="form-control ant-input-floating-control"
-                        placeholder=" "
-                        value={cause.namePlateName}
-                        disabled
-                      />
-                      <label htmlFor={`namePlateName-${cause.id}`}>
-                        Name Plate Name
-                      </label>
-                    </div>
+                    <FloatingInputField
+                      id={`namePlateName-${cause.id}`}
+                      label="Name Plate Name"
+                      value={cause.namePlateName}
+                      onChange={() => undefined}
+                      disabled
+                    />
                   </div>
 
                   <div className="col-md-9">
@@ -514,11 +444,11 @@ export const AnnounceDetailsTab = ({
 
       <div className="row g-5 mt-1">
         <div className="col-md-2">
-          {renderFloatingSelect(
-            'paymentMode',
-            'Payment Mode',
-            form.paymentMode,
-            [
+          <FloatingSelectField
+            id="paymentMode"
+            label="Payment Mode"
+            value={form.paymentMode}
+            options={[
               { value: '', label: 'Select' },
               { value: 'Cash', label: 'Cash' },
               { value: 'Cheque', label: 'Cheque' },
@@ -527,21 +457,23 @@ export const AnnounceDetailsTab = ({
               { value: 'Online', label: 'Online' },
               { value: 'Pay-In-Slip', label: 'Pay-In-Slip' },
               { value: 'Material', label: 'Material' },
-            ],
-            isViewMode,
-            errors.paymentMode,
-          )}
+            ]}
+            disabled={isViewMode}
+            onChange={value => onChange('paymentMode', value)}
+            error={errors.paymentMode}
+          />
         </div>
 
         <div className="col-md-2">
-          {renderFloatingSelect(
-            'howToDonate',
-            'How To Donate',
-            form.howToDonate,
-            howToDonateOptions,
-            isViewMode,
-            errors.howToDonate,
-          )}
+          <FloatingSelectField
+            id="howToDonate"
+            label="How To Donate"
+            value={form.howToDonate}
+            options={howToDonateOptions}
+            disabled={isViewMode}
+            onChange={value => onChange('howToDonate', value)}
+            error={errors.howToDonate}
+          />
         </div>
 
         <div className="col-md-2">
@@ -580,52 +512,31 @@ export const AnnounceDetailsTab = ({
 
         {form.isMotivated ? (
           <div className="col-md-3">
-            <div
-              className={`form-floating ant-input-floating ${
-                errors.motivatedAmount ? 'has-error' : ''
-              }`}
-            >
-              <input
-                id="motivatedAmount"
-                type="text"
-                className="form-control ant-input-floating-control"
-                placeholder=" "
-                value={form.motivatedAmount}
-                disabled={isViewMode}
-                onChange={event =>
-                  onChange('motivatedAmount', event.target.value)
-                }
-                aria-invalid={Boolean(errors.motivatedAmount)}
-              />
-              <label htmlFor="motivatedAmount">
+            <FloatingInputField
+              id="motivatedAmount"
+              label={
+                <>
                 Motivated Amount <span className="text-danger">*</span>
-              </label>
-            </div>
-            {errors.motivatedAmount ? (
-              <div className="announce-master-field-error">
-                {errors.motivatedAmount}
-              </div>
-            ) : null}
+                </>
+              }
+              value={form.motivatedAmount}
+              onChange={value => onChange('motivatedAmount', value)}
+              disabled={isViewMode}
+              error={errors.motivatedAmount}
+            />
           </div>
         ) : null}
       </div>
       {['162', '167', '168'].includes(form.causeHead) ? (
         <div className="row g-5 mt-1">
           <div className="col-md-3">
-            <div className="form-floating ant-input-floating">
-              <input
-                id="namePlateName"
-                type="text"
-                className="form-control ant-input-floating-control"
-                placeholder=" "
-                value={form.namePlateName}
-                disabled={isViewMode}
-                onChange={event =>
-                  onChange('namePlateName', event.target.value)
-                }
-              />
-              <label htmlFor="namePlateName">Name Plate Name</label>
-            </div>
+            <FloatingInputField
+              id="namePlateName"
+              label="Name Plate Name"
+              value={form.namePlateName}
+              onChange={value => onChange('namePlateName', value)}
+              disabled={isViewMode}
+            />
           </div>
 
           <div className="col-md-9">
