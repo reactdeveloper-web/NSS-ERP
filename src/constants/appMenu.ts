@@ -21,6 +21,12 @@ export const APP_MENU_ITEMS: AppMenuItem[] = [
     iconClass: 'fas fa-bullhorn fs-4',
   },
   {
+    key: 'receive-id-creation',
+    label: 'Receive ID Creation',
+    path: PATH.RECEIVE_ID_CREATION,
+    iconClass: 'fas fa-clipboard-check fs-4',
+  },
+  {
     key: 'cit',
     label: 'Call Center Ticket',
     path: PATH.CIT,
@@ -31,11 +37,5 @@ export const APP_MENU_ITEMS: AppMenuItem[] = [
     label: 'My Profile',
     path: PATH.PROFILE,
     iconClass: 'fas fa-user fs-4',
-  },
-  {
-    key: 'receive-id-creation',
-    label: 'Receive ID Creation',
-    path: PATH.RECEIVE_ID_CREATION,
-    iconClass: 'fas fa-clipboard-check fs-4',
   },
 ];
