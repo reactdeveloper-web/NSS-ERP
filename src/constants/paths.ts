@@ -6,4 +6,5 @@ export const PATH = {
   FORGOT: '/forgot',
   PROFILE: '/profile',
   RESET_PASSWORD: '/reset-password',
+  RECEIVE_ID_CREATION: '/receive-id-master',
 };

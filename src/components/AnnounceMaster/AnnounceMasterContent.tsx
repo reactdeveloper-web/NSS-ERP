@@ -1,14 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-// import { ContentTypes } from 'src/constants/content';
-// import { masterApiHeaders } from 'src/utils/masterApiHeaders';
-// import { masterApiPaths } from 'src/utils/masterApiPaths';
-// import axiosInstance from 'src/redux/interceptor';
 import { ContentTypes } from '../../constants/content';
 import { masterApiHeaders } from '../../utils/masterApiHeaders';
 import { masterApiPaths } from '../../utils/masterApiPaths';
 import axiosInstance from '../../redux/interceptor';
-
 import { AnnounceMasterNav } from './AnnounceMasterNav';
 import {
   createInitialAnnounceDetailsForm,
@@ -536,8 +531,8 @@ const extractYojnaOptions = (payload: unknown): EventOption[] => {
         label:
           yojnaName && amountValue
             ? `${yojnaName} (Rs. ${Number(amountValue).toLocaleString(
-                'en-IN',
-              )})`
+              'en-IN',
+            )})`
             : yojnaName || amountValue || yojnaId,
         yojnaId,
         qtyValue,
@@ -571,7 +566,7 @@ const extractHowToDonateOptions = (payload: unknown): EventOption[] => {
         return (
           option.value !== '' &&
           currentOptions.findIndex(item => item.value === option.value) ===
-            index
+          index
         );
       });
 
@@ -1016,8 +1011,8 @@ const normalizeApiTime = (value: unknown): string => {
         period === 'AM'
           ? parsedHours % 12
           : parsedHours % 12 === 0
-          ? 12
-          : (parsedHours % 12) + 12;
+            ? 12
+            : (parsedHours % 12) + 12;
 
       return `${String(normalizedHours).padStart(2, '0')}:${minutes}`;
     }
@@ -1607,8 +1602,8 @@ export const AnnounceMasterContent = () => {
         editingCauseId === null
           ? [...current, nextCause]
           : current.map(item =>
-              item.id === editingCauseId ? nextCause : item,
-            );
+            item.id === editingCauseId ? nextCause : item,
+          );
 
       return nextCauses;
     });
@@ -1844,7 +1839,7 @@ export const AnnounceMasterContent = () => {
           (donor, index, currentDonors) =>
             donor.donorId &&
             currentDonors.findIndex(item => item.donorId === donor.donorId) ===
-              index,
+            index,
         );
 
       if (requestId !== donorSearchRequestIdRef.current) {
@@ -1935,7 +1930,7 @@ export const AnnounceMasterContent = () => {
           (donor, index, currentDonors) =>
             donor.donorId &&
             currentDonors.findIndex(item => item.donorId === donor.donorId) ===
-              index,
+            index,
         );
 
       if (searchType === 'mobile' && uniqueDonorOptions.length > 1) {
@@ -2326,8 +2321,8 @@ export const AnnounceMasterContent = () => {
           setIsPincodeLocationLocked(
             Boolean(
               matchedState?.value ||
-                location.state.trim() ||
-                location.district.trim(),
+              location.state.trim() ||
+              location.district.trim(),
             ),
           );
         } catch (error) {
@@ -2529,11 +2524,11 @@ export const AnnounceMasterContent = () => {
       setAutoAmount(
         selectedPurposeAmount > 0
           ? (
-              selectedPurposeAmount *
-              (selectedPurposeQtyNumber > 1
-                ? quantity / selectedPurposeQtyNumber
-                : quantity)
-            ).toLocaleString('en-IN')
+            selectedPurposeAmount *
+            (selectedPurposeQtyNumber > 1
+              ? quantity / selectedPurposeQtyNumber
+              : quantity)
+          ).toLocaleString('en-IN')
           : '',
       );
       return;
@@ -2778,8 +2773,8 @@ export const AnnounceMasterContent = () => {
     selectedPurposeQty === 0
       ? 'disabled'
       : selectedPurposeQty === 1
-      ? 'stepper'
-      : 'select';
+        ? 'stepper'
+        : 'select';
   const quantityOptions =
     quantityControlMode === 'select'
       ? buildQuantityOptions(selectedPurposeQty)
@@ -2959,24 +2954,24 @@ export const AnnounceMasterContent = () => {
     const currentCauseForPayload =
       isCauseReadyToAdd && selectedPurposeOption
         ? {
-            id: Date.now(),
-            causeHead: announceDetailsForm.causeHead,
-            causeHeadLabel: selectedCauseHeadOption?.label || '',
-            causeHeadPurposeId:
-              selectedCauseHeadOption?.purposeId?.trim() ||
-              announceDetailsForm.causeHead.trim(),
-            purpose: announceDetailsForm.purpose,
-            purposeLabel:
-              selectedPurposeOption.label || announceDetailsForm.purpose,
-            yojnaId:
-              selectedPurposeOption.yojnaId?.trim() ||
-              announceDetailsForm.purpose.trim(),
-            quantity: Math.max(1, Number(announceDetailsForm.quantity) || 1),
-            amount: autoAmount.trim(),
-            causeHeadDate: announceDetailsForm.causeHeadDate,
-            namePlateName: announceDetailsForm.namePlateName.trim(),
-            donorInstruction: announceDetailsForm.donorInstruction.trim(),
-          }
+          id: Date.now(),
+          causeHead: announceDetailsForm.causeHead,
+          causeHeadLabel: selectedCauseHeadOption?.label || '',
+          causeHeadPurposeId:
+            selectedCauseHeadOption?.purposeId?.trim() ||
+            announceDetailsForm.causeHead.trim(),
+          purpose: announceDetailsForm.purpose,
+          purposeLabel:
+            selectedPurposeOption.label || announceDetailsForm.purpose,
+          yojnaId:
+            selectedPurposeOption.yojnaId?.trim() ||
+            announceDetailsForm.purpose.trim(),
+          quantity: Math.max(1, Number(announceDetailsForm.quantity) || 1),
+          amount: autoAmount.trim(),
+          causeHeadDate: announceDetailsForm.causeHeadDate,
+          namePlateName: announceDetailsForm.namePlateName.trim(),
+          donorInstruction: announceDetailsForm.donorInstruction.trim(),
+        }
         : null;
     const causesForPayload = currentCauseForPayload
       ? [...addedCauses, currentCauseForPayload]
@@ -3020,8 +3015,8 @@ export const AnnounceMasterContent = () => {
     const currentTime = getCurrentTimeValue();
     const selectedHowToDonateId = Number(
       selectedHowToDonateOption?.value?.trim() ||
-        announceDetailsForm.howToDonate.trim() ||
-        0,
+      announceDetailsForm.howToDonate.trim() ||
+      0,
     );
     const selectedBankIdsValue = selectedBankIds.length
       ? selectedBankIds.join(',')
@@ -3034,18 +3029,18 @@ export const AnnounceMasterContent = () => {
     );
     const channelCode = Number(
       selectedEventDetail?.channelCode?.trim() ||
-        selectedEventChannelDetail?.channelCode?.trim() ||
-        0,
+      selectedEventChannelDetail?.channelCode?.trim() ||
+      0,
     );
     const panditCode = Number(
       selectedEventDetail?.panditCode?.trim() ||
-        selectedEventPanditDetail?.panditCode?.trim() ||
-        0,
+      selectedEventPanditDetail?.panditCode?.trim() ||
+      0,
     );
     const bhagCityCode = Number(
       selectedEventDetail?.cityCode?.trim() ||
-        selectedEventCityDetail?.cityCode?.trim() ||
-        0,
+      selectedEventCityDetail?.cityCode?.trim() ||
+      0,
     );
     const employeeCode = Number(currentUser.empNum || 0) || null;
     const donorSearchValue = donorSearchValueRef.current.trim();
@@ -3474,12 +3469,11 @@ export const AnnounceMasterContent = () => {
                       }).result.map((item, index) => (
                         <div
                           key={`${String(item.code ?? index)}-${index}`}
-                          className={`alert ${
-                            String(item.status || '').toLowerCase() ===
-                            'success'
+                          className={`alert ${String(item.status || '').toLowerCase() ===
+                              'success'
                               ? 'alert-success'
                               : 'alert-danger'
-                          } py-3`}
+                            } py-3`}
                         >
                           <div className="fw-semibold">
                             {String(item.msg || 'No message returned.')}
