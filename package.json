@@ -1,8 +1,9 @@
 {
   "name": "typescript-react",
   "version": "0.1.0",
+  "homepage": ".",
   "private": true,
-  "proxy": "http://10.32.1.187:84/",
+  "proxy": "https://deverp.narayanseva.org",
   "dependencies": {
     "@ant-design/icons": "4.5.0",
     "antd": "4.13.1",
@@ -46,11 +47,13 @@
     "prettier": "2.2.1",
     "uuid": "8.3.2"
   },
- "scripts": {
-  "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
-  "start": "npm run dev",
-  "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts build"
-},
+  "scripts": {
+    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider SASS_SILENCE_DEPRECATIONS=legacy-js-api react-scripts start",
+    "start": "npm run dev",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider SASS_SILENCE_DEPRECATIONS=legacy-js-api react-scripts build",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,scss,css}\" \".eslintrc\" \".prettierrc\" \"package.json\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,scss,css}\" \".eslintrc\" \".prettierrc\" \"package.json\""
+  },
   "browserslist": {
     "production": [
       ">0.2%",

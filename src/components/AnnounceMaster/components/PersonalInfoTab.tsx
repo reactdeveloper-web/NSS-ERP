@@ -1,202 +1,222 @@
 import React from 'react';
-import { PersonalInfoForm, SalutationOption } from '../types';
+import {
+  AnnounceValidationErrors,
+  PersonalInfoForm,
+  SalutationOption,
+} from '../types';
+import { CountryField } from '../../Common/CountryField';
+import { DistrictField } from '../../Common/DistrictField';
+import { FloatingInputField } from '../../Common/FloatingInputField';
+import { FloatingSelectField } from '../../Common/FloatingSelectField';
+import { PincodeField } from '../../Common/PincodeField';
+import { StateField } from '../../Common/StateField';
 
 interface PersonalInfoTabProps {
   form: PersonalInfoForm;
   salutations: SalutationOption[];
+  stateOptions: { value: string; label: string }[];
+  districtOptions: { value: string; label: string }[];
+  isPincodeLocationLocked: boolean;
+  isViewMode?: boolean;
+  errors: AnnounceValidationErrors;
   onChange: <K extends keyof PersonalInfoForm>(
     field: K,
     value: PersonalInfoForm[K],
   ) => void;
 }
 
-export const PersonalInfoTab = ({ form, salutations, onChange }: PersonalInfoTabProps) => {
+export const PersonalInfoTab = ({
+  form,
+  salutations,
+  stateOptions,
+  districtOptions,
+  isPincodeLocationLocked,
+  isViewMode = false,
+  errors,
+  onChange,
+}: PersonalInfoTabProps) => {
+  const fallbackStateOptions = [
+    { value: 'Rajasthan', label: 'Rajasthan' },
+    { value: 'Delhi', label: 'Delhi' },
+    { value: 'Gujarat', label: 'Gujarat' },
+  ];
+
   const salutationOptions =
-    form.salutation && !salutations.some((salutation) => salutation.value === form.salutation)
+    form.salutation &&
+    !salutations.some(salutation => salutation.value === form.salutation)
       ? [{ value: form.salutation, label: form.salutation }, ...salutations]
       : salutations;
+  const resolvedStateOptions =
+    stateOptions.length > 0 ? stateOptions : fallbackStateOptions;
+  const stateSelectOptions =
+    form.state &&
+    !resolvedStateOptions.some(state => state.value === form.state)
+      ? [{ value: form.state, label: form.state }, ...resolvedStateOptions]
+      : resolvedStateOptions;
+  const districtSelectOptions =
+    form.district &&
+    !districtOptions.some(district => district.value === form.district)
+      ? [{ value: form.district, label: form.district }, ...districtOptions]
+      : districtOptions;
 
   return (
-    <div>
-      <div className="text-muted fs-7 mb-4">
+    <div className="announce-master-panel">
+      <div className="announce-master-helper-text">
         Donor ID empty: please fill personal details.
       </div>
 
-      <div className="row g-5">
-        
-
-        <div className="col-md-2">
-          <div className="form-floating">
-            <input
-              id="mobileNo"
-              type="tel"
-              className="form-control"
-              placeholder=" "
-              value={form.mobileNo}
-              onChange={(event) => onChange('mobileNo', event.target.value)}
-            />
-            <label htmlFor="mobileNo">
-              Mobile No. <span className="text-danger">*</span>
-            </label>
+      <div className="row g-4">
+        <div className="col-lg-3 col-md-6">
+          <div className="row g-4">
+            <div className="col-lg-4">
+              <FloatingSelectField
+                id="salutation"
+                label="Salutation"
+                value={form.salutation}
+                options={salutationOptions}
+                disabled={form.salutationLocked || isViewMode}
+                onChange={value => onChange('salutation', value)}
+                error={errors.salutation}
+              />
+            </div>
+            <div className="col-lg-8">
+              <FloatingInputField
+                id="announcerName"
+                label={
+                  <>
+                    Announcer Name <span className="text-danger">*</span>
+                  </>
+                }
+                value={form.announcerName}
+                onChange={value => onChange('announcerName', value)}
+                disabled={isViewMode}
+                error={errors.announcerName}
+              />
+            </div>
           </div>
         </div>
 
-        <div className="col-md-2">
-          <div className="form-floating">
-            <input
-              id="whatsappNo"
-              type="tel"
-              className="form-control"
-              placeholder=" "
-              value={form.whatsappNo}
-              onChange={(event) => onChange('whatsappNo', event.target.value)}
-            />
-            <label htmlFor="whatsappNo">WhatsApp No.</label>
-          </div>
-        </div>
-        <div className="col-md-2">
-          <div className="form-floating">
-            <select
-              id="salutation"
-              className="form-select"
-              value={form.salutation}
-              disabled={form.salutationLocked}
-              onChange={(event) => onChange('salutation', event.target.value)}
-            >
-              <option value="">Select</option>
-              {salutationOptions.map((salutation) => (
-                <option key={salutation.value} value={salutation.value}>
-                  {salutation.label}
-                </option>
-              ))}
-            </select>
-            <label htmlFor="salutation">Salutation</label>
-          </div>
+        <div className="col-lg-3 col-md-6">
+          <FloatingInputField
+            id="mobileNo"
+            type="tel"
+            label={
+              <>
+                Mobile No. <span className="text-danger">*</span>
+              </>
+            }
+            value={form.mobileNo}
+            onChange={value => onChange('mobileNo', value)}
+            disabled={isViewMode}
+            error={errors.mobileNo}
+          />
         </div>
 
-        <div className="col-md-3">
-          <div className="form-floating">
-            <input
-              id="announcerName"
-              type="text"
-              className="form-control"
-              placeholder=" "
-              value={form.announcerName}
-              onChange={(event) => onChange('announcerName', event.target.value)}
-            />
-            <label htmlFor="announcerName">
-              Announcer Name <span className="text-danger">*</span>
-            </label>
-          </div>
+        <div className="col-lg-3 col-md-6">
+          <FloatingInputField
+            id="whatsappNo"
+            type="tel"
+            label="WhatsApp No."
+            value={form.whatsappNo}
+            onChange={value => onChange('whatsappNo', value)}
+            disabled={isViewMode}
+          />
         </div>
 
-        <div className="col-md-3">
-          <label className="form-check form-check-custom form-check-solid pt-3">
+        <div className="col-lg-3 col-md-6">
+          <label className="announce-master-checkbox form-check m-0 p-0">
             <input
               className="form-check-input"
               type="checkbox"
               checked={form.announceInOtherName}
-              onChange={(event) =>
+              disabled={isViewMode}
+              onChange={event =>
                 onChange('announceInOtherName', event.target.checked)
               }
             />
-            <span className="form-check-label fw-semibold">
-              Announce in someone else&apos;s name
-            </span>
+            <span>Announce in someone else&apos;s name</span>
           </label>
         </div>
-
         {form.announceInOtherName ? (
-          <div className="col-md-4">
-            <div className="row g-5">
-              <div className="col-md-6">
-                <div className="form-floating">
-                  <input
-                    id="announcedForName"
-                    type="text"
-                    className="form-control"
-                    placeholder=" "
-                    value={form.announcedForName}
-                    onChange={(event) =>
-                      onChange('announcedForName', event.target.value)
-                    }
+          <>
+            <div className="col-lg-3 col-md-6">
+              <div className="row g-4">
+                <div className="col-lg-4">
+                  <FloatingSelectField
+                    id="salutationOther"
+                    label="Salutation"
+                    value={form.otherSalutation}
+                    options={salutationOptions}
+                    disabled={isViewMode}
+                    onChange={value => onChange('otherSalutation', value)}
                   />
-                  <label htmlFor="announcedForName">
-                    Announcer In The Name Of <span className="text-danger">*</span>
-                  </label>
                 </div>
-              </div>
-
-              <div className="col-md-6">
-                <div className="form-floating">
-                  <input
-                    id="relationName"
-                    type="text"
-                    className="form-control"
-                    placeholder=" "
-                    value={form.relationName}
-                    onChange={(event) => onChange('relationName', event.target.value)}
+                <div className="col-lg-8">
+                  <FloatingInputField
+                    id="announcedForName"
+                    label={
+                      <>
+                        Announcer In The Name Of{' '}
+                        <span className="text-danger">*</span>
+                      </>
+                    }
+                    value={form.announcedForName}
+                    onChange={value => onChange('announcedForName', value)}
+                    disabled={isViewMode}
+                    error={errors.announcedForName}
                   />
-                  <label htmlFor="relationName">Relation</label>
                 </div>
               </div>
             </div>
-          </div>
+
+            <div className="col-lg-3 col-md-6">
+              <FloatingInputField
+                id="relationName"
+                label="Relation"
+                value={form.relationName}
+                onChange={value => onChange('relationName', value)}
+                disabled={isViewMode}
+              />
+            </div>
+          </>
         ) : null}
 
-        <div className="col-md-2">
-          <div className="form-floating">
-            <input
-              id="pincode"
-              type="text"
-              className="form-control"
-              placeholder=" "
-              value={form.pincode}
-              onChange={(event) => onChange('pincode', event.target.value)}
-            />
-            <label htmlFor="pincode">Pincode</label>
-          </div>
+        <div className="col-lg-3 col-md-6">
+          <PincodeField
+            value={form.pincode}
+            onChange={value => onChange('pincode', value)}
+            disabled={isViewMode}
+            error={errors.pincode}
+          />
         </div>
 
-        <div className="col-md-2">
-          <div className="form-floating">
-            <select id="country" className="form-select" value={form.country} disabled>
-              <option value="India">India</option>
-            </select>
-            <label htmlFor="country">Country</label>
-          </div>
+        <div className="col-lg-3 col-md-6">
+          <CountryField
+            value={form.country}
+            onChange={value => onChange('country', value)}
+            disabled={isViewMode}
+            error={errors.country}
+          />
         </div>
 
-        <div className="col-md-2">
-          <div className="form-floating">
-            <select
-              id="state"
-              className="form-select"
-              value={form.state}
-              disabled={form.stateLocked}
-              onChange={(event) => onChange('state', event.target.value)}
-            >
-              <option value="">Select</option>
-              <option value="Rajasthan">Rajasthan</option>
-              <option value="Delhi">Delhi</option>
-              <option value="Gujarat">Gujarat</option>
-            </select>
-            <label htmlFor="state">State</label>
-          </div>
+        <div className="col-lg-3 col-md-6">
+          <StateField
+            value={form.state}
+            options={stateSelectOptions}
+            disabled={form.stateLocked || isPincodeLocationLocked || isViewMode}
+            onChange={value => onChange('state', value)}
+            error={errors.state}
+          />
         </div>
 
-        <div className="col-md-2">
-          <div className="form-floating">
-            <input
-              id="district"
-              type="text"
-              className="form-control"
-              placeholder=" "
-              value={form.district}
-              onChange={(event) => onChange('district', event.target.value)}
-            />
-            <label htmlFor="district">District</label>
-          </div>
+        <div className="col-lg-3 col-md-6">
+          <DistrictField
+            value={form.district}
+            options={districtSelectOptions}
+            disabled={isPincodeLocationLocked || isViewMode}
+            onChange={value => onChange('district', value)}
+            error={errors.district}
+          />
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@ import { Drawer, Button } from 'antd';
 
 export const AppHeader = () => {
   const { pathname } = useLocation();
+  const normalizedPathname = pathname.toLowerCase();
   const [visible, setVisible] = useState(false);
   const showDrawer = () => {
     setVisible(true);
@@ -18,9 +19,10 @@ export const AppHeader = () => {
   };
 
   if (
-    pathname === PATH.ANNOUNCE_MASTER ||
-    pathname === PATH.DASHBOARD ||
-    pathname === PATH.DUMMY
+    normalizedPathname === PATH.ANNOUNCE_MASTER.toLowerCase() ||
+    normalizedPathname === PATH.CIT.toLowerCase() ||
+    normalizedPathname === PATH.PROFILE.toLowerCase() ||
+    normalizedPathname === PATH.DASHBOARD.toLowerCase()
   ) {
     return null;
   }

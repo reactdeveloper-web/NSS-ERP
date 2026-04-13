@@ -5,7 +5,7 @@ import { NotFound } from 'src/components/Error/404';
 const _NotFoundPage = () => {
   return (
     // <PageLayout>
-      <NotFound />
+    <NotFound />
     // </PageLayout>
   );
 };

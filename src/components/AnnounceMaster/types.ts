@@ -25,6 +25,7 @@ export interface AnnounceEventForm {
 export interface PersonalInfoForm {
   salutation: string;
   salutationLocked: boolean;
+  otherSalutation: string;
   mobileNo: string;
   whatsappNo: string;
   announcerName: string;
@@ -43,6 +44,9 @@ export interface AnnounceDetailsForm {
   occasionDate: string;
   occasionRemark: string;
   causeHead: string;
+  causeHeadDate: string;
+  namePlateName: string;
+  donorInstruction: string;
   purpose: string;
   quantity: number;
   paymentMode: string;
@@ -51,6 +55,21 @@ export interface AnnounceDetailsForm {
   expectedTime: string;
   isMotivated: boolean;
   motivatedAmount: string;
+}
+
+export interface AddedAnnounceCause {
+  id: number;
+  causeHead: string;
+  causeHeadLabel: string;
+  causeHeadPurposeId: string;
+  purpose: string;
+  purposeLabel: string;
+  yojnaId: string;
+  quantity: number;
+  amount: string;
+  causeHeadDate: string;
+  namePlateName: string;
+  donorInstruction: string;
 }
 
 export interface FollowUpForm {
@@ -87,8 +106,47 @@ export interface SalutationOption {
   label: string;
 }
 
+export interface EventOption {
+  value: string;
+  label: string;
+  purposeId?: string;
+  yojnaId?: string;
+  qtyValue?: string;
+  amountValue?: string;
+  stateCode?: string;
+  districtCode?: string;
+}
+
+export type AnnounceValidationField =
+  | 'announceDate'
+  | 'salutation'
+  | 'announcerName'
+  | 'announcedForName'
+  | 'mobileNo'
+  | 'pincode'
+  | 'country'
+  | 'state'
+  | 'district'
+  | 'eventName'
+  | 'occasionType'
+  | 'occasionDate'
+  | 'occasionRemark'
+  | 'causeHead'
+  | 'causeHeadDate'
+  | 'purpose'
+  | 'paymentMode'
+  | 'announceAmount'
+  | 'howToDonate'
+  | 'motivatedAmount'
+  | 'bankSelection';
+
+export type AnnounceValidationErrors = Partial<
+  Record<AnnounceValidationField, string>
+>;
+
 export type AnnouncerTabKey =
   | 'personal'
+  | 'announceEvent'
   | 'announceDetails'
   | 'bankDetails'
   | 'followUp';

@@ -1,80 +1,172 @@
 import React from 'react';
-import { purposeOptions } from '../data';
-import { AnnounceDetailsForm } from '../types';
+import {
+  AddedAnnounceCause,
+  AnnounceDetailsForm,
+  AnnounceValidationErrors,
+  EventOption,
+} from '../types';
+import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
+import { FloatingInputField } from 'src/components/Common/FloatingInputField';
+import { FloatingSelectField } from 'src/components/Common/FloatingSelectField';
+import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 
 interface AnnounceDetailsTabProps {
   form: AnnounceDetailsForm;
-  amount: number;
+  addedCauses: AddedAnnounceCause[];
+  editingCauseId: number | null;
+  occasionTypeOptions: EventOption[];
+  causeHeadOptions: EventOption[];
+  purposeOptions: EventOption[];
+  howToDonateOptions: EventOption[];
+  amount: string;
+  isAmountEditable: boolean;
+  quantityControlMode: 'disabled' | 'stepper' | 'select';
+  quantityOptions: { value: number; label: string }[];
+  isAddCauseDisabled: boolean;
+  isViewMode?: boolean;
+  errors: AnnounceValidationErrors;
+  onAmountChange: (value: string) => void;
   onChange: <K extends keyof AnnounceDetailsForm>(
     field: K,
     value: AnnounceDetailsForm[K],
   ) => void;
+  onAddCause: () => void;
+  onEditCause: (causeId: number) => void;
+  onDeleteCause: (causeId: number) => void;
   onQuantityChange: (nextQuantity: number) => void;
 }
 
 export const AnnounceDetailsTab = ({
   form,
+  addedCauses,
+  editingCauseId,
+  occasionTypeOptions,
+  causeHeadOptions,
+  purposeOptions,
+  howToDonateOptions,
   amount,
+  isAmountEditable,
+  quantityControlMode,
+  quantityOptions,
+  isAddCauseDisabled,
+  isViewMode = false,
+  errors,
+  onAmountChange,
   onChange,
+  onAddCause,
+  onEditCause,
+  onDeleteCause,
   onQuantityChange,
 }: AnnounceDetailsTabProps) => {
+  const renderQuantityField = (
+    quantity: number,
+    disabled: boolean,
+    onQuantityInputChange?: (nextQuantity: number) => void,
+  ) =>
+    quantityControlMode === 'select' ? (
+      <div className="col-md-4">
+        <FloatingSelectField
+          id="quantity"
+          label="Quantity"
+          value={String(quantity || '')}
+          options={quantityOptions.map(option => ({
+            value: String(option.value),
+            label: option.label,
+          }))}
+          disabled={disabled}
+          onChange={value => onQuantityInputChange?.(Number(value) || 1)}
+        />
+      </div>
+    ) : (
+      <div className="col-md-2">
+        <div className="form-floating ant-input-floating quantity-floating">
+          <div className="input-group ant-input-floating-control quantity-input-group">
+            <button
+              className="btn btn-light quantity-input-btn"
+              type="button"
+              disabled={disabled || quantityControlMode === 'disabled'}
+              onClick={() => onQuantityInputChange?.(quantity - 1)}
+            >
+              -
+            </button>
+            <input
+              id="quantity"
+              type="text"
+              className="form-control text-center quantity-input-field"
+              value={quantity}
+              inputMode="numeric"
+              placeholder=" "
+              disabled={disabled || quantityControlMode === 'disabled'}
+              onChange={event =>
+                onQuantityInputChange?.(Number(event.target.value) || 1)
+              }
+            />
+            <button
+              className="btn btn-light quantity-input-btn"
+              type="button"
+              disabled={disabled || quantityControlMode === 'disabled'}
+              onClick={() => onQuantityInputChange?.(quantity + 1)}
+            >
+              +
+            </button>
+          </div>
+          <label htmlFor="quantity">Quantity</label>
+        </div>
+      </div>
+    );
+
   return (
-    <div>
-      <div className="text-muted fs-7 mb-4">
+    <div className="announce-master-panel">
+      <div className="announce-master-helper-text">
+        {' '}
         In Memory dropdown + Purpose fixed amount
       </div>
-
       <div className="row g-5">
         <div className="col-md-3">
-          <div className="form-floating">
-            <select
-              id="occasionType"
-              className="form-select"
-              value={form.occasionType}
-              onChange={(event) => onChange('occasionType', event.target.value)}
-            >
-              <option value="">Select</option>
-              <option value="birthday">Birthday</option>
-              <option value="anniversary">Anniversary</option>
-              <option value="punyatithi">Punya Tithi</option>
-              <option value="other">Other</option>
-            </select>
-            <label htmlFor="occasionType">
-              In Memory / Occasion Type <span className="text-danger">*</span>
-            </label>
-          </div>
+          <FloatingSelectField
+            id="occasionType"
+            label={
+              <>
+                In Memory / Occasion Type <span className="text-danger">*</span>
+              </>
+            }
+            value={form.occasionType}
+            options={occasionTypeOptions}
+            disabled={isViewMode}
+            onChange={value => onChange('occasionType', value)}
+            error={errors.occasionType}
+          />
         </div>
 
         <div className="col-md-2">
-          <div className="form-floating">
-            <input
-              id="occasionDate"
-              type="date"
-              className="form-control"
-              placeholder=" "
-              value={form.occasionDate}
-              onChange={(event) => onChange('occasionDate', event.target.value)}
-            />
-            <label htmlFor="occasionDate">
-              Occasion Date <span className="text-danger">*</span>
-            </label>
-          </div>
+          <FloatingDatePicker
+            id="occasionDate"
+            label={
+              <>
+                Occasion Date <span className="text-danger">*</span>
+              </>
+            }
+            value={form.occasionDate}
+            onChange={value => onChange('occasionDate', value)}
+            disabled={isViewMode}
+            readOnly={isViewMode}
+            error={errors.occasionDate}
+          />
         </div>
 
         <div className="col-md-3">
-          <div className="form-floating">
-            <input
-              id="occasionRemark"
-              type="text"
-              className="form-control"
-              placeholder=" "
-              value={form.occasionRemark}
-              onChange={(event) => onChange('occasionRemark', event.target.value)}
-            />
-            <label htmlFor="occasionRemark">
-              Remark <span className="text-danger">*</span>
-            </label>
-          </div>
+          <FloatingInputField
+            id="occasionRemark"
+            label={
+              <>
+                Remark <span className="text-danger">*</span>
+              </>
+            }
+            value={form.occasionRemark}
+            onChange={value => onChange('occasionRemark', value)}
+            disabled={isViewMode}
+            error={errors.occasionRemark}
+          />
         </div>
       </div>
 
@@ -82,168 +174,337 @@ export const AnnounceDetailsTab = ({
 
       <div className="row g-5">
         <div className="col-md-3">
-          <div className="form-floating">
-            <select
-              id="causeHead"
-              className="form-select"
-              value={form.causeHead}
-              onChange={(event) => onChange('causeHead', event.target.value)}
-            >
-              <option value="">Select</option>
-              <option value="limb">Artificial Limb</option>
-              <option value="surgery">Corrective Surgery</option>
-              <option value="education">Education</option>
-              <option value="food">Food / Seva</option>
-            </select>
-            <label htmlFor="causeHead">
-              Cause Head <span className="text-danger">*</span>
-            </label>
-          </div>
+          <FloatingSelectField
+            id="causeHead"
+            label={
+              <>
+                Cause Head <span className="text-danger">*</span>
+              </>
+            }
+            value={form.causeHead}
+            options={causeHeadOptions}
+            disabled={isViewMode}
+            onChange={value => onChange('causeHead', value)}
+            error={errors.causeHead}
+          />
         </div>
 
         <div className="col-md-3">
-          <div className="form-floating">
-            <select
-              id="purpose"
-              className="form-select"
-              value={form.purpose}
-              onChange={(event) => onChange('purpose', event.target.value)}
-            >
-              {purposeOptions.map((option) => (
-                <option key={option.value || 'empty'} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <label htmlFor="purpose">
-              Purpose <span className="text-danger">*</span>
-            </label>
-          </div>
+          <FloatingSelectField
+            id="purpose"
+            label={
+              <>
+                Purpose <span className="text-danger">*</span>
+              </>
+            }
+            value={form.purpose}
+            options={purposeOptions}
+            disabled={isViewMode}
+            onChange={value => onChange('purpose', value)}
+            error={errors.purpose}
+          />
           <div className="text-muted fs-8 mt-2">
             Purpose amount fixed - amount auto calculate
           </div>
         </div>
+        <div className="col-md-5">
+          <div className="row g-5">
+            {quantityControlMode === 'stepper' ||
+            quantityControlMode === 'disabled' ? (
+              <div className="col-md-4">
+                <div className="form-floating ant-input-floating quantity-floating">
+                  <div className="input-group ant-input-floating-control quantity-input-group">
+                    <button
+                      className="btn btn-light quantity-input-btn"
+                      type="button"
+                      disabled={
+                        quantityControlMode === 'disabled' || isViewMode
+                      }
+                      onClick={() => onQuantityChange(form.quantity - 1)}
+                    >
+                      -
+                    </button>
+                    <input
+                      id="quantity"
+                      type="text"
+                      className="form-control text-center quantity-input-field"
+                      value={form.quantity}
+                      inputMode="numeric"
+                      placeholder=" "
+                      disabled={
+                        quantityControlMode === 'disabled' || isViewMode
+                      }
+                      onChange={event =>
+                        onQuantityChange(Number(event.target.value) || 1)
+                      }
+                    />
+                    <button
+                      className="btn btn-light quantity-input-btn"
+                      type="button"
+                      disabled={
+                        quantityControlMode === 'disabled' || isViewMode
+                      }
+                      onClick={() => onQuantityChange(form.quantity + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <label htmlFor="quantity">Quantity</label>
+                </div>
+              </div>
+            ) : null}
 
-        <div className="col-md-2">
-          <label className="form-label fw-semibold">Quantity</label>
-          <div className="input-group">
-            <button
-              className="btn btn-light"
-              type="button"
-              onClick={() => onQuantityChange(form.quantity - 1)}
-            >
-              -
-            </button>
-            <input
-              type="text"
-              className="form-control text-center"
-              value={form.quantity}
-              inputMode="numeric"
-              onChange={(event) =>
-                onQuantityChange(Number(event.target.value) || 1)
-              }
-            />
-            <button
-              className="btn btn-light"
-              type="button"
-              onClick={() => onQuantityChange(form.quantity + 1)}
-            >
-              +
-            </button>
+            {quantityControlMode === 'select'
+              ? renderQuantityField(form.quantity, isViewMode, onQuantityChange)
+              : null}
+
+            <div className="col-md-4">
+              <FloatingInputField
+                id="autoAmount"
+                label={
+                  <>
+                    Amount (Auto) <span className="text-danger">*</span>
+                  </>
+                }
+                value={amount}
+                onChange={onAmountChange}
+                readOnly={!isAmountEditable || isViewMode}
+                disabled={isViewMode}
+                className={`form-control ant-input-floating-control ${
+                  isAmountEditable ? '' : 'form-control-solid'
+                }`}
+                error={errors.announceAmount}
+              />
+              {!isAmountEditable && errors.announceAmount ? (
+                <div className="announce-master-field-error">
+                  {errors.announceAmount}
+                </div>
+              ) : null}
+              <div className="text-muted fs-8 mt-2">
+                {isAmountEditable
+                  ? 'Manual amount allowed for selected purpose'
+                  : 'Auto amount fetched/calculated'}
+              </div>
+            </div>
+            {['150'].includes(form.causeHead) ? (
+              <div className="col-md-4">
+                <FloatingDatePicker
+                  id="causeHeadDate"
+                  label="Bhojan Miti Date"
+                  value={form.causeHeadDate}
+                  onChange={value => onChange('causeHeadDate', value)}
+                  disabled={isViewMode}
+                  readOnly={isViewMode}
+                  error={errors.causeHeadDate}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
-
-        <div className="col-md-2">
-          <div className="form-floating">
-            <input
-              id="autoAmount"
-              type="text"
-              className="form-control form-control-solid"
-              placeholder=" "
-              value={amount ? amount.toLocaleString('en-IN') : ''}
-              readOnly
-            />
-            <label htmlFor="autoAmount">
-              Amount (Auto) <span className="text-danger">*</span>
-            </label>
-          </div>
-          <div className="text-muted fs-8 mt-2">Auto = fixed rate x quantity</div>
+        <div className="col-md-1">
+          <button
+            className="btn btn-primary fs-6 px-0 w-100"
+            type="button"
+            disabled={isAddCauseDisabled || isViewMode}
+            onClick={onAddCause}
+          >
+            {editingCauseId === null ? 'Add Cause' : 'Update Cause'}
+          </button>
         </div>
       </div>
 
+      {addedCauses.length ? (
+        <div className="mt-6">
+          {addedCauses.map(cause => (
+            <div className="card border-0 mb-5" key={cause.id}>
+              <div className="row g-5">
+                <div className="col-md-3">
+                  <FloatingSelectField
+                    id={`causeHead-${cause.id}`}
+                    label={
+                      <>
+                        Cause Head <span className="text-danger">*</span>
+                      </>
+                    }
+                    value={cause.causeHead}
+                    options={causeHeadOptions}
+                    disabled
+                    onChange={() => undefined}
+                  />
+                </div>
+
+                <div className="col-md-3">
+                  <FloatingSelectField
+                    id={`purpose-${cause.id}`}
+                    label={
+                      <>
+                        Purpose <span className="text-danger">*</span>
+                      </>
+                    }
+                    value={cause.purpose}
+                    options={[
+                      {
+                        value: cause.purpose,
+                        label: cause.purposeLabel,
+                      },
+                    ]}
+                    disabled
+                    onChange={() => undefined}
+                  />
+                </div>
+                <div className="col-md-5">
+                  <div className="row g-5">
+                    <div className="col-md-4">
+                      <FloatingInputField
+                        id={`quantity-${cause.id}`}
+                        label="Quantity"
+                        value={String(cause.quantity)}
+                        onChange={() => undefined}
+                        disabled
+                      />
+                    </div>
+
+                    <div className="col-md-4">
+                      <FloatingInputField
+                        id={`autoAmount-${cause.id}`}
+                        label="Amount (Auto)"
+                        value={cause.amount}
+                        onChange={() => undefined}
+                        readOnly
+                        className="form-control ant-input-floating-control form-control-solid"
+                      />
+                    </div>
+
+                    {cause.causeHead === '150' ? (
+                      <div className="col-md-4">
+                        <FloatingDatePicker
+                          id={`causeHeadDate-${cause.id}`}
+                          label="Bhojan Miti Date"
+                          value={cause.causeHeadDate}
+                          disabled
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="col-md-1 d-flex">
+                  <button
+                    className="btn btn-light-primary text-center w-50"
+                    type="button"
+                    disabled={isViewMode}
+                    onClick={() => onEditCause(cause.id)}
+                  >
+                    <i className="fa fa-pen  fs-5"></i>
+                  </button>
+                  <button
+                    className="btn btn-light-danger  w-50 text-center"
+                    type="button"
+                    disabled={isViewMode}
+                    onClick={() => onDeleteCause(cause.id)}
+                  >
+                    <i className="fa fa-trash  fs-5"></i>
+                  </button>
+                </div>
+              </div>
+
+              {['162', '167', '168'].includes(cause.causeHead) ? (
+                <div className="row g-5 mt-1">
+                  <div className="col-md-3">
+                    <FloatingInputField
+                      id={`namePlateName-${cause.id}`}
+                      label="Name Plate Name"
+                      value={cause.namePlateName}
+                      onChange={() => undefined}
+                      disabled
+                    />
+                  </div>
+
+                  <div className="col-md-9">
+                    <div className="form-floating ant-input-floating">
+                      <textarea
+                        id={`donorInstruction-${cause.id}`}
+                        className="form-control ant-input-floating-control"
+                        placeholder=" "
+                        value={cause.donorInstruction}
+                        disabled
+                        style={{ minHeight: '42px' }}
+                      />
+                      <label htmlFor={`donorInstruction-${cause.id}`}>
+                        Donor Instruction
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       <div className="row g-5 mt-1">
         <div className="col-md-2">
-          <div className="form-floating">
-            <select
-              id="paymentMode"
-              className="form-select"
-              value={form.paymentMode}
-              onChange={(event) => onChange('paymentMode', event.target.value)}
-            >
-              <option value="">Select</option>
-              <option value="Cash">Cash</option>
-              <option value="UPI">UPI</option>
-              <option value="NetBanking">NetBanking</option>
-              <option value="Cheque">Cheque</option>
-              <option value="Card">Card</option>
-            </select>
-            <label htmlFor="paymentMode">Payment Mode</label>
-          </div>
+          <FloatingSelectField
+            id="paymentMode"
+            label="Payment Mode"
+            value={form.paymentMode}
+            options={[
+              { value: '', label: 'Select' },
+              { value: 'Cash', label: 'Cash' },
+              { value: 'Cheque', label: 'Cheque' },
+              { value: 'DD', label: 'DD' },
+              { value: 'Money Order', label: 'Money Order' },
+              { value: 'Online', label: 'Online' },
+              { value: 'Pay-In-Slip', label: 'Pay-In-Slip' },
+              { value: 'Material', label: 'Material' },
+            ]}
+            disabled={isViewMode}
+            onChange={value => onChange('paymentMode', value)}
+            error={errors.paymentMode}
+          />
         </div>
 
         <div className="col-md-2">
-          <div className="form-floating">
-            <select
-              id="howToDonate"
-              className="form-select"
-              value={form.howToDonate}
-              onChange={(event) => onChange('howToDonate', event.target.value)}
-            >
-              <option value="">Select</option>
-              <option value="Bank Transfer">Bank Transfer</option>
-              <option value="UPI Link">UPI Link</option>
-              <option value="Payment Gateway">Payment Gateway</option>
-              <option value="Donation Box">Donation Box</option>
-            </select>
-            <label htmlFor="howToDonate">How To Donate</label>
-          </div>
+          <FloatingSelectField
+            id="howToDonate"
+            label="How To Donate"
+            value={form.howToDonate}
+            options={howToDonateOptions}
+            disabled={isViewMode}
+            onChange={value => onChange('howToDonate', value)}
+            error={errors.howToDonate}
+          />
         </div>
 
         <div className="col-md-2">
-          <div className="form-floating">
-            <input
-              id="expectedDate"
-              type="date"
-              className="form-control"
-              placeholder=" "
-              value={form.expectedDate}
-              onChange={(event) => onChange('expectedDate', event.target.value)}
-            />
-            <label htmlFor="expectedDate">Expected Donation Date</label>
-          </div>
+          <FloatingDatePicker
+            id="expectedDate"
+            label="Expected Donation Date"
+            value={form.expectedDate}
+            onChange={value => onChange('expectedDate', value)}
+            disabled={isViewMode}
+            readOnly={isViewMode}
+          />
         </div>
 
         <div className="col-md-2">
-          <div className="form-floating">
-            <input
-              id="expectedTime"
-              type="time"
-              className="form-control"
-              placeholder=" "
-              value={form.expectedTime}
-              onChange={(event) => onChange('expectedTime', event.target.value)}
-            />
-            <label htmlFor="expectedTime">Expected Donation Time</label>
-          </div>
+          <FloatingTimePicker
+            id="expectedTime"
+            label="Expected Donation Time"
+            value={form.expectedTime}
+            onChange={value => onChange('expectedTime', value)}
+            disabled={isViewMode}
+          />
         </div>
 
         <div className="col-md-1">
-          <label className="form-check form-check-custom form-check-solid pt-10">
+          <label className="form-check form-check-custom form-check-solid pt-3">
             <input
               className="form-check-input"
               type="checkbox"
               checked={form.isMotivated}
-              onChange={(event) => onChange('isMotivated', event.target.checked)}
+              disabled={isViewMode}
+              onChange={event => onChange('isMotivated', event.target.checked)}
             />
             <span className="form-check-label fw-semibold">Motivated</span>
           </label>
@@ -251,24 +512,51 @@ export const AnnounceDetailsTab = ({
 
         {form.isMotivated ? (
           <div className="col-md-3">
-            <div className="form-floating">
-              <input
-                id="motivatedAmount"
-                type="text"
-                className="form-control"
-                placeholder=" "
-                value={form.motivatedAmount}
-                onChange={(event) =>
-                  onChange('motivatedAmount', event.target.value)
-                }
-              />
-              <label htmlFor="motivatedAmount">
-                Motivated Amount <span className="text-danger">*</span>
-              </label>
-            </div>
+            <FloatingInputField
+              id="motivatedAmount"
+              label={
+                <>
+                  Motivated Amount <span className="text-danger">*</span>
+                </>
+              }
+              value={form.motivatedAmount}
+              onChange={value => onChange('motivatedAmount', value)}
+              disabled={isViewMode}
+              error={errors.motivatedAmount}
+            />
           </div>
         ) : null}
       </div>
+      {['162', '167', '168'].includes(form.causeHead) ? (
+        <div className="row g-5 mt-1">
+          <div className="col-md-3">
+            <FloatingInputField
+              id="namePlateName"
+              label="Name Plate Name"
+              value={form.namePlateName}
+              onChange={value => onChange('namePlateName', value)}
+              disabled={isViewMode}
+            />
+          </div>
+
+          <div className="col-md-9">
+            <div className="form-floating ant-input-floating">
+              <textarea
+                id="donorInstruction"
+                className="form-control ant-input-floating-control"
+                placeholder=" "
+                value={form.donorInstruction}
+                disabled={isViewMode}
+                onChange={event =>
+                  onChange('donorInstruction', event.target.value)
+                }
+                style={{ minHeight: '42px' }}
+              />
+              <label htmlFor="donorInstruction">Donor Instruction</label>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

@@ -17,14 +17,13 @@ const mapDispatchToProps = {
 };
 const connector = connect(mapStateToProps, mapDispatchToProps);
 interface Props extends ConnectedProps<typeof connector> {}
-  const hrefa: React.CSSProperties = {
-  margin: "0 auto"
+const hrefa: React.CSSProperties = {
+  margin: '0 auto',
 };
 
 const _Forgot = (props: Props) => {
-  // eslint-disable-next-line
   const [error, setError] = useState('');
-  const { forgot, isAuthenticated , isforgot} = props;
+  const { forgot, isforgot } = props;
 
   const onFinish = async formData => {
     try {
@@ -33,77 +32,80 @@ const _Forgot = (props: Props) => {
       setError(error.payload.message);
     }
   };
-  const onFinishFailed = errorInfo => {
-    // eslint-disable-next-line
-    console.log('Failed:', errorInfo);
-  };
-  console.log('isAuthenticated',isAuthenticated)
   if (isforgot) {
     return <Redirect to={PATH.HOME} />;
   }
+
   return (
-     <div className="d-flex flex-start text-center flex-column flex-column-fluid p-5 px-2 p-md-5">
-          <div className=" ant-layout-content fdd">
-            <div className="container">
-              {/* <!--begin::Logo--> */}
-              <a href="#" style={hrefa}>
-                <img alt="Logo" src={IMAGEPATH.LOGO} className="h-60px" />
-              </a>
-              {/* <!--end::Logo--> */}
-    
-              {/* <!--begin::Wrapper--> */}
-              <div className="w-lg-500px bg-body rounded shadow-sm p-10 p-lg-15 mx-auto">
-              
-                <Form
-                  name="forgot-form"
-                  className="forgot-form form w-100"
-                  initialValues={{ remember: true }}
-                  onFinish={onFinish}
-                >
-                  
-                  {/* <!--begin::Heading--> */}
-                  <div className="text-center mb-8">
-                    {/* <!--begin::Title--> */}
-                    <h1 className="text-dark mb-3">Forgot Password ?</h1>
-                    {/* <!--end::Title--> */}
-                    {/* <!--begin::Link--> */}
-                    <div className="text-gray-400 fw-bold fs-4">Enter your User ID to reset your password.</div>
-                    {/* <!--end::Link--> */}
+    <div className="login-logo d-flex vh-100">
+      <div className="bottom-bg d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
+        <div className="d-flex flex-start text-center flex-column flex-column-fluid p-5 px-2 p-md-5">
+          <div className="container">
+            {/* Logo */}
+            <img alt="Logo" src={IMAGEPATH.LOGO} className="h-60px" />
+
+            <div className="w-md-500px h-md-500px w-xxl-600px h-xxl-600px w-100 bg-body custom-rounded mx-auto d-flex flex-center p-4">
+              <Form
+                name="forgot-form"
+                className="form w-md-375px w-xxl-425px w-100"
+                onFinish={onFinish}
+              >
+                {/* Heading */}
+                <div className="text-center mb-8">
+                  <img src={IMAGEPATH.LOGIN_NSS} alt="" />
+                  <h1 className="nssTextColor mb-3 fw-normal">
+                    Forgot Password
+                  </h1>
+                  <div className="text-gray-400 fw-semibold fs-6">
+                    Enter your User ID to reset password
                   </div>
-                  
-                 	<div className="fv-row mb-10">
-                  <label className="form-label fw-bolder text-gray-900 fs-6">User ID</label>
+                </div>
+
+                {/* User ID Field */}
+                <div className="fv-row mb-8 d-flex flex-center position-relative">
                   <Form.Item
-                    name="userid" className='form-control fs-5 fw-normal ps-10'
-                    rules={[{ required: true, message: 'Please input your userid!' }]}
+                    name="userid"
+                    className="w-100"
+                    rules={[
+                      { required: true, message: 'Please enter your User ID!' },
+                    ]}
                   >
-                  
-                    <input className="form-control fs-5 fw-normal ps-10" type="text" name=""
-                    placeholder="Enter your ID" />
-    
+                    <Input
+                      className="form-control fs-5 fw-normal ps-10"
+                      placeholder="Enter your User ID"
+                    />
                   </Form.Item>
+
+                  <img
+                    src={IMAGEPATH.USERICON}
+                    alt=""
+                    className="position-absolute start-0 ms-2 top-0 mt-4"
+                  />
+                </div>
+
+                {/* Buttons */}
+                <div className="text-center">
+                  <button
+                    type="submit"
+                    className="btn btn-lg nssBtnColor text-white w-100 mb-5"
+                  >
+                    <span className="indicator-label fs-3 fw-normal">
+                      SUBMIT
+                    </span>
+                  </button>
+
+                  <div className="login-form-register-link-wrapper">
+                    <Link to={PATH.LOGIN} className="login-form-register-link">
+                      Back to Login
+                    </Link>
                   </div>
-    
-                   <div className="d-flex flex-wrap justify-content-center pb-lg-0">
-                   <button
-                      type="submit"
-                      id="kt_sign_in_submit"
-                      className="btn btn-lg btn-primary fw-bolder me-4"
-                    >
-                     <span className="indicator-label">Submit</span>
-                      <span className="indicator-progress">Please wait...
-                      <span className="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                    </button>
-                  <a href="sign-in.html" className="btn btn-lg btn-light-primary fw-bolder"> <NavLink className="navbar-item" to="/login">
-                            Cancel
-                          </NavLink></a>
-                  
-                  </div>
-                </Form>
-              </div>
+                </div>
+              </Form>
             </div>
           </div>
         </div>
+      </div>
+    </div>
   );
 };
 const Forgot = connector(_Forgot);

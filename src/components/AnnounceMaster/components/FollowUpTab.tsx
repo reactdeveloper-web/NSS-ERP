@@ -1,10 +1,17 @@
 import React from 'react';
+import { Select } from 'antd';
+import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
+import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 import { FollowUpForm, FollowUpItem } from '../types';
 
 interface FollowUpTabProps {
   form: FollowUpForm;
   items: FollowUpItem[];
-  onChange: <K extends keyof FollowUpForm>(field: K, value: FollowUpForm[K]) => void;
+  isViewMode?: boolean;
+  onChange: <K extends keyof FollowUpForm>(
+    field: K,
+    value: FollowUpForm[K],
+  ) => void;
   onAdd: () => void;
   onRemove: (id: number) => void;
 }
@@ -12,98 +19,124 @@ interface FollowUpTabProps {
 export const FollowUpTab = ({
   form,
   items,
+  isViewMode = false,
   onChange,
   onAdd,
   onRemove,
 }: FollowUpTabProps) => {
+  const renderFloatingSelect = (
+    id: keyof Pick<FollowUpForm, 'assignTo' | 'status'>,
+    label: string,
+    value: string,
+    options: { value: string; label: string }[],
+  ) => (
+    <div
+      className={`form-floating ant-select-floating ${
+        value ? 'has-value' : ''
+      }`}
+    >
+      <Select
+        id={id}
+        placeholder=""
+        showSearch
+        allowClear={!isViewMode}
+        disabled={isViewMode}
+        value={value || undefined}
+        onChange={nextValue => onChange(id, (nextValue as string) || '')}
+        optionFilterProp="label"
+        filterOption={(input, option) =>
+          String(option?.label ?? '')
+            .toLowerCase()
+            .includes(input.toLowerCase())
+        }
+        options={options.map(option => ({
+          value: option.value,
+          label: option.label,
+        }))}
+      />
+      <label htmlFor={id}>{label}</label>
+    </div>
+  );
+
   return (
     <div className="card border">
       <div className="card-header min-h-50px">
         <div className="card-title d-flex flex-column">
           <h5 className="fw-bold mb-1">Follow-up</h5>
-          <span className="text-muted fs-8">Add follow-up tasks / reminders</span>
+          <span className="text-muted fs-8">
+            Add follow-up tasks / reminders
+          </span>
         </div>
       </div>
 
       <div className="card-body">
         <div className="row g-5">
           <div className="col-md-3">
-            <div className="form-floating">
-              <input
-                id="followupDate"
-                type="date"
-                className="form-control"
-                placeholder=" "
-                value={form.date}
-                onChange={(event) => onChange('date', event.target.value)}
-              />
-              <label htmlFor="followupDate">Follow-up Date</label>
-            </div>
+            <FloatingDatePicker
+              id="followupDate"
+              label="Follow-up Date"
+              value={form.date}
+              onChange={value => onChange('date', value)}
+              disabled={isViewMode}
+              readOnly={isViewMode}
+            />
           </div>
 
           <div className="col-md-3">
-            <div className="form-floating">
-              <input
-                id="followupTime"
-                type="time"
-                className="form-control"
-                placeholder=" "
-                value={form.time}
-                onChange={(event) => onChange('time', event.target.value)}
-              />
-              <label htmlFor="followupTime">Follow-up Time</label>
-            </div>
+            <FloatingTimePicker
+              id="followupTime"
+              label="Follow-up Time"
+              value={form.time}
+              onChange={value => onChange('time', value)}
+              disabled={isViewMode}
+              readOnly={isViewMode}
+            />
           </div>
 
           <div className="col-md-3">
-            <div className="form-floating">
-              <select
-                id="assignTo"
-                className="form-select"
-                value={form.assignTo}
-                onChange={(event) => onChange('assignTo', event.target.value)}
-              >
-                <option value="">Select</option>
-                <option value="Contact Center Executive">Contact Center Executive</option>
-                <option value="Area Manager">Area Manager</option>
-                <option value="HOD - Contact Center">HOD - Contact Center</option>
-              </select>
-              <label htmlFor="assignTo">Assign To</label>
-            </div>
+            {renderFloatingSelect('assignTo', 'Assign To', form.assignTo, [
+              {
+                value: 'Contact Center Executive',
+                label: 'Contact Center Executive',
+              },
+              { value: 'Area Manager', label: 'Area Manager' },
+              {
+                value: 'HOD - Contact Center',
+                label: 'HOD - Contact Center',
+              },
+            ])}
           </div>
 
           <div className="col-md-3">
-            <div className="form-floating">
-              <select
-                id="followupStatus"
-                className="form-select"
-                value={form.status}
-                onChange={(event) => onChange('status', event.target.value)}
-              >
-                <option value="Open">Open</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Closed">Closed</option>
-              </select>
-              <label htmlFor="followupStatus">Status</label>
-            </div>
+            {renderFloatingSelect('status', 'Status', form.status, [
+              { value: 'Open', label: 'Open' },
+              { value: 'In Progress', label: 'In Progress' },
+              { value: 'Closed', label: 'Closed' },
+            ])}
           </div>
 
           <div className="col-md-9">
-            <div className="form-floating">
+            <div className="form-floating ant-input-floating">
               <input
                 id="followupNote"
                 type="text"
-                className="form-control"
+                className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.note}
-                onChange={(event) => onChange('note', event.target.value)}
+                disabled={isViewMode}
+                onChange={event => onChange('note', event.target.value)}
               />
               <label htmlFor="followupNote">Follow-up Note</label>
             </div>
           </div>
 
           <div className="col-md-3 d-flex align-items-end">
-            <button className="btn btn-primary w-100" type="button" onClick={onAdd}>
+            <button
+              className="btn btn-primary w-100"
+              type="button"
+              disabled={isViewMode}
+              onClick={onAdd}
+            >
               Add Follow-up
             </button>
           </div>
@@ -123,7 +156,7 @@ export const FollowUpTab = ({
             </thead>
             <tbody>
               {items.length ? (
-                items.map((item) => (
+                items.map(item => (
                   <tr key={item.id}>
                     <td>{item.date || '-'}</td>
                     <td>{item.time || '-'}</td>
@@ -134,6 +167,7 @@ export const FollowUpTab = ({
                       <button
                         className="btn btn-sm btn-light-danger"
                         type="button"
+                        disabled={isViewMode}
                         onClick={() => onRemove(item.id)}
                       >
                         Remove

@@ -1,6 +1,9 @@
+@use 'sass:color';
+@use 'config' as *;
+
 .homepage {
   position: relative;
-  background: url('../images/home2.jpeg') no-repeat center center/cover;
+  //background: url('../images/home2.jpeg') no-repeat center center/cover;
   height: 100vh;
 
   &-inner {
@@ -31,7 +34,7 @@
     padding: 2rem 8rem;
     border-radius: 4px;
     .home-text-light {
-      color: darken($white-color, 30%);
+      color: color.adjust($white-color, $lightness: -30%);
       span {
         color: $white-color;
       }
