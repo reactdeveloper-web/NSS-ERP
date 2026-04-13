@@ -1,5 +1,10 @@
 import React, { useEffect } from 'react';
+import { Menu, Grid } from 'antd';
+import { NavLink } from 'react-router-dom';
+import { LoginOutlined } from '@ant-design/icons';
+import { logout } from 'src/components/Auth/Auth.thunks';
 import { connect, ConnectedProps } from 'react-redux';
+import { PATH } from 'src/constants/paths';
 import { getTodos, clearProduct } from './Todos.thunks';
 import { Link, useHistory } from 'react-router-dom';
 
@@ -18,11 +23,16 @@ interface Props extends ConnectedProps<typeof connector> {}
 
 export const _TodosList = (props: Props) => {
   const history = useHistory();
+  //console.log('listview',todos);
   const { todos, getTodos, clearProduct } = props;
 
+  //let data = [{}];
   useEffect(() => {
     getTodos();
   }, [getTodos]);
+  console.log('props222222', props.todos);
+  // eslint-disable-next-line array-callback-return
+  console.log('todos', todos);
 
   return (
     <div className="card card-xl-stretch mb-xl-8">

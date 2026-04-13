@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
 type FlatpickrInstance = {
-  open?: () => void;
   destroy?: () => void;
   setDate?: (
     date: string | Date | Array<string | Date>,
@@ -58,27 +57,19 @@ export const FloatingDatePicker = ({
 }: FloatingDatePickerProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const pickerRef = useRef<FlatpickrInstance | null>(null);
-  const hasFlatpickr =
-    typeof window !== 'undefined' && typeof window.flatpickr === 'function';
 
   const handleOpenPicker = () => {
     if (disabled || readOnly) {
       return;
     }
 
-    pickerRef.current?.open?.();
-
-    if (pickerRef.current?.open) {
-      return;
-    }
-
     inputRef.current?.focus();
-    inputRef.current?.showPicker?.();
+    inputRef.current?.click();
   };
 
   useEffect(() => {
     const input = inputRef.current;
-    const canInitPicker = !disabled && !readOnly && hasFlatpickr;
+    const canInitPicker = !disabled && !readOnly && !!window.flatpickr;
 
     if (!input || !canInitPicker) {
       return;
@@ -100,7 +91,7 @@ export const FloatingDatePicker = ({
       pickerRef.current?.destroy?.();
       pickerRef.current = null;
     };
-  }, [disabled, hasFlatpickr, onChange, readOnly, value]);
+  }, [disabled, onChange, readOnly, value]);
 
   useEffect(() => {
     const picker = pickerRef.current;
@@ -127,7 +118,7 @@ export const FloatingDatePicker = ({
         <input
           ref={inputRef}
           id={id}
-          type={hasFlatpickr ? 'text' : 'date'}
+          type="text"
           className={className}
           data-kt-date-picker="true"
           data-kt-date-picker-input-mode="true"
@@ -136,8 +127,7 @@ export const FloatingDatePicker = ({
           value={value}
           disabled={disabled}
           readOnly={readOnly}
-          onClick={!hasFlatpickr ? handleOpenPicker : undefined}
-          onFocus={!hasFlatpickr ? handleOpenPicker : undefined}
+          spellCheck={false}
           onChange={event => onChange?.(event.target.value)}
         />
         <button

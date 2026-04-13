@@ -7,7 +7,6 @@ interface BankDetailsTabProps {
   error: string;
   validationError?: string;
   selectedBankIds: string[];
-  isViewMode?: boolean;
   onToggleBank: (bankId: string) => void;
 }
 
@@ -17,7 +16,6 @@ export const BankDetailsTab = ({
   error,
   validationError,
   selectedBankIds,
-  isViewMode = false,
   onToggleBank,
 }: BankDetailsTabProps) => {
   return (
@@ -71,7 +69,6 @@ export const BankDetailsTab = ({
                           className="form-check-input"
                           type="checkbox"
                           checked={selectedBankIds.includes(bank.id)}
-                          disabled={isViewMode}
                           onChange={() => onToggleBank(bank.id)}
                         />
                       </div>

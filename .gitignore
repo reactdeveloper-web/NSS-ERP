@@ -231,3 +231,9 @@ dist/
 .boilerplate/
 # Local Netlify folder
 .netlify
+
+#vs code
+.vscode
+
+#github ignore
+.github

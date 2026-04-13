@@ -16,15 +16,9 @@ export const APP_MENU_ITEMS: AppMenuItem[] = [
   },
   {
     key: 'announce-master',
-    label: 'Announcement',
+    label: 'Announce Master',
     path: PATH.ANNOUNCE_MASTER,
     iconClass: 'fas fa-bullhorn fs-4',
-  },
-  {
-    key: 'cit',
-    label: 'Call Center Ticket',
-    path: PATH.CIT,
-    iconClass: 'fas fa-headset fs-4',
   },
   {
     key: 'my-profile',

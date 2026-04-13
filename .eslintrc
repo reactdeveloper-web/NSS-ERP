@@ -2,7 +2,7 @@
   "extends": ["react-app", "prettier"],
   "plugins": ["react", "prettier"],
   "rules": {
-  "prettier/prettier": [
+    "prettier/prettier": [
       "warn",
       {
         "arrowParens": "avoid",
@@ -13,6 +13,9 @@
         "printWidth": 80,
         "useTabs": false,
         "singleQuote": true
+      },
+      {
+        "usePrettierrc": false
       }
     ],
     "no-console": "off",

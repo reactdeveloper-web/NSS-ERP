@@ -40,7 +40,6 @@ interface FloatingDatePickerProps {
   placeholder?: string;
   className?: string;
   wrapperClassName?: string;
-  error?: string;
 }
 
 export const FloatingDatePicker = ({
@@ -53,7 +52,6 @@ export const FloatingDatePicker = ({
   placeholder = ' ',
   className = 'form-control ant-input-floating-control',
   wrapperClassName = 'form-floating ant-input-floating',
-  error,
 }: FloatingDatePickerProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const pickerRef = useRef<FlatpickrInstance | null>(null);
@@ -100,27 +98,22 @@ export const FloatingDatePicker = ({
   }, [value]);
 
   return (
-    <div>
-      <div className={`${wrapperClassName} ${error ? 'has-error' : ''}`}>
-        <input
-          ref={inputRef}
-          id={id}
-          type="text"
-          className={className}
-          data-kt-date-picker="true"
-          data-kt-date-picker-input-mode="true"
-          data-kt-date-picker-position-to-input="left"
-          placeholder={placeholder}
-          value={value}
-          disabled={disabled}
-          readOnly={readOnly}
-          onChange={event => onChange?.(event.target.value)}
-        />
-        <label htmlFor={id}>{label}</label>
-      </div>
-      {error ? (
-        <div className="announce-master-field-error">{error}</div>
-      ) : null}
+    <div className={wrapperClassName}>
+      <input
+        ref={inputRef}
+        id={id}
+        type="text"
+        className={className}
+        data-kt-date-picker="true"
+        data-kt-date-picker-input-mode="true"
+        data-kt-date-picker-position-to-input="left"
+        placeholder={placeholder}
+        value={value}
+        disabled={disabled}
+        readOnly={readOnly}
+        onChange={event => onChange?.(event.target.value)}
+      />
+      <label htmlFor={id}>{label}</label>
     </div>
   );
 };
