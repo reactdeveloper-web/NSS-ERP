@@ -170,6 +170,7 @@ export const AnnounceMasterContent = () => {
     'donorId',
   );
   const lastDonorSearchKeyRef = useRef('');
+  const preservePersonalInfoOnEmptyDonorIdRef = useRef(false);
   const donorSearchRequestIdRef = useRef(0);
   const pincodeRequestIdRef = useRef(0);
   const purposeOptionsRequestIdRef = useRef(0);
@@ -214,6 +215,7 @@ export const AnnounceMasterContent = () => {
     donorSearchRequestIdRef,
     donorSearchTypeRef,
     lastDonorSearchKeyRef,
+    preservePersonalInfoOnEmptyDonorIdRef,
     setActiveTab,
     setDonorIdentificationForm,
     setDonorOptions,
@@ -256,6 +258,7 @@ export const AnnounceMasterContent = () => {
 
   const hydrateAnnouncementFromCache = useCallback(
     (cachedRecord: AnnouncementCacheRecord) => {
+      preservePersonalInfoOnEmptyDonorIdRef.current = !cachedRecord.donorIdentificationForm.donorId.trim();
       setDonorIdentificationForm(cachedRecord.donorIdentificationForm);
       setAnnounceEventForm(cachedRecord.announceEventForm);
       setPersonalInfoForm(cachedRecord.personalInfoForm);

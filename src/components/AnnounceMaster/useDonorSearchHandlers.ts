@@ -32,6 +32,7 @@ type UseDonorSearchHandlersArgs = {
     DonorIdentificationForm['donorSearchType']
   >;
   lastDonorSearchKeyRef: MutableRefObject<string>;
+  preservePersonalInfoOnEmptyDonorIdRef: MutableRefObject<boolean>;
   setActiveTab: Dispatch<SetStateAction<AnnouncerTabKey>>;
   setDonorIdentificationForm: Dispatch<SetStateAction<DonorIdentificationForm>>;
   setDonorOptions: Dispatch<SetStateAction<DonorSearchResult[]>>;
@@ -46,6 +47,7 @@ export const useDonorSearchHandlers = ({
   donorSearchRequestIdRef,
   donorSearchTypeRef,
   lastDonorSearchKeyRef,
+  preservePersonalInfoOnEmptyDonorIdRef,
   setActiveTab,
   setDonorIdentificationForm,
   setDonorOptions,
@@ -238,6 +240,10 @@ export const useDonorSearchHandlers = ({
       setDonorSearchError('');
       setDonorOptions([]);
       setShowDonorModal(false);
+      if (preservePersonalInfoOnEmptyDonorIdRef.current) {
+        preservePersonalInfoOnEmptyDonorIdRef.current = false;
+        return;
+      }
       resetPersonalInfo();
       return;
     }
@@ -261,6 +267,7 @@ export const useDonorSearchHandlers = ({
     donorSearchRequestIdRef,
     handleSearchDonor,
     lastDonorSearchKeyRef,
+    preservePersonalInfoOnEmptyDonorIdRef,
     resetPersonalInfo,
     setDonorOptions,
     setDonorSearchError,
