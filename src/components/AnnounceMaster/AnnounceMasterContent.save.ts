@@ -68,14 +68,17 @@ const getPreferredValidationTab = ({
   }
 
   const currentTabHasError = errorFields.some(
-    field => field !== 'announceDate' && getTabForFieldError(field) === activeTab,
+    field =>
+      field !== 'announceDate' && getTabForFieldError(field) === activeTab,
   );
 
   if (currentTabHasError) {
     return activeTab;
   }
 
-  const firstTabErrorField = errorFields.find(field => field !== 'announceDate');
+  const firstTabErrorField = errorFields.find(
+    field => field !== 'announceDate',
+  );
   return firstTabErrorField ? getTabForFieldError(firstTabErrorField) : null;
 };
 
@@ -369,9 +372,7 @@ const buildSavePayload = ({
   const selectedDistrictCode = Number(
     selectedDistrictOption?.districtCode?.trim() || 0,
   );
-  const selectedStateCode = Number(
-    selectedStateOption?.stateCode?.trim() || 0,
-  );
+  const selectedStateCode = Number(selectedStateOption?.stateCode?.trim() || 0);
   const channelCode = Number(
     selectedEventDetail?.channelCode?.trim() ||
       selectedEventChannelDetail?.channelCode?.trim() ||
@@ -602,7 +603,9 @@ const persistSavedAnnouncement = ({
 
   writeAnnouncementCache([
     nextCacheRecord,
-    ...cachedRecords.filter(record => record.announceId !== resolvedAnnouncementId),
+    ...cachedRecords.filter(
+      record => record.announceId !== resolvedAnnouncementId,
+    ),
   ]);
 };
 

@@ -26,14 +26,16 @@ export const SaveResultModal = ({
   const resultItems = Array.isArray(
     (resultPayload as { result?: unknown[] } | null)?.result,
   )
-    ? ((resultPayload as { result: Array<Record<string, unknown>> }).result ??
-        [])
+    ? (resultPayload as { result: Array<Record<string, unknown>> }).result ?? []
     : [];
 
   return (
     <>
       <div className="modal fade show d-block" tabIndex={-1} role="dialog">
-        <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div
+          className="modal-dialog modal-dialog-centered modal-lg"
+          role="document"
+        >
           <div className="modal-content">
             <div className="modal-header p-4">
               <h4 className="modal-title">Create Announce Response</h4>
@@ -90,7 +92,11 @@ export const SaveResultModal = ({
             </div>
 
             <div className="modal-footer">
-              <button type="button" className="btn btn-primary" onClick={onClose}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={onClose}
+              >
                 Close
               </button>
             </div>
@@ -141,7 +147,11 @@ export const DeleteCauseModal = ({
               <button type="button" className="btn btn-light" onClick={onClose}>
                 Cancel
               </button>
-              <button type="button" className="btn btn-danger" onClick={onConfirm}>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={onConfirm}
+              >
                 Delete
               </button>
             </div>

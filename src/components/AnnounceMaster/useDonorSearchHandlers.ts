@@ -28,7 +28,9 @@ import {
 type UseDonorSearchHandlersArgs = {
   donorIdentificationForm: DonorIdentificationForm;
   donorSearchRequestIdRef: MutableRefObject<number>;
-  donorSearchTypeRef: MutableRefObject<DonorIdentificationForm['donorSearchType']>;
+  donorSearchTypeRef: MutableRefObject<
+    DonorIdentificationForm['donorSearchType']
+  >;
   lastDonorSearchKeyRef: MutableRefObject<string>;
   setActiveTab: Dispatch<SetStateAction<AnnouncerTabKey>>;
   setDonorIdentificationForm: Dispatch<SetStateAction<DonorIdentificationForm>>;
@@ -184,7 +186,9 @@ export const useDonorSearchHandlers = ({
         return;
       }
 
-      setDonorSearchError(getErrorMessage(error, 'Failed to search donor data.'));
+      setDonorSearchError(
+        getErrorMessage(error, 'Failed to search donor data.'),
+      );
       resetPersonalInfo();
     } finally {
       if (requestId === donorSearchRequestIdRef.current) {
