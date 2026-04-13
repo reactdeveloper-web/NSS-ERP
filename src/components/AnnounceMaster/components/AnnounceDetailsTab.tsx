@@ -6,7 +6,7 @@ import {
   AnnounceValidationErrors,
   EventOption,
 } from '../types';
-import { FloatingDatePicker } from './FloatingDatePicker';
+import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
 import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 
 interface AnnounceDetailsTabProps {

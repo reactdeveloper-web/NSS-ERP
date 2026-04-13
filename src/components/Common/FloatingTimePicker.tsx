@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 type FlatpickrInstance = {
-  altInput?: HTMLInputElement;
-  destroy?: () => void;
   open?: () => void;
+  destroy?: () => void;
   setDate?: (
     date: string | Date | Array<string | Date>,
     triggerChange?: boolean,
@@ -18,12 +17,9 @@ declare global {
       element: HTMLElement,
       config?: {
         allowInput?: boolean;
-        altFormat?: string;
-        altInput?: boolean;
         clickOpens?: boolean;
         dateFormat?: string;
         defaultDate?: string;
-        disableMobile?: boolean;
         enableTime?: boolean;
         noCalendar?: boolean;
         position?: string;
@@ -57,7 +53,7 @@ export const FloatingTimePicker = ({
   onChange,
   disabled = false,
   readOnly = false,
-  placeholder = 'Select Time',
+  placeholder = ' ',
   className = 'form-control ant-input-floating-control',
   wrapperClassName = 'form-floating ant-input-floating',
 }: FloatingTimePickerProps) => {
@@ -66,7 +62,7 @@ export const FloatingTimePicker = ({
   const hasFlatpickr =
     typeof window !== 'undefined' && typeof window.flatpickr === 'function';
 
-  const handleOpenPicker = useCallback(() => {
+  const handleOpenPicker = () => {
     if (disabled || readOnly) {
       return;
     }
@@ -79,7 +75,7 @@ export const FloatingTimePicker = ({
 
     inputRef.current?.focus();
     inputRef.current?.showPicker?.();
-  }, [disabled, readOnly]);
+  };
 
   useEffect(() => {
     const input = inputRef.current;
@@ -91,17 +87,14 @@ export const FloatingTimePicker = ({
 
     pickerRef.current =
       window.flatpickr?.(input, {
-        allowInput: false,
-        altFormat: 'h:i K',
-        altInput: true,
+        allowInput: true,
         clickOpens: true,
         dateFormat: 'H:i',
         defaultDate: value || undefined,
-        disableMobile: true,
         enableTime: true,
         noCalendar: true,
         position: 'auto left',
-        time_24hr: false,
+        time_24hr: true,
         onChange: (_selectedDates, dateStr) => {
           onChange?.(dateStr);
         },
@@ -112,26 +105,6 @@ export const FloatingTimePicker = ({
       pickerRef.current = null;
     };
   }, [disabled, hasFlatpickr, onChange, readOnly, value]);
-
-  useEffect(() => {
-    const altInput = pickerRef.current?.altInput;
-
-    if (!altInput) {
-      return;
-    }
-
-    altInput.placeholder = placeholder;
-    altInput.disabled = disabled;
-    altInput.readOnly = true;
-    altInput.className = className;
-    altInput.addEventListener('click', handleOpenPicker);
-    altInput.addEventListener('focus', handleOpenPicker);
-
-    return () => {
-      altInput.removeEventListener('click', handleOpenPicker);
-      altInput.removeEventListener('focus', handleOpenPicker);
-    };
-  }, [className, disabled, handleOpenPicker, placeholder]);
 
   useEffect(() => {
     const picker = pickerRef.current;
@@ -159,8 +132,8 @@ export const FloatingTimePicker = ({
         value={value}
         disabled={disabled}
         readOnly={readOnly}
-        onClick={hasFlatpickr ? undefined : handleOpenPicker}
-        onFocus={hasFlatpickr ? undefined : handleOpenPicker}
+        onClick={!hasFlatpickr ? handleOpenPicker : undefined}
+        onFocus={!hasFlatpickr ? handleOpenPicker : undefined}
         onChange={event => onChange?.(event.target.value)}
       />
       <button
