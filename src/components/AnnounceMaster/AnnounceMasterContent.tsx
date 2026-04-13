@@ -2,10 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { PATH } from 'src/constants/paths';
 import { AnnounceMasterNav } from './AnnounceMasterNav';
-import {
-  AnnouncementListing,
-  AnnouncementListingItem,
-} from './components/AnnouncementListing';
+import { AnnouncementListing } from './components/AnnouncementListing';
 import {
   DeleteCauseModal,
   SaveResultModal,
@@ -40,7 +37,6 @@ import {
   createEmptyCauseFields,
   getToday,
   inferCurrencyIdFromCode,
-  mapCacheToListingItem,
   mapEventDetailRecord,
   parseAmountValue,
   parseStoredUser,
@@ -150,11 +146,6 @@ export const AnnounceMasterContent = () => {
   const [showSaveResultModal, setShowSaveResultModal] = useState(false);
   const [saveRequestPayload, setSaveRequestPayload] = useState<unknown>(null);
   const [saveResultPayload, setSaveResultPayload] = useState<unknown>(null);
-  const [announcementItems, setAnnouncementItems] = useState<
-    AnnouncementListingItem[]
-  >([]);
-  const [announcementListLoading, setAnnouncementListLoading] = useState(false);
-  const [announcementListError, setAnnouncementListError] = useState('');
   const [deletingAnnouncementId, setDeletingAnnouncementId] = useState<
     string | null
   >(null);
@@ -238,24 +229,6 @@ export const AnnounceMasterContent = () => {
     [history],
   );
 
-  const loadAnnouncementListing = useCallback(() => {
-    setAnnouncementListLoading(true);
-    setAnnouncementListError('');
-
-    try {
-      const items = readAnnouncementCache()
-        .sort((left, right) => right.savedAt.localeCompare(left.savedAt))
-        .map(mapCacheToListingItem);
-
-      setAnnouncementItems(items);
-    } catch {
-      setAnnouncementItems([]);
-      setAnnouncementListError('Announcement listing load nahi hui.');
-    } finally {
-      setAnnouncementListLoading(false);
-    }
-  }, []);
-
   const hydrateAnnouncementFromCache = useCallback(
     (cachedRecord: AnnouncementCacheRecord) => {
       preservePersonalInfoOnEmptyDonorIdRef.current = !cachedRecord.donorIdentificationForm.donorId.trim();
@@ -282,22 +255,18 @@ export const AnnounceMasterContent = () => {
     [],
   );
 
-  const handleDeleteAnnouncement = useCallback(
-    (announcementId: string) => {
-      setDeletingAnnouncementId(announcementId);
+  const handleDeleteAnnouncement = useCallback((announcementId: string) => {
+    setDeletingAnnouncementId(announcementId);
 
-      try {
-        const nextRecords = readAnnouncementCache().filter(
-          record => record.announceId !== announcementId,
-        );
-        writeAnnouncementCache(nextRecords);
-        loadAnnouncementListing();
-      } finally {
-        setDeletingAnnouncementId(null);
-      }
-    },
-    [loadAnnouncementListing],
-  );
+    try {
+      const nextRecords = readAnnouncementCache().filter(
+        record => record.announceId !== announcementId,
+      );
+      writeAnnouncementCache(nextRecords);
+    } finally {
+      setDeletingAnnouncementId(null);
+    }
+  }, []);
 
   const handleDonorIdentificationChange = <
     K extends keyof DonorIdentificationForm
@@ -1148,7 +1117,6 @@ export const AnnounceMasterContent = () => {
 
   useEffect(() => {
     if (isListingMode) {
-      loadAnnouncementListing();
       return;
     }
 
@@ -1181,13 +1149,7 @@ export const AnnounceMasterContent = () => {
     if (cachedRecord) {
       hydrateAnnouncementFromCache(cachedRecord);
     }
-  }, [
-    announceIdParam,
-    hydrateAnnouncementFromCache,
-    isListingMode,
-    loadAnnouncementListing,
-    operation,
-  ]);
+  }, [announceIdParam, hydrateAnnouncementFromCache, isListingMode, operation]);
 
   const selectedPurposeOption = purposeOptions.find(
     option => option.value === announceDetailsForm.purpose,
@@ -1421,10 +1383,9 @@ export const AnnounceMasterContent = () => {
         <div className="post d-flex flex-column-fluid" id="kt_post">
           <div id="kt_content_container" className="container-fluid py-6">
             <AnnouncementListing
-              items={announcementItems}
-              loading={announcementListLoading}
-              error={announcementListError}
               deletingId={deletingAnnouncementId}
+              causeHeadOptions={causeHeadOptions}
+              howToDonateOptions={howToDonateOptions}
               onAdd={() => openAnnouncementForm('0', 'ADD')}
               onEdit={announceId => openAnnouncementForm(announceId, 'Edit')}
               onView={announceId => openAnnouncementForm(announceId, 'View')}
