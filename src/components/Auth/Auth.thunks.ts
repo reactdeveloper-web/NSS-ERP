@@ -48,6 +48,7 @@ export const login = (payload: ReqLogin) => async dispatch => {
       // ✅ store tokens
       localStorage.setItem('accessToken', res.data.token);
       localStorage.setItem('refreshToken', res.data.refreshToken);
+      localStorage.setItem('loginTimestamp', Date.now().toString());
       dispatch(
         setAlert({
           msg: 'You are logged in!',
@@ -140,6 +141,12 @@ export const register = (payload: ReqLogin) => async dispatch => {
 };
 
 export const logout = () => async dispatch => {
+  //Clear all storage explicitly
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('loginTimestamp');
+  localStorage.removeItem('user');
+
   dispatch(actions.logoutSuccess());
   dispatch(
     setAlert({
@@ -150,6 +157,17 @@ export const logout = () => async dispatch => {
 };
 
 // ================= TYPES =================
+export interface ReqLogin {
+  username?: string | number;
+  password?: string;
+  [key: string]: any;
+}
+
+export interface ReqForgot {
+  userid?: string | number;
+  [key: string]: any;
+}
+
 export interface ReqSetupPassword {
   EmpNum: string;
   Token: string;
