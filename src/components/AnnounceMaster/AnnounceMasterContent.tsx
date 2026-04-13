@@ -1,16 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import axios from 'axios';
 import { useHistory } from 'react-router-dom';
-import { ContentTypes } from 'src/constants/content';
 import { PATH } from 'src/constants/paths';
-import { masterApiHeaders } from 'src/utils/masterApiHeaders';
-import { masterApiPaths } from 'src/utils/masterApiPaths';
-import axiosInstance from 'src/redux/interceptor';
 import { AnnounceMasterNav } from './AnnounceMasterNav';
 import {
   AnnouncementListing,
   AnnouncementListingItem,
 } from './components/AnnouncementListing';
+import {
+  DeleteCauseModal,
+  SaveResultModal,
+} from './components/AnnounceMasterModals';
 import {
   createInitialAnnounceDetailsForm,
   createInitialAnnounceEventForm,
@@ -25,7 +24,6 @@ import {
   AnnounceDetailsForm,
   AnnounceEventForm,
   AnnounceValidationErrors,
-  AnnounceValidationField,
   DepositBank,
   DonorIdentificationForm,
   DonorSearchResult,
@@ -36,1320 +34,45 @@ import {
   SalutationOption,
 } from './types';
 
-const getToday = () => new Date().toISOString().split('T')[0];
-
-const isValidDateValue = (value: string) => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value.trim())) {
-    return false;
-  }
-
-  const parsedDate = new Date(`${value}T00:00:00`);
-  return !Number.isNaN(parsedDate.getTime());
-};
-
-const donorSearchTypeCandidates: Record<string, string[]> = {
-  donorId: ['NGCode', 'donorId', 'DonorId'],
-  mobile: ['mobile', 'DMobile'],
-  email: ['email', 'DEmail'],
-  pan: ['pan', 'PAN_Number', 'panNo'],
-  aadhaar: ['aadhaar', 'aadhar', 'AadharNo'],
-};
-
-const getFirstValue = (
-  record: Record<string, unknown>,
-  keys: string[],
-): string => {
-  for (const key of keys) {
-    const value = record[key];
-    if (value !== undefined && value !== null && String(value).trim() !== '') {
-      return String(value);
-    }
-  }
-
-  return '';
-};
-
-const getMappedValue = (
-  record: Record<string, unknown>,
-  keys: string[],
-): string | undefined => {
-  for (const key of keys) {
-    if (Object.prototype.hasOwnProperty.call(record, key)) {
-      const value = record[key];
-      return value === undefined || value === null ? '' : String(value).trim();
-    }
-  }
-
-  return undefined;
-};
-
-const normalizeStateValue = (value: string): string => {
-  const normalizedValue = value.trim().toLowerCase();
-  const stateMap: Record<string, string> = {
-    rajasthan: 'Rajasthan',
-    delhi: 'Delhi',
-    gujarat: 'Gujarat',
-  };
-
-  return stateMap[normalizedValue] ?? value.trim();
-};
-
-const extractDonorRecord = (
-  payload: unknown,
-): Record<string, unknown> | null => {
-  if (Array.isArray(payload)) {
-    const [first] = payload;
-    return first && typeof first === 'object'
-      ? (first as Record<string, unknown>)
-      : null;
-  }
-
-  if (!payload || typeof payload !== 'object') {
-    return null;
-  }
-
-  const record = payload as Record<string, unknown>;
-  const nestedKeys = [
-    'data',
-    'Data',
-    'result',
-    'Result',
-    'donorData',
-    'DonorData',
-  ];
-
-  for (const key of nestedKeys) {
-    const nestedValue = record[key];
-    if (Array.isArray(nestedValue)) {
-      const [first] = nestedValue;
-      if (first && typeof first === 'object') {
-        return first as Record<string, unknown>;
-      }
-    }
-
-    if (nestedValue && typeof nestedValue === 'object') {
-      return nestedValue as Record<string, unknown>;
-    }
-  }
-
-  return record;
-};
-
-const extractDonorRecords = (payload: unknown): Record<string, unknown>[] => {
-  if (Array.isArray(payload)) {
-    return payload.filter(
-      (item): item is Record<string, unknown> =>
-        Boolean(item) && typeof item === 'object',
-    );
-  }
-
-  if (!payload || typeof payload !== 'object') {
-    return [];
-  }
-
-  const record = payload as Record<string, unknown>;
-  const nestedKeys = [
-    'data',
-    'Data',
-    'result',
-    'Result',
-    'donorData',
-    'DonorData',
-  ];
-
-  for (const key of nestedKeys) {
-    const nestedValue = record[key];
-    if (Array.isArray(nestedValue)) {
-      return nestedValue.filter(
-        (item): item is Record<string, unknown> =>
-          Boolean(item) && typeof item === 'object',
-      );
-    }
-  }
-
-  const donorRecord = extractDonorRecord(payload);
-  return donorRecord ? [donorRecord] : [];
-};
-
-const mapDonorToPersonalInfo = (
-  donorRecord: Record<string, unknown>,
-): Partial<PersonalInfoForm> => {
-  const rawState = getMappedValue(donorRecord, ['StateName', 'State']);
-  const state =
-    rawState === undefined ? undefined : normalizeStateValue(rawState);
-  const donorSalutation = getMappedValue(donorRecord, [
-    'DShri',
-    'Salutation',
-    'SalutationName',
-    'Title',
-    'TitleName',
-    'Prefix',
-  ]);
-
-  return {
-    salutation: donorSalutation,
-    salutationLocked:
-      donorSalutation === undefined ? undefined : donorSalutation.trim() !== '',
-    mobileNo: getMappedValue(donorRecord, [
-      'DMobile',
-      'MobileNo',
-      'Mobile',
-      'mobile',
-    ]),
-    whatsappNo: getMappedValue(donorRecord, [
-      'WhatsappNo',
-      'WhatsAppNo',
-      'WMobile',
-      'AltMobile',
-      'DMobile',
-    ]),
-    announcerName: getMappedValue(donorRecord, [
-      'DonorName',
-      'DName',
-      'Name',
-      'AnnouncerName',
-    ]),
-    pincode: getMappedValue(donorRecord, ['PinCode', 'Pincode', 'ZipCode']),
-    country: getMappedValue(donorRecord, ['CountryName', 'Country']),
-    state,
-    stateLocked: state === undefined ? undefined : state !== '',
-    district: getMappedValue(donorRecord, [
-      'DistrictName',
-      'District',
-      'CityName',
-    ]),
-  };
-};
-
-const mapDonorSearchResult = (
-  donorRecord: Record<string, unknown>,
-): DonorSearchResult => ({
-  donorId: getFirstValue(donorRecord, ['NGCode', 'DonorID', 'DonorId']),
-  donorName: getFirstValue(donorRecord, ['DonorName', 'DName', 'Name']),
-  mobileNo: getFirstValue(donorRecord, [
-    'DMobile',
-    'MobileNo',
-    'Mobile',
-    'mobile',
-  ]),
-  email: getFirstValue(donorRecord, ['DEmail', 'Email', 'email']),
-  record: donorRecord,
-});
-
-const extractArrayPayload = (payload: unknown): Record<string, unknown>[] => {
-  if (Array.isArray(payload)) {
-    return payload.filter(
-      (item): item is Record<string, unknown> =>
-        Boolean(item) && typeof item === 'object',
-    );
-  }
-
-  if (!payload || typeof payload !== 'object') {
-    return [];
-  }
-
-  const record = payload as Record<string, unknown>;
-  const nestedKeys = [
-    'data',
-    'Data',
-    'result',
-    'Result',
-    'banks',
-    'Banks',
-    'table',
-    'Table',
-    'table1',
-    'Table1',
-    'list',
-    'List',
-    'items',
-    'Items',
-    'rows',
-    'Rows',
-  ];
-
-  for (const key of nestedKeys) {
-    const nestedValue = record[key];
-    if (Array.isArray(nestedValue)) {
-      return nestedValue.filter(
-        (item): item is Record<string, unknown> =>
-          Boolean(item) && typeof item === 'object',
-      );
-    }
-  }
-
-  for (const value of Object.values(record)) {
-    if (Array.isArray(value)) {
-      const objectItems = value.filter(
-        (item): item is Record<string, unknown> =>
-          Boolean(item) && typeof item === 'object',
-      );
-
-      if (objectItems.length > 0) {
-        return objectItems;
-      }
-    }
-
-    if (value && typeof value === 'object') {
-      const nestedRecords = extractArrayPayload(value);
-
-      if (nestedRecords.length > 0) {
-        return nestedRecords;
-      }
-    }
-  }
-
-  return [];
-};
-
-const collectObjectArrayCandidates = (
-  payload: unknown,
-): Record<string, unknown>[][] => {
-  if (Array.isArray(payload)) {
-    const objectItems = payload.filter(
-      (item): item is Record<string, unknown> =>
-        Boolean(item) && typeof item === 'object',
-    );
-
-    return objectItems.length > 0 ? [objectItems] : [];
-  }
-
-  if (!payload || typeof payload !== 'object') {
-    return [];
-  }
-
-  return Object.values(payload as Record<string, unknown>).flatMap(value =>
-    collectObjectArrayCandidates(value),
-  );
-};
-
-const getPayloadRecordCandidates = (
-  payload: unknown,
-): Record<string, unknown>[] => [
-  ...extractArrayPayload(payload),
-  ...collectObjectArrayCandidates(payload).flat(),
-  ...(payload && typeof payload === 'object'
-    ? [payload as Record<string, unknown>]
-    : []),
-];
-
-const extractSalutationOptions = (payload: unknown): SalutationOption[] => {
-  const salutationRecords = extractArrayPayload(payload);
-
-  return salutationRecords
-    .map(record => ({
-      value: getFirstValue(record, [
-        'SAL_CODE',
-        'SalutationCode',
-        'Code',
-        'Id',
-        'ID',
-      ]),
-      label: getFirstValue(record, [
-        'SAL_NAME',
-        'Salutation',
-        'SalutationName',
-        'Title',
-        'TitleName',
-        'Prefix',
-        'Name',
-        'Text',
-      ]),
-    }))
-    .filter((option, index, currentOptions) => {
-      const normalizedValue = option.value.trim();
-      const normalizedLabel = option.label.trim();
-      return (
-        normalizedValue !== '' &&
-        normalizedLabel !== '' &&
-        currentOptions.findIndex(item => item.value === option.value) === index
-      );
-    });
-};
-
-const extractAnnounceCauseOptions = (payload: unknown): EventOption[] => {
-  const causeRecords = extractArrayPayload(payload);
-
-  return causeRecords
-    .map(record => ({
-      value: getFirstValue(record, [
-        'VC_Code',
-        'VCCode',
-        'Code',
-        'CAUSE_NAME',
-        'CauseName',
-        'EventCause',
-        'CAUSE',
-        'Name',
-        'Text',
-      ]),
-      label: getFirstValue(record, [
-        'CName',
-        'CauseLabel',
-        'CAUSE_NAME',
-        'CauseName',
-        'EventCause',
-        'CAUSE',
-        'Name',
-        'Text',
-      ]),
-    }))
-    .filter(
-      (option, index, currentOptions) =>
-        option.value.trim() !== '' &&
-        currentOptions.findIndex(item => item.value === option.value) === index,
-    );
-};
-
-const extractOccasionOptions = (payload: unknown): EventOption[] => {
-  const occasionRecords = extractArrayPayload(payload);
-
-  return occasionRecords
-    .map(record => ({
-      value: getFirstValue(record, [
-        'OM_CODE',
-        'OccasionCode',
-        'Code',
-        'OccasionName',
-        'OM_NAME',
-        'Name',
-        'Text',
-      ]),
-      label: getFirstValue(record, [
-        'OM_NAME',
-        'OccasionName',
-        'Name',
-        'Text',
-        'OM_CODE',
-        'OccasionCode',
-        'Code',
-      ]),
-    }))
-    .filter(
-      (option, index, currentOptions) =>
-        option.value.trim() !== '' &&
-        option.label.trim() !== '' &&
-        currentOptions.findIndex(item => item.value === option.value) === index,
-    );
-};
-
-const extractCauseHeadOptions = (payload: unknown): EventOption[] => {
-  const purposeRecords = extractArrayPayload(payload);
-
-  return purposeRecords
-    .map(record => {
-      const purposeId = getFirstValue(record, [
-        'Purpose_id',
-        'PurposeId',
-        'PURPOSE_ID',
-        'PurposeHeadId',
-        'PURPOSEHEADID',
-        'Id',
-        'ID',
-      ]);
-
-      return {
-        value:
-          purposeId ||
-          getFirstValue(record, [
-            'PurposeCode',
-            'PURPOSE_CODE',
-            'PurposeHeadCode',
-            'PURPOSEHEADCODE',
-            'P_CODE',
-            'PCODE',
-            'Code',
-            'Id',
-            'ID',
-            'PurposeName',
-            'PURPOSE_NAME',
-            'PurposeHeadName',
-            'PURPOSEHEADNAME',
-            'Purpose',
-            'Name',
-            'Text',
-          ]),
-        label: getFirstValue(record, [
-          'PurposeName',
-          'PURPOSE_NAME',
-          'PurposeHeadName',
-          'PURPOSEHEADNAME',
-          'PName',
-          'Purpose',
-          'HeadName',
-          'Description',
-          'Name',
-          'Text',
-          'PurposeCode',
-          'PURPOSE_CODE',
-          'PurposeHeadCode',
-          'PURPOSEHEADCODE',
-          'P_CODE',
-          'PCODE',
-          'Code',
-        ]),
-        purposeId,
-      };
-    })
-    .filter(
-      (option, index, currentOptions) =>
-        option.value.trim() !== '' &&
-        option.label.trim() !== '' &&
-        currentOptions.findIndex(item => item.value === option.value) === index,
-    );
-};
-
-const extractYojnaOptions = (payload: unknown): EventOption[] => {
-  const yojnaRecords = extractArrayPayload(payload);
-
-  return yojnaRecords
-    .map(record => {
-      const amountValue = getFirstValue(record, [
-        'Amount',
-        'AMOUNT',
-        'YojnaAmount',
-        'YOJNA_AMOUNT',
-        'FixedAmount',
-        'FIXED_AMOUNT',
-        'Rate',
-        'RATE',
-        'DonationAmount',
-      ]);
-      const yojnaName = getFirstValue(record, [
-        'YojnaName',
-        'YOJNA_NAME',
-        'SchemeName',
-        'SCHEME_NAME',
-        'PlanName',
-        'PLAN_NAME',
-        'Yojna',
-        'PurposeName',
-        'Name',
-        'Text',
-      ]);
-      const yojnaId = getFirstValue(record, [
-        'YojnaId',
-        'Yojna_ID',
-        'YOJNA_ID',
-        'SchemeId',
-        'SCHEME_ID',
-        'Id',
-        'ID',
-      ]);
-      const qtyValue = getFirstValue(record, [
-        'Qty',
-        'QTY',
-        'Quantity',
-        'QUANTITY',
-      ]);
-
-      return {
-        value: yojnaId || amountValue || yojnaName,
-        label:
-          yojnaName && amountValue
-            ? `${yojnaName} (Rs. ${Number(amountValue).toLocaleString(
-                'en-IN',
-              )})`
-            : yojnaName || amountValue || yojnaId,
-        yojnaId,
-        qtyValue,
-        amountValue,
-      };
-    })
-    .filter(
-      (option, index, currentOptions) =>
-        option.value.trim() !== '' &&
-        option.label.trim() !== '' &&
-        currentOptions.findIndex(item => item.value === option.value) === index,
-    );
-};
-
-const extractHowToDonateOptions = (payload: unknown): EventOption[] => {
-  if (Array.isArray(payload)) {
-    const scalarOptions = payload
-      .filter(
-        (item): item is string | number =>
-          typeof item === 'string' || typeof item === 'number',
-      )
-      .map(item => {
-        const normalizedValue = String(item).trim();
-
-        return {
-          value: normalizedValue,
-          label: normalizedValue,
-        };
-      })
-      .filter((option, index, currentOptions) => {
-        return (
-          option.value !== '' &&
-          currentOptions.findIndex(item => item.value === option.value) ===
-            index
-        );
-      });
-
-    if (scalarOptions.length > 0) {
-      return scalarOptions;
-    }
-  }
-
-  const howToDonateRecords = extractArrayPayload(payload);
-
-  return howToDonateRecords
-    .map(record => {
-      const value = getFirstValue(record, [
-        'id',
-        'Id',
-        'ID',
-        'code',
-        'Code',
-        'CODE',
-        'HOW_TO_DONATE_ID',
-        'HowToDonateId',
-        'HOWTODONATEID',
-        'RemarkId',
-        'REMARK_ID',
-        'REMARKID',
-        'MasterId',
-        'MASTER_ID',
-        'Value',
-        'value',
-        'Name',
-        'name',
-        'Text',
-        'text',
-        'Remark',
-        'remark',
-        'RemarkName',
-        'REMARK_NAME',
-        'REMARKNAME',
-      ]);
-      const label = getFirstValue(record, [
-        'name',
-        'Name',
-        'NAME',
-        'Text',
-        'text',
-        'label',
-        'Label',
-        'LABEL',
-        'Remark',
-        'remark',
-        'RemarkName',
-        'REMARK_NAME',
-        'REMARKNAME',
-        'HOW_TO_DONATE_NAME',
-        'HowToDonateName',
-        'HOWTODONATENAME',
-        'Value',
-        'value',
-      ]);
-
-      return {
-        value: value || label,
-        label: label || value,
-      };
-    })
-    .filter(
-      (option, index, currentOptions) =>
-        option.value.trim() !== '' &&
-        option.label.trim() !== '' &&
-        currentOptions.findIndex(item => item.value === option.value) === index,
-    );
-};
-
-const extractCurrencyId = (payload: unknown): string => {
-  const currencyRecords = extractArrayPayload(payload);
-
-  for (const record of currencyRecords) {
-    const currencyId = getFirstValue(record, [
-      'CurrencyId',
-      'CurrencyID',
-      'CURRENCY_ID',
-      'currencyId',
-      'Id',
-      'ID',
-    ]);
-
-    if (currencyId.trim() !== '') {
-      return currencyId.trim();
-    }
-  }
-
-  if (payload && typeof payload === 'object') {
-    return getFirstValue(payload as Record<string, unknown>, [
-      'CurrencyId',
-      'CurrencyID',
-      'CURRENCY_ID',
-      'currencyId',
-      'Id',
-      'ID',
-    ]).trim();
-  }
-
-  return '';
-};
-
-const extractOperationAmount = (payload: unknown): string => {
-  for (const record of getPayloadRecordCandidates(payload)) {
-    const amountValue = getFirstValue(record, [
-      'Amount',
-      'AMOUNT',
-      'TotalAmount',
-      'TOTAL_AMOUNT',
-      'OperationAmount',
-      'OPERATION_AMOUNT',
-      'OperationAmt',
-      'Amt',
-      'NetAmount',
-      'DonationAmount',
-      'Value',
-    ]);
-
-    if (amountValue.trim() !== '') {
-      return amountValue.trim();
-    }
-  }
-
-  return '';
-};
-
-const parseAmountValue = (value: string): number => {
-  const sanitizedValue = value.replace(/,/g, '').trim();
-  const parsedValue = Number(sanitizedValue);
-
-  return Number.isFinite(parsedValue) ? parsedValue : 0;
-};
-
-const createEmptyCauseFields = (): Pick<
-  AnnounceDetailsForm,
-  | 'causeHead'
-  | 'causeHeadDate'
-  | 'namePlateName'
-  | 'donorInstruction'
-  | 'purpose'
-  | 'quantity'
-> => ({
-  causeHead: '',
-  causeHeadDate: '',
-  namePlateName: '',
-  donorInstruction: '',
-  purpose: '',
-  quantity: 1,
-});
-
-const buildQuantityOptions = (
-  baseQuantity: number,
-): { value: number; label: string }[] =>
-  Array.from({ length: 10 }, (_, index) => {
-    const quantityValue = baseQuantity * (index + 1);
-
-    return {
-      value: quantityValue,
-      label: String(quantityValue),
-    };
-  });
-
-const extractStateOptions = (payload: unknown): EventOption[] => {
-  const stateKeyCandidates = [
-    'State',
-    'StateName',
-    'State_Name',
-    'STATE_NAME',
-    'state_name',
-    'stateName',
-    'STATE',
-    'state',
-    'State_Code',
-    'StateCode',
-    'STATE_CODE',
-    'state_code',
-    'stateCode',
-  ];
-  const candidateArrays = [
-    extractArrayPayload(payload),
-    ...collectObjectArrayCandidates(payload),
-  ].filter(candidate => candidate.length > 0);
-
-  const stateRecords =
-    candidateArrays
-      .map(records => ({
-        records,
-        score: records.reduce((total, record) => {
-          const recordKeys = Object.keys(record);
-          const matchedKeys = stateKeyCandidates.filter(key =>
-            recordKeys.some(recordKey => recordKey === key),
-          ).length;
-
-          return total + matchedKeys;
-        }, 0),
-      }))
-      .sort((left, right) => right.score - left.score)[0]?.records ?? [];
-
-  return stateRecords
-    .map(record => ({
-      value: getFirstValue(record, [
-        'State_Name',
-        'StateName',
-        'STATE_NAME',
-        'state_name',
-        'stateName',
-        'State',
-        'STATE',
-        'Name',
-        'Text',
-        'state',
-      ]),
-      label: getFirstValue(record, [
-        'State_Name',
-        'StateName',
-        'STATE_NAME',
-        'state_name',
-        'stateName',
-        'State',
-        'STATE',
-        'Name',
-        'Text',
-        'state',
-      ]),
-      stateCode: getFirstValue(record, [
-        'State_Code',
-        'StateCode',
-        'STATE_CODE',
-        'state_code',
-        'stateCode',
-        'Code',
-      ]),
-    }))
-    .filter(
-      (option, index, currentOptions) =>
-        option.value.trim() !== '' &&
-        option.label.trim() !== '' &&
-        currentOptions.findIndex(item => item.value === option.value) === index,
-    );
-};
-
-const extractDistrictOptions = (payload: unknown): EventOption[] => {
-  const districtRecords = extractArrayPayload(payload);
-
-  return districtRecords
-    .map(record => ({
-      value: getFirstValue(record, [
-        'District_Name',
-        'DistrictName',
-        'DISTRICT_NAME',
-        'district_name',
-        'districtName',
-        'District',
-        'DISTRICT',
-        'Name',
-        'Text',
-      ]),
-      label: getFirstValue(record, [
-        'District_Name',
-        'DistrictName',
-        'DISTRICT_NAME',
-        'district_name',
-        'districtName',
-        'District',
-        'DISTRICT',
-        'Name',
-        'Text',
-      ]),
-      districtCode: getFirstValue(record, [
-        'District_Code',
-        'DistrictCode',
-        'DISTRICT_CODE',
-        'district_code',
-        'districtCode',
-        'DistrictId',
-        'DISTRICTID',
-        'Code',
-      ]),
-    }))
-    .filter(
-      (option, index, currentOptions) =>
-        option.value.trim() !== '' &&
-        option.label.trim() !== '' &&
-        currentOptions.findIndex(item => item.value === option.value) === index,
-    );
-};
-
-const extractPincodeLocation = (
-  payload: unknown,
-): {
-  country: string;
-  state: string;
-  stateCode: string;
-  district: string;
-} | null => {
-  for (const record of getPayloadRecordCandidates(payload)) {
-    const country = getFirstValue(record, [
-      'Country_Name',
-      'CountryName',
-      'COUNTRY_NAME',
-      'country_name',
-      'countryName',
-      'Country',
-      'COUNTRY',
-      'country',
-    ]);
-    const state = getFirstValue(record, [
-      'State_Name',
-      'StateName',
-      'STATE_NAME',
-      'state_name',
-      'stateName',
-      'State',
-      'STATE',
-      'state',
-      'statename',
-    ]);
-    const stateCode = getFirstValue(record, [
-      'State_Code',
-      'StateCode',
-      'STATE_CODE',
-      'state_code',
-      'stateCode',
-      'StateId',
-      'STATEID',
-      'stateId',
-      'Code',
-    ]);
-    const district = getFirstValue(record, [
-      'District_Name',
-      'DistrictName',
-      'DISTRICT_NAME',
-      'district_name',
-      'districtName',
-      'District',
-      'DISTRICT',
-      'district',
-      'districtname',
-    ]);
-
-    if (country || state || stateCode || district) {
-      return {
-        country,
-        state,
-        stateCode,
-        district,
-      };
-    }
-  }
-
-  return null;
-};
-
-const resolveStateOption = (
-  options: EventOption[],
-  location: { state: string; stateCode: string },
-): EventOption | undefined => {
-  const normalizedState = location.state.trim().toLowerCase();
-  const normalizedStateCode = location.stateCode.trim().toLowerCase();
-
-  return options.find(option => {
-    const optionValue = option.value.trim().toLowerCase();
-    const optionLabel = option.label.trim().toLowerCase();
-    const optionStateCode = option.stateCode?.trim().toLowerCase() ?? '';
-
-    return (
-      (normalizedStateCode !== '' && optionStateCode === normalizedStateCode) ||
-      (normalizedState !== '' &&
-        (optionValue === normalizedState || optionLabel === normalizedState))
-    );
-  });
-};
-
-const normalizeApiDate = (value: unknown): string => {
-  if (value === undefined || value === null) {
-    return '';
-  }
-
-  const rawValue = String(value).trim();
-  if (!rawValue) {
-    return '';
-  }
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(rawValue)) {
-    return rawValue;
-  }
-
-  const normalizedValue = rawValue.replace(/\//g, '-');
-  const ddmmyyyyMatch = normalizedValue.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-  if (ddmmyyyyMatch) {
-    const [, day, month, year] = ddmmyyyyMatch;
-    return `${year}-${month}-${day}`;
-  }
-
-  const parsedDate = new Date(rawValue);
-  if (!Number.isNaN(parsedDate.getTime())) {
-    return parsedDate.toISOString().split('T')[0];
-  }
-
-  return '';
-};
-
-const normalizeApiTime = (value: unknown): string => {
-  if (value === undefined || value === null) {
-    return '';
-  }
-
-  const rawValue = String(value).trim();
-  if (!rawValue) {
-    return '';
-  }
-
-  const normalizedSeparators = rawValue.replace(/\./g, ':').toUpperCase();
-  const amPmMatch = normalizedSeparators.match(
-    /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/,
-  );
-  if (amPmMatch) {
-    const [, rawHours, minutes, , period] = amPmMatch;
-    const parsedHours = Number(rawHours);
-
-    if (parsedHours >= 1 && parsedHours <= 12) {
-      const normalizedHours =
-        period === 'AM'
-          ? parsedHours % 12
-          : parsedHours % 12 === 0
-          ? 12
-          : (parsedHours % 12) + 12;
-
-      return `${String(normalizedHours).padStart(2, '0')}:${minutes}`;
-    }
-  }
-
-  const timeMatch = rawValue.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-  if (timeMatch) {
-    const [, hours, minutes] = timeMatch;
-    return `${hours.padStart(2, '0')}:${minutes}`;
-  }
-
-  const dotTimeMatch = rawValue.match(/^(\d{1,2})\.(\d{2})(?:\.\d{2})?$/);
-  if (dotTimeMatch) {
-    const [, hours, minutes] = dotTimeMatch;
-    return `${hours.padStart(2, '0')}:${minutes}`;
-  }
-
-  const parsedDate = new Date(`1970-01-01T${rawValue}`);
-  if (!Number.isNaN(parsedDate.getTime())) {
-    return parsedDate.toISOString().slice(11, 16);
-  }
-
-  return '';
-};
-
-const formatDateForApi = (value: string): string | null => {
-  const normalizedDate = normalizeApiDate(value);
-
-  if (!normalizedDate) {
-    return null;
-  }
-
-  const [year, month, day] = normalizedDate.split('-');
-  return `${day}/${month}/${year}`;
-};
-
-const formatTimeForApi = (value: string): string | null => {
-  const normalizedTime = normalizeApiTime(value);
-
-  if (!normalizedTime) {
-    return null;
-  }
-
-  const [rawHours, minutes] = normalizedTime.split(':');
-  const parsedHours = Number(rawHours);
-
-  if (!Number.isFinite(parsedHours)) {
-    return null;
-  }
-
-  const period = parsedHours >= 12 ? 'PM' : 'AM';
-  const displayHours = parsedHours % 12 || 12;
-
-  return `${displayHours}:${minutes} ${period}`;
-};
-
-const ANNOUNCEMENT_CACHE_KEY = 'announcement-list-cache';
-
-interface AnnouncementCacheRecord {
-  announceId: string;
-  donorIdentificationForm: DonorIdentificationForm;
-  announceEventForm: AnnounceEventForm;
-  personalInfoForm: PersonalInfoForm;
-  announceDetailsForm: AnnounceDetailsForm;
-  followUpForm: FollowUpForm;
-  followUpItems: FollowUpItem[];
-  addedCauses: AddedAnnounceCause[];
-  selectedBankIds: string[];
-  currencyId?: string;
-  savedAt: string;
-}
-
-const readAnnouncementCache = (): AnnouncementCacheRecord[] => {
-  try {
-    const rawValue = localStorage.getItem(ANNOUNCEMENT_CACHE_KEY);
-    if (!rawValue) {
-      return [];
-    }
-
-    const parsedValue = JSON.parse(rawValue);
-    return Array.isArray(parsedValue)
-      ? (parsedValue as AnnouncementCacheRecord[])
-      : [];
-  } catch {
-    return [];
-  }
-};
-
-const writeAnnouncementCache = (records: AnnouncementCacheRecord[]) => {
-  localStorage.setItem(ANNOUNCEMENT_CACHE_KEY, JSON.stringify(records));
-};
-
-const mapCacheToListingItem = (
-  record: AnnouncementCacheRecord,
-): AnnouncementListingItem => ({
-  announceId: record.announceId,
-  announceDate: record.donorIdentificationForm.announceDate,
-  announcerName: record.personalInfoForm.announcerName,
-  mobileNo: record.personalInfoForm.mobileNo,
-  eventName: record.announceEventForm.eventName,
-  occasionType: record.announceDetailsForm.occasionType,
-  announceAmount: String(
-    record.addedCauses.reduce(
-      (total, cause) => total + parseAmountValue(cause.amount),
-      0,
-    ),
-  ),
-  source: 'cache',
-});
-
-const extractAnnouncementId = (
-  payload: unknown,
-  fallbackValue: string,
-): string => {
-  if (payload && typeof payload === 'object') {
-    const resultItems = Array.isArray(
-      (payload as { result?: unknown[] }).result,
-    )
-      ? ((payload as { result: unknown[] }).result ?? []).filter(
-          (item): item is Record<string, unknown> =>
-            Boolean(item) && typeof item === 'object',
-        )
-      : [];
-
-    for (const item of resultItems) {
-      const resolvedCode = getFirstValue(item, [
-        'code',
-        'Code',
-        'announce_id',
-        'AnnounceID',
-        'id',
-        'ID',
-      ]).trim();
-
-      if (/^\d+$/.test(resolvedCode) && resolvedCode !== '0') {
-        return resolvedCode;
-      }
-    }
-  }
-
-  const record = extractDonorRecord(payload);
-  if (!record) {
-    return fallbackValue;
-  }
-
-  const resolvedId = getFirstValue(record, [
-    'announce_id',
-    'AnnounceID',
-    'id',
-    'ID',
-    'code',
-    'Code',
-  ]).trim();
-
-  return /^\d+$/.test(resolvedId) && resolvedId !== '0'
-    ? resolvedId
-    : fallbackValue;
-};
-
-const parseStoredUser = (): Partial<IUser> => {
-  try {
-    const userJson = localStorage.getItem('user');
-    return userJson ? (JSON.parse(userJson) as Partial<IUser>) : {};
-  } catch {
-    return {};
-  }
-};
-
-const toNullableText = (value: string): string | null => {
-  const normalizedValue = value.trim();
-  return normalizedValue ? normalizedValue : null;
-};
-
-const toDigitsNumber = (value: string): number => {
-  const digits = value.replace(/\D/g, '');
-  return digits ? Number(digits) : 0;
-};
-
-const inferCurrencyIdFromCode = (currencyCode: string): string => {
-  const normalizedCurrencyCode = currencyCode.trim().toUpperCase();
-
-  if (normalizedCurrencyCode === 'INR') {
-    return '4';
-  }
-
-  return '';
-};
-
-const getCurrentTimeValue = (): string => {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
-};
-
-const mapEventDetailRecord = (record: Record<string, unknown>) => ({
-  id: getFirstValue(record, ['EVENT_ID', 'EventId', 'EventID', 'Id', 'ID']),
-  eventName: getFirstValue(record, [
-    'EName',
-    'EVENT_NAME',
-    'EventName',
-    'Name',
-  ]),
-  eventCause: getFirstValue(record, [
-    'CAUSE_NAME',
-    'EventCause',
-    'CauseName',
-    'CAUSE',
-  ]),
-  eventFromDate: normalizeApiDate(
-    getFirstValue(record, ['EVENT_START_DATE', 'StartDate', 'EVENTDATEFROM']),
-  ),
-  eventToDate: normalizeApiDate(
-    getFirstValue(record, ['EVENT_END_DATE', 'EndDate', 'EVENTDATETO']),
-  ),
-  eventFromTime: normalizeApiTime(
-    getFirstValue(record, [
-      'Frm_Time',
-      'EVENT_START_TIME',
-      'StartTime',
-      'EVENTTIMEFROM',
-    ]),
-  ),
-  eventToTime: normalizeApiTime(
-    getFirstValue(record, [
-      'To_Time',
-      'EVENT_END_TIME',
-      'EndTime',
-      'EVENTTIMETO',
-    ]),
-  ),
-  eventCity: getFirstValue(record, ['CITY_NAME', 'CityName', 'CITY']),
-  eventChannel: getFirstValue(record, [
-    'CHANNEL_NAME',
-    'ChannelName',
-    'CHANNEL',
-  ]),
-  panditJi: getFirstValue(record, ['PANDIT_NAME', 'PanditName', 'PANDITJI']),
-  cityCode: getFirstValue(record, [
-    'CITY_CODE',
-    'CityCode',
-    'CityID',
-    'CityId',
-    'BhagCityCode',
-    'BHAG_CITY_CODE',
-  ]),
-  channelCode: getFirstValue(record, [
-    'CHANNEL_CODE',
-    'ChannelCode',
-    'ChannelID',
-    'ChannelId',
-  ]),
-  panditCode: getFirstValue(record, [
-    'PANDIT_CODE',
-    'PanditCode',
-    'PanditID',
-    'PanditId',
-  ]),
-  eventLocation: getFirstValue(record, [
-    'FULL_ADDRESS',
-    'FullAddress',
-    'Address',
-    'EVENT_ADDRESS',
-  ]),
-});
-
-const createEventOptions = (
-  eventRecords: ReturnType<typeof mapEventDetailRecord>[],
-): EventOption[] =>
-  eventRecords
-    .map((record, index) => ({
-      value: record.eventName,
-      label: record.eventName,
-      sortOrder: index,
-    }))
-    .filter(
-      (
-        option,
-        index,
-        currentOptions,
-      ): option is EventOption & { sortOrder: number } =>
-        option.value.trim() !== '' &&
-        currentOptions.findIndex(item => item.value === option.value) === index,
-    )
-    .sort((left, right) => left.sortOrder - right.sortOrder)
-    .map(({ value, label }) => ({
-      value,
-      label,
-    }));
-
-const createUniqueFieldOptions = (
-  eventRecords: ReturnType<typeof mapEventDetailRecord>[],
-  field: 'eventCity' | 'eventChannel' | 'panditJi',
-): EventOption[] =>
-  eventRecords
-    .map(record => record[field].trim())
-    .filter(
-      (value, index, currentValues) =>
-        value !== '' && currentValues.indexOf(value) === index,
-    )
-    .map(value => ({
-      value,
-      label: value,
-    }));
-
-const mapBankRecord = (
-  bankRecord: Record<string, unknown>,
-  index: number,
-): DepositBank => ({
-  id:
-    getFirstValue(bankRecord, ['ID', 'Id', 'BankId', 'DepositBankId']) ||
-    `${index}`,
-  bankName: getFirstValue(bankRecord, [
-    'FullName',
-    'BankName',
-    'bankName',
-    'BANKNAME',
-  ]),
-  accountNo: getFirstValue(bankRecord, [
-    'Acc_No',
-    'AccountNo',
-    'AccountNumber',
-    'AccNo',
-    'BANKACCOUNTNO',
-  ]),
-  accountType: getFirstValue(bankRecord, [
-    'Account_Type',
-    'AccountType',
-    'AcType',
-    'BankAccountType',
-  ]),
-  ifsc: getFirstValue(bankRecord, ['IFSC', 'IFSCCode', 'IfscCode']),
-  branch:
-    getFirstValue(bankRecord, ['Branch', 'BranchName', 'BANKBRANCH']) ||
-    'Udaipur',
-});
+import {
+  AnnouncementCacheRecord,
+  buildQuantityOptions,
+  createEmptyCauseFields,
+  getToday,
+  inferCurrencyIdFromCode,
+  mapCacheToListingItem,
+  mapEventDetailRecord,
+  parseAmountValue,
+  parseStoredUser,
+  readAnnouncementCache,
+  writeAnnouncementCache,
+} from './AnnounceMasterContent.helpers';
+import {
+  getErrorMessage,
+  loadBanksData,
+  loadCauseHeadMasterOptions,
+  loadDistrictMasterOptions,
+  loadEventCauseOptions,
+  loadEventDetailsData,
+  loadHowToDonateMasterOptions,
+  loadOccasionTypeOptions,
+  loadOperationAmountValue,
+  loadPincodeLocationData,
+  loadPurposeOptionsData,
+  loadSalutationMasterOptions,
+  loadStateMasterOptions,
+} from './AnnounceMasterContent.loaders';
+import {
+  buildCurrentCauseForPayload,
+  buildSavePayload,
+  getPreferredValidationTab,
+  getSaveErrorPayload,
+  persistSavedAnnouncement,
+  submitSaveRequest,
+  validateBeforeSave,
+} from './AnnounceMasterContent.save';
+import { useAnnounceCauseManagement } from './useAnnounceCauseManagement';
+import { useDonorSearchHandlers } from './useDonorSearchHandlers';
 
 export const AnnounceMasterContent = () => {
   const history = useHistory();
@@ -1451,6 +174,54 @@ export const AnnounceMasterContent = () => {
   const pincodeRequestIdRef = useRef(0);
   const purposeOptionsRequestIdRef = useRef(0);
   const amountRequestIdRef = useRef(0);
+
+  const {
+    handleAddCause,
+    handleCloseDeleteCauseModal,
+    handleConfirmDeleteCause,
+    handleDeleteCause,
+    handleEditCause,
+  } = useAnnounceCauseManagement({
+    addedCauses,
+    announceDetailsForm,
+    autoAmount,
+    causeHeadOptions,
+    causeIdPendingDelete,
+    currencyId,
+    editingCauseId,
+    isViewMode,
+    purposeOptions,
+    amountRequestIdRef,
+    purposeOptionsRequestIdRef,
+    setAddedCauses,
+    setAnnounceDetailsForm,
+    setAutoAmount,
+    setCauseIdPendingDelete,
+    setCurrencyId,
+    setEditingCauseId,
+    setIsAmountEditable,
+    setPersistedCurrencyId,
+    setPurposeOptions,
+    setValidationErrors,
+  });
+
+  const {
+    handleCloseDonorModal,
+    handleSelectDonor,
+    resetPersonalInfo,
+  } = useDonorSearchHandlers({
+    donorIdentificationForm,
+    donorSearchRequestIdRef,
+    donorSearchTypeRef,
+    lastDonorSearchKeyRef,
+    setActiveTab,
+    setDonorIdentificationForm,
+    setDonorOptions,
+    setDonorSearchError,
+    setIsSearchingDonor,
+    setPersonalInfoForm,
+    setShowDonorModal,
+  });
 
   const openAnnouncementListing = useCallback(() => {
     history.push(PATH.ANNOUNCE_MASTER);
@@ -1788,148 +559,6 @@ export const AnnounceMasterContent = () => {
     }));
   };
 
-  const handleAddCause = () => {
-    if (isViewMode) {
-      return;
-    }
-
-    const selectedCauseHead = causeHeadOptions.find(
-      option => option.value === announceDetailsForm.causeHead,
-    );
-    const selectedPurpose = purposeOptions.find(
-      option => option.value === announceDetailsForm.purpose,
-    );
-    const yojnaId =
-      selectedPurpose?.yojnaId?.trim() || announceDetailsForm.purpose.trim();
-    const causeAmount =
-      autoAmount.trim() || selectedPurpose?.amountValue?.trim() || '';
-
-    if (
-      !announceDetailsForm.causeHead.trim() ||
-      !announceDetailsForm.purpose.trim() ||
-      !yojnaId ||
-      !causeAmount ||
-      (announceDetailsForm.causeHead === '150' &&
-        !announceDetailsForm.causeHeadDate.trim())
-    ) {
-      return;
-    }
-
-    const nextCause: AddedAnnounceCause = {
-      id: editingCauseId ?? Date.now(),
-      causeHead: announceDetailsForm.causeHead,
-      causeHeadLabel:
-        selectedCauseHead?.label || announceDetailsForm.causeHead.trim(),
-      causeHeadPurposeId:
-        selectedCauseHead?.purposeId?.trim() ||
-        announceDetailsForm.causeHead.trim(),
-      purpose: announceDetailsForm.purpose,
-      purposeLabel:
-        selectedPurpose?.label || announceDetailsForm.purpose.trim(),
-      yojnaId,
-      quantity: Math.max(1, Number(announceDetailsForm.quantity) || 1),
-      amount: causeAmount,
-      causeHeadDate: announceDetailsForm.causeHeadDate,
-      namePlateName: announceDetailsForm.namePlateName.trim(),
-      donorInstruction: announceDetailsForm.donorInstruction.trim(),
-    };
-
-    setAddedCauses(current => {
-      const nextCauses =
-        editingCauseId === null
-          ? [...current, nextCause]
-          : current.map(item =>
-              item.id === editingCauseId ? nextCause : item,
-            );
-
-      return nextCauses;
-    });
-    setValidationErrors(current => {
-      const nextErrors = { ...current };
-      delete nextErrors.announceAmount;
-      return nextErrors;
-    });
-    setEditingCauseId(null);
-    purposeOptionsRequestIdRef.current += 1;
-    amountRequestIdRef.current += 1;
-    if (currencyId.trim()) {
-      setPersistedCurrencyId(currencyId.trim());
-    }
-    setCurrencyId('');
-    setPurposeOptions([]);
-    setAutoAmount('');
-    setIsAmountEditable(false);
-    setAnnounceDetailsForm(current => ({
-      ...current,
-      ...createEmptyCauseFields(),
-    }));
-  };
-
-  const handleEditCause = (causeId: number) => {
-    if (isViewMode) {
-      return;
-    }
-
-    const cause = addedCauses.find(item => item.id === causeId);
-
-    if (!cause) {
-      return;
-    }
-
-    setEditingCauseId(causeId);
-    setAutoAmount(cause.amount);
-    setAnnounceDetailsForm(current => ({
-      ...current,
-      causeHead: cause.causeHead,
-      causeHeadDate: cause.causeHeadDate,
-      namePlateName: cause.namePlateName,
-      donorInstruction: cause.donorInstruction,
-      purpose: cause.purpose,
-      quantity: cause.quantity,
-    }));
-  };
-
-  const handleDeleteCause = (causeId: number) => {
-    if (isViewMode) {
-      return;
-    }
-
-    setCauseIdPendingDelete(causeId);
-  };
-
-  const handleCloseDeleteCauseModal = () => {
-    setCauseIdPendingDelete(null);
-  };
-
-  const handleConfirmDeleteCause = () => {
-    if (isViewMode) {
-      return;
-    }
-
-    if (causeIdPendingDelete === null) {
-      return;
-    }
-
-    const causeId = causeIdPendingDelete;
-    setAddedCauses(current => current.filter(item => item.id !== causeId));
-
-    if (editingCauseId === causeId) {
-      setEditingCauseId(null);
-      purposeOptionsRequestIdRef.current += 1;
-      amountRequestIdRef.current += 1;
-      setCurrencyId('');
-      setPurposeOptions([]);
-      setAutoAmount('');
-      setIsAmountEditable(false);
-      setAnnounceDetailsForm(current => ({
-        ...current,
-        ...createEmptyCauseFields(),
-      }));
-    }
-
-    setCauseIdPendingDelete(null);
-  };
-
   const handleToggleBank = (bankId: string) => {
     if (isViewMode) {
       return;
@@ -1974,65 +603,6 @@ export const AnnounceMasterContent = () => {
     setFollowUpItems(current => current.filter(item => item.id !== id));
   };
 
-  const applyDonorRecord = useCallback(
-    (
-      donorRecord: Record<string, unknown>,
-      fallbackSearchData: string,
-      nextSearchType?: DonorIdentificationForm['donorSearchType'],
-    ) => {
-      const resolvedDonorId =
-        getFirstValue(donorRecord, ['NGCode', 'DonorID', 'DonorId']) ||
-        fallbackSearchData;
-      const resolvedSearchType =
-        nextSearchType ?? donorIdentificationForm.donorSearchType;
-
-      setDonorSearchError('');
-      lastDonorSearchKeyRef.current = `${resolvedSearchType}:${resolvedDonorId}`;
-      setDonorIdentificationForm(current => ({
-        ...current,
-        donorSearchType: resolvedSearchType,
-        donorId: resolvedDonorId,
-      }));
-
-      const donorPersonalInfo = mapDonorToPersonalInfo(donorRecord);
-
-      setPersonalInfoForm(current => ({
-        ...current,
-        ...Object.fromEntries(
-          Object.entries(donorPersonalInfo).filter(
-            ([, value]) => value !== undefined,
-          ),
-        ),
-      }));
-      setActiveTab('personal');
-    },
-    [donorIdentificationForm.donorSearchType],
-  );
-
-  const resetPersonalInfo = useCallback(
-    (overrides?: Partial<PersonalInfoForm>) => {
-      setPersonalInfoForm({
-        ...createInitialPersonalInfoForm(),
-        ...overrides,
-      });
-    },
-    [],
-  );
-
-  const handleSelectDonor = (donor: DonorSearchResult) => {
-    applyDonorRecord(
-      donor.record,
-      donorIdentificationForm.donorId.trim(),
-      'donorId',
-    );
-    setShowDonorModal(false);
-    setDonorOptions([]);
-  };
-
-  const handleCloseDonorModal = () => {
-    setShowDonorModal(false);
-  };
-
   const resetEventSelectionFields = (
     liveType: AnnounceEventForm['liveType'],
     eventName = '',
@@ -2055,212 +625,10 @@ export const AnnounceMasterContent = () => {
     }));
   };
 
-  const handleSearchDonor = async () => {
-    const searchData = donorIdentificationForm.donorId.trim();
-    const requestId = donorSearchRequestIdRef.current + 1;
-    donorSearchRequestIdRef.current = requestId;
-
-    if (!searchData) {
-      setDonorSearchError('Please enter a value to search.');
-      resetPersonalInfo();
-      return;
-    }
-
-    setIsSearchingDonor(true);
-    setDonorSearchError('');
-
-    try {
-      const searchTypeOptions =
-        donorSearchTypeCandidates[donorIdentificationForm.donorSearchType] ??
-        donorSearchTypeCandidates.donorId;
-      let response = null;
-      let lastError: unknown = null;
-
-      for (const searchType of searchTypeOptions) {
-        try {
-          response = await axiosInstance.get(masterApiPaths.searchDonorData, {
-            params: {
-              searchType,
-              searchData,
-              dataFlag: ContentTypes.DataFlag,
-            },
-            headers: masterApiHeaders(),
-          });
-          break;
-        } catch (error) {
-          lastError = error;
-        }
-      }
-
-      if (!response) {
-        throw lastError;
-      }
-
-      const donorRecords = extractDonorRecords(response.data);
-      const uniqueDonorOptions = donorRecords
-        .map(mapDonorSearchResult)
-        .filter(
-          (donor, index, currentDonors) =>
-            donor.donorId &&
-            currentDonors.findIndex(item => item.donorId === donor.donorId) ===
-              index,
-        );
-
-      if (requestId !== donorSearchRequestIdRef.current) {
-        return;
-      }
-
-      if (donorRecords.length === 0) {
-        setDonorSearchError('No donor data found.');
-        setDonorOptions([]);
-        setShowDonorModal(false);
-        resetPersonalInfo();
-        return;
-      }
-
-      if (
-        donorIdentificationForm.donorSearchType === 'mobile' &&
-        uniqueDonorOptions.length > 1
-      ) {
-        setDonorOptions(uniqueDonorOptions);
-        setShowDonorModal(true);
-        return;
-      }
-
-      setDonorOptions([]);
-      setShowDonorModal(false);
-      applyDonorRecord(donorRecords[0], searchData);
-    } catch (error: any) {
-      if (requestId !== donorSearchRequestIdRef.current) {
-        return;
-      }
-
-      const message =
-        error?.response?.data?.message ||
-        error?.response?.data?.Message ||
-        error?.message ||
-        'Failed to search donor data.';
-      setDonorSearchError(message);
-      resetPersonalInfo();
-    } finally {
-      if (requestId === donorSearchRequestIdRef.current) {
-        setIsSearchingDonor(false);
-      }
-    }
-  };
-
-  const searchDonorByValue = useCallback(
-    async ({
-      searchType,
-      searchData,
-      onNoData,
-      onMultipleResults,
-    }: {
-      searchType: DonorIdentificationForm['donorSearchType'];
-      searchData: string;
-      onNoData?: () => void;
-      onMultipleResults?: (options: DonorSearchResult[]) => void;
-    }) => {
-      const searchTypeOptions =
-        donorSearchTypeCandidates[searchType] ??
-        donorSearchTypeCandidates.donorId;
-      let response = null;
-      let lastError: unknown = null;
-
-      for (const searchTypeOption of searchTypeOptions) {
-        try {
-          response = await axiosInstance.get(masterApiPaths.searchDonorData, {
-            params: {
-              searchType: searchTypeOption,
-              searchData,
-              dataFlag: ContentTypes.DataFlag,
-            },
-            headers: masterApiHeaders(),
-          });
-          break;
-        } catch (error) {
-          lastError = error;
-        }
-      }
-
-      if (!response) {
-        throw lastError;
-      }
-
-      const donorRecords = extractDonorRecords(response.data);
-      const uniqueDonorOptions = donorRecords
-        .map(mapDonorSearchResult)
-        .filter(
-          (donor, index, currentDonors) =>
-            donor.donorId &&
-            currentDonors.findIndex(item => item.donorId === donor.donorId) ===
-              index,
-        );
-
-      if (searchType === 'mobile' && uniqueDonorOptions.length > 1) {
-        onMultipleResults?.(uniqueDonorOptions);
-        return;
-      }
-
-      if (donorRecords.length === 0) {
-        onNoData?.();
-        return;
-      }
-
-      setDonorOptions([]);
-      setShowDonorModal(false);
-      applyDonorRecord(donorRecords[0], searchData, searchType);
-    },
-    [applyDonorRecord],
-  );
-
-  useEffect(() => {
-    const searchData = donorIdentificationForm.donorId.trim();
-
-    if (!searchData) {
-      lastDonorSearchKeyRef.current = '';
-      donorSearchRequestIdRef.current += 1;
-      setIsSearchingDonor(false);
-      setDonorSearchError('');
-      setDonorOptions([]);
-      setShowDonorModal(false);
-      resetPersonalInfo();
-      return;
-    }
-
-    const searchKey = `${donorIdentificationForm.donorSearchType}:${searchData}`;
-    if (lastDonorSearchKeyRef.current === searchKey) {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      lastDonorSearchKeyRef.current = searchKey;
-      void handleSearchDonor();
-    }, 600);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    donorIdentificationForm.donorId,
-    donorIdentificationForm.donorSearchType,
-  ]);
-
   useEffect(() => {
     const loadEventCauses = async () => {
       try {
-        const response = await axiosInstance.get(
-          masterApiPaths.getAnnounceCauses,
-          {
-            params: {
-              DataFlag: ContentTypes.DataFlag,
-              Operation: eventOperation,
-            },
-          },
-        );
-
-        setEventCauseOptions(extractAnnounceCauseOptions(response.data));
+        setEventCauseOptions(await loadEventCauseOptions(eventOperation));
       } catch (error) {
         setEventCauseOptions([]);
       }
@@ -2275,28 +643,22 @@ export const AnnounceMasterContent = () => {
       setEventError('');
 
       try {
-        const response = await axiosInstance.get(
-          masterApiPaths.getEventDetails,
-          {
-            params: {
-              dataflag: ContentTypes.DataFlag,
-              IsLive: announceEventForm.liveType === 'live' ? 'Y' : 'N',
-              Operation: eventOperation,
-            },
-          },
-        );
-
-        const records = extractArrayPayload(response.data).map(
-          mapEventDetailRecord,
-        );
+        const {
+          eventChannelOptions: nextEventChannelOptions,
+          eventCityOptions: nextEventCityOptions,
+          eventOptions: nextEventOptions,
+          panditOptions: nextPanditOptions,
+          records,
+        } = await loadEventDetailsData({
+          eventOperation,
+          isLive: announceEventForm.liveType === 'live',
+        });
 
         setEventDetails(records);
-        setEventOptions(createEventOptions(records));
-        setEventCityOptions(createUniqueFieldOptions(records, 'eventCity'));
-        setEventChannelOptions(
-          createUniqueFieldOptions(records, 'eventChannel'),
-        );
-        setPanditOptions(createUniqueFieldOptions(records, 'panditJi'));
+        setEventOptions(nextEventOptions);
+        setEventCityOptions(nextEventCityOptions);
+        setEventChannelOptions(nextEventChannelOptions);
+        setPanditOptions(nextPanditOptions);
 
         const matchedRecord = records.find(
           record => record.eventName === announceEventForm.eventName,
@@ -2305,7 +667,7 @@ export const AnnounceMasterContent = () => {
         if (!matchedRecord && operation === 'ADD') {
           resetEventSelectionFields(announceEventForm.liveType);
         }
-      } catch (error: any) {
+      } catch (error) {
         setEventDetails([]);
         setEventOptions([]);
         setEventCityOptions([]);
@@ -2314,12 +676,7 @@ export const AnnounceMasterContent = () => {
         if (operation === 'ADD' || !announceEventForm.eventName.trim()) {
           resetEventSelectionFields(announceEventForm.liveType);
         }
-        const message =
-          error?.response?.data?.message ||
-          error?.response?.data?.Message ||
-          error?.message ||
-          'Failed to load event list.';
-        setEventError(message);
+        setEventError(getErrorMessage(error, 'Failed to load event list.'));
       } finally {
         setEventLoading(false);
       }
@@ -2367,17 +724,7 @@ export const AnnounceMasterContent = () => {
   useEffect(() => {
     const loadOccasionTypes = async () => {
       try {
-        const response = await axiosInstance.get(
-          masterApiPaths.getOccasionMaster,
-          {
-            params: {
-              DataFlag: ContentTypes.DataFlag,
-            },
-            headers: masterApiHeaders(),
-          },
-        );
-
-        setOccasionTypeOptions(extractOccasionOptions(response.data));
+        setOccasionTypeOptions(await loadOccasionTypeOptions());
       } catch (error) {
         setOccasionTypeOptions([]);
       }
@@ -2389,14 +736,7 @@ export const AnnounceMasterContent = () => {
   useEffect(() => {
     const loadHowToDonateOptions = async () => {
       try {
-        const response = await axiosInstance.get(
-          masterApiPaths.getHowToDonateMaster,
-          {
-            headers: masterApiHeaders(),
-          },
-        );
-
-        setHowToDonateOptions(extractHowToDonateOptions(response.data));
+        setHowToDonateOptions(await loadHowToDonateMasterOptions());
       } catch (error) {
         setHowToDonateOptions([]);
       }
@@ -2408,18 +748,7 @@ export const AnnounceMasterContent = () => {
   useEffect(() => {
     const loadStateOptions = async () => {
       try {
-        const response = await axiosInstance.get(
-          masterApiPaths.getStatesByCountry,
-          {
-            params: {
-              countryCode: 22,
-              DataFlag: ContentTypes.DataFlag,
-            },
-            headers: masterApiHeaders(),
-          },
-        );
-
-        setStateOptions(extractStateOptions(response.data));
+        setStateOptions(await loadStateMasterOptions());
       } catch (error) {
         setStateOptions([]);
       }
@@ -2441,18 +770,7 @@ export const AnnounceMasterContent = () => {
 
     const loadDistrictOptions = async () => {
       try {
-        const response = await axiosInstance.get(
-          masterApiPaths.getDistrictByState,
-          {
-            params: {
-              stateCode,
-              DataFlag: ContentTypes.DataFlag,
-            },
-            headers: masterApiHeaders(),
-          },
-        );
-
-        setDistrictOptions(extractDistrictOptions(response.data));
+        setDistrictOptions(await loadDistrictMasterOptions(stateCode));
       } catch (error) {
         setDistrictOptions([]);
       }
@@ -2476,31 +794,23 @@ export const AnnounceMasterContent = () => {
     const timeoutId = window.setTimeout(() => {
       const loadLocationByPincode = async () => {
         try {
-          const response = await axiosInstance.post(
-            masterApiPaths.getStateAndDistrictByPinCode,
-            null,
-            {
-              params: {
-                countryCode: 22,
-                dataFlag: ContentTypes.DataFlag,
-                pincode: normalizedPincode,
-              },
-              headers: masterApiHeaders(),
-            },
-          );
+          if (requestId !== pincodeRequestIdRef.current) {
+            return;
+          }
+
+          const { location, matchedState } = await loadPincodeLocationData({
+            normalizedPincode,
+            stateOptions,
+          });
 
           if (requestId !== pincodeRequestIdRef.current) {
             return;
           }
 
-          const location = extractPincodeLocation(response.data);
-
           if (!location) {
             setIsPincodeLocationLocked(false);
             return;
           }
-
-          const matchedState = resolveStateOption(stateOptions, location);
 
           setPersonalInfoForm(current => ({
             ...current,
@@ -2553,17 +863,7 @@ export const AnnounceMasterContent = () => {
   useEffect(() => {
     const loadCauseHeadOptions = async () => {
       try {
-        const response = await axiosInstance.get(
-          masterApiPaths.getPurposeByDataFlag,
-          {
-            params: {
-              DataFlag: ContentTypes.DataFlag,
-            },
-            headers: masterApiHeaders(),
-          },
-        );
-
-        setCauseHeadOptions(extractCauseHeadOptions(response.data));
+        setCauseHeadOptions(await loadCauseHeadMasterOptions());
       } catch (error) {
         setCauseHeadOptions([]);
       }
@@ -2598,22 +898,14 @@ export const AnnounceMasterContent = () => {
 
     const loadPurposeOptions = async () => {
       try {
-        const currencyResponse = await axiosInstance.get(
-          masterApiPaths.getCurrencyByCountry,
-          {
-            params: {
-              countryCode: 22,
-              DataFlag: ContentTypes.DataFlag,
-            },
-            headers: masterApiHeaders(),
-          },
-        );
-
         if (requestId !== purposeOptionsRequestIdRef.current) {
           return;
         }
 
-        const nextCurrencyId = extractCurrencyId(currencyResponse.data);
+        const {
+          currencyId: nextCurrencyId,
+          purposeOptions: nextPurposeOptions,
+        } = await loadPurposeOptionsData(purposeId);
 
         if (!nextCurrencyId) {
           setCurrencyId('');
@@ -2631,23 +923,10 @@ export const AnnounceMasterContent = () => {
         setCurrencyId(nextCurrencyId);
         setPersistedCurrencyId(nextCurrencyId);
 
-        const response = await axiosInstance.get(
-          masterApiPaths.getYojnaByPurposeAndCurrency,
-          {
-            params: {
-              DataFlag: ContentTypes.DataFlag,
-              CurrencyId: nextCurrencyId,
-              PurposeId: purposeId,
-            },
-            headers: masterApiHeaders(),
-          },
-        );
-
         if (requestId !== purposeOptionsRequestIdRef.current) {
           return;
         }
 
-        const nextPurposeOptions = extractYojnaOptions(response.data);
         setPurposeOptions(nextPurposeOptions);
         setIsAmountEditable(false);
         setAnnounceDetailsForm(current => {
@@ -2745,23 +1024,16 @@ export const AnnounceMasterContent = () => {
 
     const loadOperationAmount = async () => {
       try {
-        const response = await axiosInstance.get(
-          masterApiPaths.getOperationAmountByQty,
-          {
-            params: {
-              DataFlag: ContentTypes.DataFlag,
-              CurrencyId: currencyId,
-              qty: quantity,
-            },
-            headers: masterApiHeaders(),
-          },
-        );
+        const nextAmount = await loadOperationAmountValue({
+          currencyId,
+          quantity,
+        });
 
         if (requestId !== amountRequestIdRef.current) {
           return;
         }
 
-        setAutoAmount(extractOperationAmount(response.data));
+        setAutoAmount(nextAmount);
       } catch (error) {
         if (requestId !== amountRequestIdRef.current) {
           return;
@@ -2803,39 +1075,8 @@ export const AnnounceMasterContent = () => {
 
   useEffect(() => {
     const loadSalutations = async () => {
-      const requestConfigs = [
-        {
-          params: {
-            Data_Flag: ContentTypes.DataFlag,
-          },
-        },
-        {
-          params: {
-            dataflag: ContentTypes.DataFlag,
-          },
-        },
-      ];
-
       try {
-        let response = null;
-        let lastError: unknown = null;
-
-        for (const config of requestConfigs) {
-          try {
-            response = await axiosInstance.get(masterApiPaths.getSalutations, {
-              params: config.params,
-            });
-            break;
-          } catch (error) {
-            lastError = error;
-          }
-        }
-
-        if (!response) {
-          throw lastError;
-        }
-
-        setSalutations(extractSalutationOptions(response.data));
+        setSalutations(await loadSalutationMasterOptions());
       } catch (error) {
         setSalutations([]);
       }
@@ -2849,36 +1090,10 @@ export const AnnounceMasterContent = () => {
       setBankLoading(true);
       setBankError('');
 
-      try {
-        const response = await axiosInstance.get(
-          masterApiPaths.getDepositBanks,
-          {
-            params: {
-              dataflag: ContentTypes.DataFlag,
-            },
-          },
-        );
-
-        const bankRecords = extractArrayPayload(response.data);
-        setBanks(
-          bankRecords
-            .map(mapBankRecord)
-            .filter(
-              (bank, index, currentBanks) =>
-                (bank.bankName || bank.accountNo || bank.ifsc || bank.branch) &&
-                currentBanks.findIndex(item => item.id === bank.id) === index,
-            ),
-        );
-      } catch (error: any) {
-        const message =
-          error?.response?.data?.message ||
-          error?.response?.data?.Message ||
-          error?.message ||
-          'Failed to load bank list.';
-        setBankError(message);
-      } finally {
-        setBankLoading(false);
-      }
+      const { banks: nextBanks, errorMessage } = await loadBanksData();
+      setBanks(nextBanks);
+      setBankError(errorMessage);
+      setBankLoading(false);
     };
 
     void loadBanks();
@@ -3056,164 +1271,6 @@ export const AnnounceMasterContent = () => {
     }
   };
 
-  const getTabForFieldError = (
-    field: AnnounceValidationField,
-  ): AnnouncerTabKey => {
-    switch (field) {
-      case 'salutation':
-      case 'announcerName':
-      case 'announcedForName':
-      case 'mobileNo':
-      case 'pincode':
-      case 'country':
-      case 'state':
-      case 'district':
-        return 'personal';
-      case 'eventName':
-        return 'announceEvent';
-      case 'bankSelection':
-        return 'bankDetails';
-      default:
-        return 'announceDetails';
-    }
-  };
-
-  const getPreferredValidationTab = (
-    errors: AnnounceValidationErrors,
-  ): AnnouncerTabKey | null => {
-    const errorFields = Object.keys(errors) as AnnounceValidationField[];
-
-    if (errorFields.length === 0) {
-      return null;
-    }
-
-    const currentTabHasError = errorFields.some(
-      field =>
-        field !== 'announceDate' && getTabForFieldError(field) === activeTab,
-    );
-
-    if (currentTabHasError) {
-      return activeTab;
-    }
-
-    const firstTabErrorField = errorFields.find(
-      field => field !== 'announceDate',
-    );
-
-    return firstTabErrorField ? getTabForFieldError(firstTabErrorField) : null;
-  };
-
-  const validateBeforeSave = (
-    causesForPayload: AddedAnnounceCause[],
-    announceAmount: number,
-  ) => {
-    const nextErrors: AnnounceValidationErrors = {};
-
-    if (!isValidDateValue(donorIdentificationForm.announceDate)) {
-      nextErrors.announceDate = 'Announce Date Not Valid.';
-    }
-
-    if (!announceDetailsForm.paymentMode.trim()) {
-      nextErrors.paymentMode = 'Please Fill Pay Mode.';
-    }
-
-    if (!personalInfoForm.announcerName.trim()) {
-      nextErrors.announcerName = 'Please Fill Announcer Name';
-    }
-
-    if (
-      personalInfoForm.announceInOtherName &&
-      !personalInfoForm.announcedForName.trim()
-    ) {
-      nextErrors.announcedForName = 'Please Fill Announcer In The Name Of';
-    }
-
-    if (!personalInfoForm.salutation.trim()) {
-      nextErrors.salutation = 'Please Select Salutation.';
-    }
-
-    if (operation !== 'EDIT' && !announceEventForm.eventName.trim()) {
-      nextErrors.eventName = 'Please Select Event Name.';
-    }
-
-    if (!personalInfoForm.country.trim()) {
-      nextErrors.country = 'Please select country.';
-    }
-
-    if (!personalInfoForm.pincode.trim()) {
-      nextErrors.pincode = 'Please enter pincode.';
-    }
-
-    if (!personalInfoForm.state.trim()) {
-      nextErrors.state = 'Please select state.';
-    }
-
-    if (!personalInfoForm.district.trim()) {
-      nextErrors.district = 'Please select district.';
-    }
-
-    if (!personalInfoForm.mobileNo.trim()) {
-      nextErrors.mobileNo = 'Please Enter Mobile No.';
-    } else if (personalInfoForm.mobileNo.trim().length !== 10) {
-      nextErrors.mobileNo = 'Please Enter Mobile No. only 10 digit';
-    }
-
-    if (!announceDetailsForm.occasionType.trim()) {
-      nextErrors.occasionType = 'Please Select In Memory / Occasion Type.';
-    }
-
-    if (!isValidDateValue(announceDetailsForm.occasionDate)) {
-      nextErrors.occasionDate = 'In Memory / Occassion Date Not Valid.';
-    }
-
-    if (!announceDetailsForm.occasionRemark.trim()) {
-      nextErrors.occasionRemark = 'Please Fill Remark.';
-    }
-
-    if (operation !== 'EDIT' && !announceDetailsForm.causeHead.trim()) {
-      nextErrors.causeHead = 'Please Select Cause Head.';
-    }
-
-    if (
-      announceDetailsForm.causeHead === '150' &&
-      !announceDetailsForm.causeHeadDate.trim()
-    ) {
-      nextErrors.causeHeadDate = 'Please Select Cause Head Date.';
-    }
-
-    if (operation !== 'EDIT' && !announceDetailsForm.purpose.trim()) {
-      nextErrors.purpose = 'Please Select Purpose.';
-    }
-
-    if (
-      announceDetailsForm.purpose.trim() &&
-      isAmountEditable &&
-      announceAmount <= 0
-    ) {
-      nextErrors.announceAmount = 'Please Fill Announce Amount';
-    }
-
-    if (!announceDetailsForm.howToDonate.trim()) {
-      nextErrors.howToDonate = 'Please Select How to donate.';
-    }
-
-    if (
-      announceDetailsForm.isMotivated &&
-      !announceDetailsForm.motivatedAmount.trim()
-    ) {
-      nextErrors.motivatedAmount = 'Please enter motivated amount.';
-    }
-
-    if (
-      ['Online', 'Pay-In-Slip'].includes(announceDetailsForm.paymentMode) &&
-      selectedBankIds.length === 0
-    ) {
-      nextErrors.bankSelection = 'Please select any one bank to message.';
-    }
-
-    return nextErrors;
-  };
-
   const handleSave = async () => {
     if (isViewMode) {
       return;
@@ -3226,28 +1283,13 @@ export const AnnounceMasterContent = () => {
       queryParams.get('crtObjectId') || queryParams.get('crtobjectid');
     const queryStringDReason = queryParams.get('DReason');
     const queryStringThisCallId = queryParams.get('THISCALLID');
-    const currentCauseForPayload =
-      isCauseReadyToAdd && selectedPurposeOption
-        ? {
-            id: Date.now(),
-            causeHead: announceDetailsForm.causeHead,
-            causeHeadLabel: selectedCauseHeadOption?.label || '',
-            causeHeadPurposeId:
-              selectedCauseHeadOption?.purposeId?.trim() ||
-              announceDetailsForm.causeHead.trim(),
-            purpose: announceDetailsForm.purpose,
-            purposeLabel:
-              selectedPurposeOption.label || announceDetailsForm.purpose,
-            yojnaId:
-              selectedPurposeOption.yojnaId?.trim() ||
-              announceDetailsForm.purpose.trim(),
-            quantity: Math.max(1, Number(announceDetailsForm.quantity) || 1),
-            amount: autoAmount.trim(),
-            causeHeadDate: announceDetailsForm.causeHeadDate,
-            namePlateName: announceDetailsForm.namePlateName.trim(),
-            donorInstruction: announceDetailsForm.donorInstruction.trim(),
-          }
-        : null;
+    const currentCauseForPayload = buildCurrentCauseForPayload({
+      announceDetailsForm,
+      autoAmount,
+      isCauseReadyToAdd,
+      selectedCauseHeadOption,
+      selectedPurposeOption,
+    });
     const causesForPayload = currentCauseForPayload
       ? [...addedCauses, currentCauseForPayload]
       : addedCauses;
@@ -3255,12 +1297,25 @@ export const AnnounceMasterContent = () => {
       (total, cause) => total + parseAmountValue(cause.amount),
       0,
     );
-    const nextErrors = validateBeforeSave(causesForPayload, announceAmount);
+    const nextErrors = validateBeforeSave({
+      announceAmount,
+      announceDetailsForm,
+      announceEventForm,
+      causesForPayload,
+      donorIdentificationForm,
+      isAmountEditable,
+      operation: operation as 'ADD' | 'EDIT' | 'VIEW',
+      personalInfoForm,
+      selectedBankIds,
+    });
 
     setValidationErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      const preferredTab = getPreferredValidationTab(nextErrors);
+      const preferredTab = getPreferredValidationTab({
+        activeTab,
+        errors: nextErrors,
+      });
 
       if (preferredTab && preferredTab !== activeTab) {
         setActiveTab(preferredTab);
@@ -3269,257 +1324,82 @@ export const AnnounceMasterContent = () => {
       return;
     }
 
-    const donorInstruction = toNullableText(
-      causesForPayload
-        .map(cause => cause.donorInstruction)
-        .filter(Boolean)
-        .join(', '),
-    );
-    const namePlate = toNullableText(
-      causesForPayload
-        .map(cause => cause.namePlateName)
-        .filter(Boolean)
-        .join(', '),
-    );
-    const dueDate =
-      formatDateForApi(announceDetailsForm.expectedDate) ||
-      formatDateForApi(followUpForm.date);
-    const dueTime =
-      normalizeApiTime(announceDetailsForm.expectedTime) ||
-      normalizeApiTime(followUpForm.time);
-    const currentTime = getCurrentTimeValue();
-    const selectedHowToDonateId = Number(
-      selectedHowToDonateOption?.value?.trim() ||
-        announceDetailsForm.howToDonate.trim() ||
-        0,
-    );
-    const selectedBankIdsValue = selectedBankIds.length
-      ? selectedBankIds.join(',')
-      : null;
-    const selectedDistrictCode = Number(
-      selectedDistrictOption?.districtCode?.trim() || 0,
-    );
-    const selectedStateCode = Number(
-      selectedStateOption?.stateCode?.trim() || 0,
-    );
-    const channelCode = Number(
-      selectedEventDetail?.channelCode?.trim() ||
-        selectedEventChannelDetail?.channelCode?.trim() ||
-        0,
-    );
-    const panditCode = Number(
-      selectedEventDetail?.panditCode?.trim() ||
-        selectedEventPanditDetail?.panditCode?.trim() ||
-        0,
-    );
-    const bhagCityCode = Number(
-      selectedEventDetail?.cityCode?.trim() ||
-        selectedEventCityDetail?.cityCode?.trim() ||
-        0,
-    );
     const employeeCode = Number(currentUser.empNum || 0) || null;
     const donorSearchValue = donorSearchValueRef.current.trim();
     const donorSearchType = donorSearchTypeRef.current;
-    const searchedEmailId =
-      donorSearchType === 'email' && donorSearchValue ? donorSearchValue : null;
-    const searchedAadharNumber =
-      donorSearchType === 'aadhaar' && donorSearchValue
-        ? donorSearchValue
-        : null;
-    const searchedPanNumber =
-      donorSearchType === 'pan' && donorSearchValue ? donorSearchValue : null;
     const callingSadhakId = employeeCode;
     const callingSadhakName =
       (currentUser as Partial<IUser> & { empName?: string }).empName ||
       currentUser.username ||
       null;
-    const ngCode = donorIdentificationForm.donorId.trim() || null;
     const resolvedCurrencyId =
       currencyId.trim() ||
       persistedCurrencyId.trim() ||
       inferCurrencyIdFromCode(announceEventForm.currency);
-    const payload = {
-      annoucePurposeList: causesForPayload.map(cause => ({
-        yojna_id: cause.yojnaId || '0',
-        qty: String(Math.max(1, Number(cause.quantity) || 1)),
-        amount: String(parseAmountValue(cause.amount) || 0),
-        bhojan_date: formatDateForApi(cause.causeHeadDate) || '',
-      })),
-      announce_id: Number(announceIdParam || 0),
-      ashri: personalInfoForm.salutation || '',
-      ashri_oth: personalInfoForm.salutation || null,
-      announcer_name: personalInfoForm.announcerName.trim(),
-      announce_amount: announceAmount,
-      address1: null,
-      address2: null,
-      address3: null,
-      ph_no: null,
-      mob_no: personalInfoForm.mobileNo.trim(),
-      announce_through: announceThroughParam || 'CALLCENTER',
-      announce_date: formatDateForApi(donorIdentificationForm.announceDate),
-      announce_time: currentTime,
-      std_code: null,
-      email_id: searchedEmailId,
-      purpose: Number(announceDetailsForm.causeHead.trim() || 0),
-      due_date: dueDate,
-      due_time: dueTime,
-      completed: '0',
-      first_date: '',
-      second_date: '',
-      third_date: '',
-      remark1: selectedHowToDonateId,
-      first_remark: null,
-      second_remark: donorInstruction,
-      third_remark: namePlate,
-      city_code: 0,
-      district_code: selectedDistrictCode,
-      state_code: selectedStateCode,
-      remark2: toNullableText(announceDetailsForm.occasionRemark),
-      channel_code: channelCode,
-      pandit_code: panditCode,
-      bhag_city_code: bhagCityCode || null,
-      oth_name: null,
-      mob_no_second: null,
-      mob_no_third: null,
-      user_name: currentUser.username || '',
-      ash_code: toDigitsNumber(donorIdentificationForm.donorId.trim()),
-      emp_code: employeeCode || 0,
-      live: announceEventForm.liveType === 'live' ? 'Y' : 'N',
-      provisional_no: null,
-      chk_prov: null,
-      rec_amount: 0,
-      rec_date: null,
-      allocate_date: null,
-      ash_event_id: selectedEventId,
-      event_ash_id: selectedEventId,
-      event_name: announceEventForm.eventName.trim() || null,
-      audit_confirm: 'N',
-      user_id: Number(currentUser.id || 0),
-      audit_remark: null,
-      allocated_to: null,
-      followup_priority: donorIdentificationForm.urgentFollowup ? 1 : 0,
-      bank_code: null,
-      future_donor: null,
-      search_remark: null,
-      search_empname: null,
-      search_complete: null,
-      complete_userid: null,
-      complete_date: null,
-      landmark: null,
-      cash_pickup: 'N',
-      other_type: personalInfoForm.announceInOtherName ? 1 : null,
-      currency_id: resolvedCurrencyId ? Number(resolvedCurrencyId) : null,
-      cause_id: Number(causesForPayload[0]?.causeHeadPurposeId || 0),
-      ngcode: ngCode,
-      msg_banks: selectedBankIdsValue,
-      data_flag: ContentTypes.DataFlag,
-      fy_id: 21,
-      crtobjectid: null,
-      last_call_no: null,
-      last_fp_remark: null,
-      last_call_date: null,
-      last_call_back_date: null,
-      last_remark: null,
-      fp_received: null,
-      fp_org_rec_no: null,
-      receive_id_by: null,
-      receive_head_by: null,
-      dmobile5: null,
-      dmobilewhatsapp1: personalInfoForm.whatsappNo.trim() || null,
-      dmobilewhatsapp2: null,
-      phoffice: null,
-      aadhar_number: searchedAadharNumber,
-      pan_number: searchedPanNumber,
-      in_memory_occasion: toNullableText(announceDetailsForm.occasionType),
-      in_memocc_date:
-        formatDateForApi(announceDetailsForm.occasionDate) || null,
-      donor_instruction: donorInstruction,
-      name_plate: namePlate,
-      edit_user_id: null,
-      edit_user_name: null,
-      edit_datetime: null,
-      pincode_code: Number(personalInfoForm.pincode.trim() || 0),
-      country_code: 91,
-      pincode: personalInfoForm.pincode.trim(),
-      calling_sadhak_id: callingSadhakId,
-      calling_sadhak_name: callingSadhakName,
-      daan_patra_no: null,
-      orderno: null,
-      pay_mode: announceDetailsForm.paymentMode || null,
-      docket_no: null,
-      route_code: null,
-      token_no: null,
-      no_followup_require: donorIdentificationForm.followupNotRequired
-        ? 'Y'
-        : 'N',
-      last_call_id: null,
-      faked: 'N',
-      discarded: 'N',
-      self_deposit: 'N',
-      send_sadhak: 'Y',
-      online_bank_id: selectedBankIds[0] || null,
-      motivated: announceDetailsForm.isMotivated,
-      motivated_amount: Number(announceDetailsForm.motivatedAmount || 0),
-      wfh_auto_id: null,
-      PostType: 'WebReact',
-      QueryString_BID: queryStringBid,
-      QueryString_crtObjectId: queryStringCrtObjectId,
-      QueryString_DReason: queryStringDReason,
-      QueryString_THISCALLID: queryStringThisCallId,
-    };
+    const { payload, resolvedCurrencyId: nextCurrencyId } = buildSavePayload({
+      addedCauses,
+      announceDetailsForm,
+      announceEventForm,
+      announceIdParam,
+      announceThroughParam,
+      autoAmount,
+      callingSadhakId,
+      callingSadhakName,
+      currentUser,
+      donorIdentificationForm,
+      donorSearchType,
+      donorSearchValue,
+      followUpForm,
+      isCauseReadyToAdd,
+      persistedCurrencyId,
+      personalInfoForm,
+      queryStringBid,
+      queryStringCrtObjectId,
+      queryStringDReason,
+      queryStringThisCallId,
+      resolvedCurrencyId,
+      selectedBankIds,
+      selectedCauseHeadOption,
+      selectedDistrictOption,
+      selectedEventChannelDetail,
+      selectedEventCityDetail,
+      selectedEventDetail,
+      selectedEventId,
+      selectedEventPanditDetail,
+      selectedHowToDonateOption,
+      selectedPurposeOption,
+      selectedStateOption,
+    });
 
     setIsSaving(true);
     setSaveRequestPayload(payload);
 
     try {
-      const response = await axiosInstance.post(
-        operation === 'EDIT'
-          ? masterApiPaths.updateAnnounce
-          : masterApiPaths.createAnnounce,
+      const response = await submitSaveRequest({
+        operation: operation as 'ADD' | 'EDIT' | 'VIEW',
         payload,
-        {
-          headers: masterApiHeaders(),
-        },
-      );
+      });
 
-      const resolvedAnnouncementId = extractAnnouncementId(
-        response.data,
-        announceIdParam !== '0' ? announceIdParam : String(Date.now()),
-      );
-      const cachedRecords = readAnnouncementCache();
-      const nextCacheRecord: AnnouncementCacheRecord = {
-        announceId: resolvedAnnouncementId,
-        donorIdentificationForm,
+      persistSavedAnnouncement({
+        addedCauses: causesForPayload,
+        announceDetailsForm,
         announceEventForm,
-        personalInfoForm,
-        announceDetailsForm: {
-          ...announceDetailsForm,
-          ...createEmptyCauseFields(),
-        },
+        announceIdParam,
+        cachedRecords: readAnnouncementCache(),
+        currencyId: nextCurrencyId,
+        donorIdentificationForm,
         followUpForm,
         followUpItems,
-        addedCauses: causesForPayload,
+        personalInfoForm,
+        responseData: response.data,
         selectedBankIds,
-        currencyId: resolvedCurrencyId,
-        savedAt: new Date().toISOString(),
-      };
-
-      writeAnnouncementCache([
-        nextCacheRecord,
-        ...cachedRecords.filter(
-          record => record.announceId !== resolvedAnnouncementId,
-        ),
-      ]);
+      });
 
       setSaveResultPayload(response.data);
       setShouldNavigateToListingOnModalClose(true);
       setShowSaveResultModal(true);
     } catch (error) {
-      const errorPayload = axios.isAxiosError(error)
-        ? error.response?.data || { message: error.message }
-        : { message: 'Failed to save announce.' };
-
-      setSaveResultPayload(errorPayload);
+      setSaveResultPayload(getSaveErrorPayload(error));
       setShouldNavigateToListingOnModalClose(false);
       setShowSaveResultModal(true);
     } finally {
@@ -3630,144 +1510,18 @@ export const AnnounceMasterContent = () => {
         </div>
       </div>
 
-      {showSaveResultModal ? (
-        <>
-          <div className="modal fade show d-block" tabIndex={-1} role="dialog">
-            <div
-              className="modal-dialog modal-dialog-centered modal-lg"
-              role="document"
-            >
-              <div className="modal-content">
-                <div className="modal-header p-4">
-                  <h4 className="modal-title">Create Announce Response</h4>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-icon btn-active-color-primary"
-                    aria-label="Close"
-                    onClick={handleCloseSaveResultModal}
-                  >
-                    <i className="ki-duotone ki-cross fs-1">
-                      <span className="path1"></span>
-                      <span className="path2"></span>
-                    </i>
-                  </button>
-                </div>
+      <SaveResultModal
+        open={showSaveResultModal}
+        requestPayload={saveRequestPayload}
+        resultPayload={saveResultPayload}
+        onClose={handleCloseSaveResultModal}
+      />
 
-                <div className="modal-body">
-                  <div className="bg-light-primary rounded p-4 mb-5">
-                    <div className="fw-bold mb-2">Request Payload</div>
-                    <pre className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
-                      {JSON.stringify(saveRequestPayload, null, 2)}
-                    </pre>
-                  </div>
-
-                  {Array.isArray(
-                    (saveResultPayload as { result?: unknown[] } | null)
-                      ?.result,
-                  ) ? (
-                    <div className="mb-5">
-                      {(saveResultPayload as {
-                        result: Array<Record<string, unknown>>;
-                      }).result.map((item, index) => (
-                        <div
-                          key={`${String(item.code ?? index)}-${index}`}
-                          className={`alert ${
-                            String(item.status || '').toLowerCase() ===
-                            'success'
-                              ? 'alert-success'
-                              : 'alert-danger'
-                          } py-3`}
-                        >
-                          <div className="fw-semibold">
-                            {String(item.msg || 'No message returned.')}
-                          </div>
-                          <div className="fs-8 mt-1 text-muted">
-                            Code: {String(item.code ?? '-')} | Status:{' '}
-                            {String(item.status ?? '-')}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  <div className="bg-light rounded p-4">
-                    <div className="fw-bold mb-2">Raw Response</div>
-                    <pre className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
-                      {JSON.stringify(saveResultPayload, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={handleCloseSaveResultModal}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            className="modal-backdrop fade show"
-            onClick={handleCloseSaveResultModal}
-          />
-        </>
-      ) : null}
-
-      {causeIdPendingDelete !== null ? (
-        <>
-          <div className="modal fade show d-block" tabIndex={-1} role="dialog">
-            <div className="modal-dialog modal-dialog-centered" role="document">
-              <div className="modal-content">
-                <div className="modal-header p-4">
-                  <h4 className="modal-title">Confirm Delete</h4>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-icon btn-active-color-primary"
-                    aria-label="Close"
-                    onClick={handleCloseDeleteCauseModal}
-                  >
-                    <i className="ki-duotone ki-cross fs-1">
-                      <span className="path1"></span>
-                      <span className="path2"></span>
-                    </i>
-                  </button>
-                </div>
-
-                <div className="modal-body">
-                  <p className="mb-0">
-                    Kya aap is added cause ko delete karna chahte hain?
-                  </p>
-                </div>
-
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-light"
-                    onClick={handleCloseDeleteCauseModal}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-danger"
-                    onClick={handleConfirmDeleteCause}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            className="modal-backdrop fade show"
-            onClick={handleCloseDeleteCauseModal}
-          />
-        </>
-      ) : null}
+      <DeleteCauseModal
+        open={causeIdPendingDelete !== null}
+        onClose={handleCloseDeleteCauseModal}
+        onConfirm={handleConfirmDeleteCause}
+      />
     </div>
   );
 };
