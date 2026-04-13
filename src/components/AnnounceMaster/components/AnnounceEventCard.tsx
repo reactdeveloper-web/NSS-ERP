@@ -6,6 +6,7 @@ import {
   EventOption,
 } from '../types';
 import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
+import { FloatingInputField } from 'src/components/Common/FloatingInputField';
 import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 
 interface AnnounceEventCardProps {
@@ -243,18 +244,15 @@ export const AnnounceEventCard = ({
           </div>
 
           <div className="col-md-8">
-            <div className="form-floating ant-input-floating">
-              <input
-                id="eventLocation"
-                type="text"
-                className="form-control form-control-solid ant-input-floating-control"
-                placeholder=" "
-                value={form.eventLocation}
-                disabled
-                readOnly
-              />
-              <label htmlFor="eventLocation">Location / Venue (Display)</label>
-            </div>
+            <FloatingInputField
+              id="eventLocation"
+              label="Location / Venue (Display)"
+              value={form.eventLocation}
+              onChange={() => undefined}
+              disabled
+              readOnly
+              className="form-control form-control-solid ant-input-floating-control"
+            />
           </div>
 
           <div className="col-md-4">

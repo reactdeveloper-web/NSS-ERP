@@ -26,7 +26,9 @@ export const FloatingInputField = ({
   error,
 }: FloatingInputFieldProps) => (
   <div>
-    <div className={`form-floating ant-input-floating ${error ? 'has-error' : ''}`}>
+    <div
+      className={`form-floating ant-input-floating ${error ? 'has-error' : ''}`}
+    >
       <input
         id={id}
         type={type}

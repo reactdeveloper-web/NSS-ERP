@@ -90,6 +90,7 @@ const ResetPassword = () => {
                     <img
                       alt={showNew ? 'Hide password' : 'Show password'}
                       src={showNew ? IMAGEPATH.EYE_OPEN : IMAGEPATH.EYE_CLOSE}
+                      alt=""
                       onClick={() => setShowNew(!showNew)}
                       className="position-absolute end-0 me-2 top-0 mt-4"
                       style={{ cursor: 'pointer' }}
@@ -98,6 +99,7 @@ const ResetPassword = () => {
                     <img
                       alt=""
                       src={IMAGEPATH.PASSWORD}
+                      alt=""
                       className="position-absolute start-0 ms-2 top-0 mt-4"
                     />
                   </div>
@@ -134,6 +136,7 @@ const ResetPassword = () => {
                       src={
                         showConfirm ? IMAGEPATH.EYE_OPEN : IMAGEPATH.EYE_CLOSE
                       }
+                      alt=""
                       onClick={() => setShowConfirm(!showConfirm)}
                       className="position-absolute end-0 me-2 top-0 mt-4"
                       style={{ cursor: 'pointer' }}
@@ -142,6 +145,7 @@ const ResetPassword = () => {
                     <img
                       alt=""
                       src={IMAGEPATH.PASSWORD}
+                      alt=""
                       className="position-absolute start-0 ms-2 top-0 mt-4"
                     />
                   </div>

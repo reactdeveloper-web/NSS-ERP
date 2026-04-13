@@ -1,6 +1,7 @@
 {
   "name": "typescript-react",
   "version": "0.1.0",
+  "homepage": ".",
   "private": true,
   "proxy": "https://deverp.narayanseva.org",
   "dependencies": {
