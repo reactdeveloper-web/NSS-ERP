@@ -2,7 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { PATH } from 'src/constants/paths';
 import { Loading } from 'src/components/Loading';
-import { Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { MainLayout } from 'src/pages/layouts/MainLayout';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 
@@ -55,6 +55,12 @@ export const Routes = () => {
               <Route exact path={PATH.PROFILE} component={ProfileMasterPage} />
               <Route exact path={PATH.FORGOT} component={ForgotPage} />
               <Route path={PATH.RESET_PASSWORD} component={ResetPassword} />
+              {/* <Route
+                exact
+                sensitive
+                path="/Announcement"
+                render={() => <Redirect to={PATH.ANNOUNCE_MASTER} />}
+              /> */}
               <Route
                 exact
                 path={PATH.ANNOUNCE_MASTER}

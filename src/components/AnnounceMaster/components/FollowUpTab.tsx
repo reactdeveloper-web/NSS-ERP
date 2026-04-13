@@ -1,5 +1,7 @@
 import React from 'react';
 import { Select } from 'antd';
+import { FloatingDatePicker } from './FloatingDatePicker';
+import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 import { FollowUpForm, FollowUpItem } from '../types';
 
 interface FollowUpTabProps {
@@ -70,33 +72,25 @@ export const FollowUpTab = ({
       <div className="card-body">
         <div className="row g-5">
           <div className="col-md-3">
-            <div className="form-floating ant-input-floating">
-              <input
-                id="followupDate"
-                type="date"
-                className="form-control ant-input-floating-control"
-                placeholder=" "
-                value={form.date}
-                disabled={isViewMode}
-                onChange={event => onChange('date', event.target.value)}
-              />
-              <label htmlFor="followupDate">Follow-up Date</label>
-            </div>
+            <FloatingDatePicker
+              id="followupDate"
+              label="Follow-up Date"
+              value={form.date}
+              onChange={value => onChange('date', value)}
+              disabled={isViewMode}
+              readOnly={isViewMode}
+            />
           </div>
 
           <div className="col-md-3">
-            <div className="form-floating ant-input-floating">
-              <input
-                id="followupTime"
-                type="time"
-                className="form-control ant-input-floating-control"
-                placeholder=" "
-                value={form.time}
-                disabled={isViewMode}
-                onChange={event => onChange('time', event.target.value)}
-              />
-              <label htmlFor="followupTime">Follow-up Time</label>
-            </div>
+            <FloatingTimePicker
+              id="followupTime"
+              label="Follow-up Time"
+              value={form.time}
+              onChange={value => onChange('time', value)}
+              disabled={isViewMode}
+              readOnly={isViewMode}
+            />
           </div>
 
           <div className="col-md-3">

@@ -34,23 +34,20 @@ export const AnnouncementListing = ({
 }: AnnouncementListingProps) => {
   return (
     <div className="card shadow-sm">
-      <div className="card-header border-0 pt-6">
+      <div className="card-header announce-master-card-header">
         <div className="card-title">
-          <div>
-            <h3 className="mb-1">Announcement Listing</h3>
-            <div className="text-muted fs-7">
-              Saved announce records with quick actions
-            </div>
+          <div className="d-flex align-items-center gap-4 flex-wrap">
+            <h3 className="fw-bold mb-0">Announcement Listing</h3>
           </div>
         </div>
-        <div className="card-toolbar">
+        <div className="announce-master-header-tools">
           <button className="btn btn-primary" type="button" onClick={onAdd}>
             Add Announce
           </button>
         </div>
       </div>
 
-      <div className="card-body pt-0">
+      <div className="card-body p-6">
         {error ? <div className="alert alert-warning mb-6">{error}</div> : null}
 
         <div className="table-responsive">

@@ -335,30 +335,32 @@ export const AnnouncerPersonalDetailsCard = ({
         </div>
 
         <div className="card-body p-6">
-          <ul
-            ref={tabsRef}
-            className="nav announce-master-tabs fs-6 fw-semibold m-0 p-0 mb-4"
-          >
-            {tabs.map(tab => (
-              <li className="nav-item" key={tab.key}>
-                <button
-                  className={`nav-link ${
-                    activeTab === tab.key ? 'active' : ''
-                  }`}
-                  type="button"
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="top"
-                  data-bs-trigger="hover"
-                  data-bs-title={tab.title}
-                  title={tab.title}
-                  aria-pressed={activeTab === tab.key}
-                  onClick={() => onTabChange(tab.key)}
-                >
-                  {tab.label}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div className="tabs-mobile-scroll">
+            <ul
+              ref={tabsRef}
+              className="nav nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 fw-semibold mb-6"
+            >
+              {tabs.map(tab => (
+                <li className="nav-item" key={tab.key}>
+                  <button
+                    className={`nav-link ${
+                      activeTab === tab.key ? 'active' : ''
+                    }`}
+                    type="button"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-trigger="hover"
+                    data-bs-title={tab.title}
+                    title={tab.title}
+                    aria-pressed={activeTab === tab.key}
+                    onClick={() => onTabChange(tab.key)}
+                  >
+                    {tab.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           <div className="tab-content">
             <div className={getTabPaneClassName('personal')}>
