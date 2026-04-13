@@ -1,3 +1,5 @@
+/* eslint-disable eqeqeq */
+/* eslint-disable prettier/prettier */
 import axios from 'axios';
 import { URL } from 'src/constants/urls';
 import * as actions from './Auth.actions';
@@ -39,13 +41,17 @@ export const login = (payload: ReqLogin) => async dispatch => {
     const res = await axiosInstance.post(`/login/UserLogin`, payload);
     const allUsers = res.data;
     let user = allUsers.userData;
-    const isMatchingUser =
-      String(user?.empNum ?? '').trim() === String(payload.username).trim();
-    if (allUsers.userData.status === 'Success' && user && isMatchingUser) {
+    //console.log('login',allUsers);
+    if (
+      allUsers.userData.status === 'Success' &&
+      user &&
+      user.empNum == payload.username
+    ) {
       dispatch(actions.loginSuccess(user));
       // ✅ store tokens
       localStorage.setItem('accessToken', res.data.token);
       localStorage.setItem('refreshToken', res.data.refreshToken);
+      localStorage.setItem('loginTimestamp', Date.now().toString());
       dispatch(
         setAlert({
           msg: 'You are logged in!',
@@ -79,10 +85,16 @@ export const forgot = (payload: ReqForgot) => async dispatch => {
       Emp_Num: payload.userid,
       Data_Flag: ContentTypes.DataFlag,
     };
+
+    console.log('FINAL PAYLOAD', addPayload);
+
     const res = await axiosInstance.post(
       `/login/ForgotPasswordRequest`,
       addPayload,
     );
+
+    console.log('API RESPONSE', res.data);
+
     if (res.data?.result === true) {
       dispatch(
         setAlert({
@@ -132,6 +144,12 @@ export const register = (payload: ReqLogin) => async dispatch => {
 };
 
 export const logout = () => async dispatch => {
+  //Clear all storage explicitly
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('loginTimestamp');
+  localStorage.removeItem('user');
+
   dispatch(actions.logoutSuccess());
   dispatch(
     setAlert({
@@ -142,6 +160,17 @@ export const logout = () => async dispatch => {
 };
 
 // ================= TYPES =================
+export interface ReqLogin {
+  username?: string | number;
+  password?: string;
+  [key: string]: any;
+}
+
+export interface ReqForgot {
+  userid?: string | number;
+  [key: string]: any;
+}
+
 export interface ReqSetupPassword {
   EmpNum: string;
   Token: string;
