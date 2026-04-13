@@ -80,9 +80,12 @@ const loadOccasionTypeOptions = async (): Promise<EventOption[]> => {
 };
 
 const loadHowToDonateMasterOptions = async (): Promise<EventOption[]> => {
-  const response = await axiosInstance.get(masterApiPaths.getHowToDonateMaster, {
-    headers: masterApiHeaders(),
-  });
+  const response = await axiosInstance.get(
+    masterApiPaths.getHowToDonateMaster,
+    {
+      headers: masterApiHeaders(),
+    },
+  );
 
   return extractHowToDonateOptions(response.data);
 };
@@ -142,12 +145,15 @@ const loadPincodeLocationData = async ({
 };
 
 const loadCauseHeadMasterOptions = async (): Promise<EventOption[]> => {
-  const response = await axiosInstance.get(masterApiPaths.getPurposeByDataFlag, {
-    params: {
-      DataFlag: ContentTypes.DataFlag,
+  const response = await axiosInstance.get(
+    masterApiPaths.getPurposeByDataFlag,
+    {
+      params: {
+        DataFlag: ContentTypes.DataFlag,
+      },
+      headers: masterApiHeaders(),
     },
-    headers: masterApiHeaders(),
-  });
+  );
 
   return extractCauseHeadOptions(response.data);
 };

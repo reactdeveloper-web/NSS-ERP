@@ -127,7 +127,7 @@ export const AnnounceDetailsTab = ({
             id="occasionType"
             label={
               <>
-              In Memory / Occasion Type <span className="text-danger">*</span>
+                In Memory / Occasion Type <span className="text-danger">*</span>
               </>
             }
             value={form.occasionType}
@@ -159,7 +159,7 @@ export const AnnounceDetailsTab = ({
             id="occasionRemark"
             label={
               <>
-              Remark <span className="text-danger">*</span>
+                Remark <span className="text-danger">*</span>
               </>
             }
             value={form.occasionRemark}
@@ -178,7 +178,7 @@ export const AnnounceDetailsTab = ({
             id="causeHead"
             label={
               <>
-              Cause Head <span className="text-danger">*</span>
+                Cause Head <span className="text-danger">*</span>
               </>
             }
             value={form.causeHead}
@@ -194,7 +194,7 @@ export const AnnounceDetailsTab = ({
             id="purpose"
             label={
               <>
-              Purpose <span className="text-danger">*</span>
+                Purpose <span className="text-danger">*</span>
               </>
             }
             value={form.purpose}
@@ -263,7 +263,7 @@ export const AnnounceDetailsTab = ({
                 id="autoAmount"
                 label={
                   <>
-                  Amount (Auto) <span className="text-danger">*</span>
+                    Amount (Auto) <span className="text-danger">*</span>
                   </>
                 }
                 value={amount}
@@ -323,7 +323,7 @@ export const AnnounceDetailsTab = ({
                     id={`causeHead-${cause.id}`}
                     label={
                       <>
-                      Cause Head <span className="text-danger">*</span>
+                        Cause Head <span className="text-danger">*</span>
                       </>
                     }
                     value={cause.causeHead}
@@ -338,7 +338,7 @@ export const AnnounceDetailsTab = ({
                     id={`purpose-${cause.id}`}
                     label={
                       <>
-                      Purpose <span className="text-danger">*</span>
+                        Purpose <span className="text-danger">*</span>
                       </>
                     }
                     value={cause.purpose}
@@ -516,7 +516,7 @@ export const AnnounceDetailsTab = ({
               id="motivatedAmount"
               label={
                 <>
-                Motivated Amount <span className="text-danger">*</span>
+                  Motivated Amount <span className="text-danger">*</span>
                 </>
               }
               value={form.motivatedAmount}

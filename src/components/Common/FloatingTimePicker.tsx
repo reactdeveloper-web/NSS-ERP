@@ -140,9 +140,7 @@ export const FloatingTimePicker = ({
         type="button"
         className="floating-date-picker-icon"
         onClick={handleOpenPicker}
-        aria-label={`Open ${
-          typeof label === 'string' ? label : 'time'
-        } picker`}
+        aria-label={`Open ${typeof label === 'string' ? label : 'time'} picker`}
         tabIndex={-1}
       >
         <i className="fa fa-clock" aria-hidden="true" />

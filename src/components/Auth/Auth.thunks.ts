@@ -41,11 +41,7 @@ export const login = (payload: ReqLogin) => async dispatch => {
     let user = allUsers.userData;
     const isMatchingUser =
       String(user?.empNum ?? '').trim() === String(payload.username).trim();
-    if (
-      allUsers.userData.status === 'Success' &&
-      user &&
-      isMatchingUser
-    ) {
+    if (allUsers.userData.status === 'Success' && user && isMatchingUser) {
       dispatch(actions.loginSuccess(user));
       // ✅ store tokens
       localStorage.setItem('accessToken', res.data.token);
