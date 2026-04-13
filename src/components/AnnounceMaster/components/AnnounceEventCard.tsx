@@ -17,7 +17,10 @@ interface AnnounceEventCardProps {
   panditOptions: EventOption[];
   eventLoading: boolean;
   eventError: string;
+<<<<<<< HEAD
   isViewMode?: boolean;
+=======
+>>>>>>> rahulsharma-dev
   errors: AnnounceValidationErrors;
   onChange: <K extends keyof AnnounceEventForm>(
     field: K,
@@ -34,7 +37,10 @@ export const AnnounceEventCard = ({
   panditOptions,
   eventLoading,
   eventError,
+<<<<<<< HEAD
   isViewMode = false,
+=======
+>>>>>>> rahulsharma-dev
   errors,
   onChange,
 }: AnnounceEventCardProps) => {
@@ -82,10 +88,18 @@ export const AnnounceEventCard = ({
     <>
       <div className="announce-master-panel">
         <div className="announce-master-helper-text">
+<<<<<<< HEAD
           Announcement details: please fill in the announcement details.
         </div>
         <div className="row g-5">
           <div className="col-md-2">
+=======
+          Anounce Deatails: please fill Announce details.
+        </div>
+        <div className="row g-5">
+          <div className="col-md-2">
+            {/* <label className="form-label fw-semibold">Live / NonLive</label> */}
+>>>>>>> rahulsharma-dev
             <div
               className="btn-group w-100"
               role="group"
@@ -98,7 +112,10 @@ export const AnnounceEventCard = ({
                 id="btnLive"
                 autoComplete="off"
                 checked={form.liveType === 'live'}
+<<<<<<< HEAD
                 disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
                 onChange={() => onChange('liveType', 'live')}
               />
               <label
@@ -119,7 +136,10 @@ export const AnnounceEventCard = ({
                 id="btnNonLive"
                 autoComplete="off"
                 checked={form.liveType === 'nonLive'}
+<<<<<<< HEAD
                 disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
                 onChange={() => onChange('liveType', 'nonLive')}
               />
               <label
@@ -135,6 +155,10 @@ export const AnnounceEventCard = ({
             </div>
           </div>
           <div className="col-md-6">
+<<<<<<< HEAD
+=======
+            {/* <label className="form-label fw-semibold">Event Date Range</label> */}
+>>>>>>> rahulsharma-dev
             <div className="row g-3">
               <div className="col-md-6">
                 {renderFloatingSelect(
@@ -142,7 +166,11 @@ export const AnnounceEventCard = ({
                   'Event Name',
                   form.eventName,
                   eventOptions,
+<<<<<<< HEAD
                   eventLoading || isViewMode,
+=======
+                  eventLoading,
+>>>>>>> rahulsharma-dev
                 )}
                 {errors.eventName ? (
                   <div className="announce-master-field-error">
@@ -160,7 +188,10 @@ export const AnnounceEventCard = ({
                   'Event Cause',
                   form.eventCause,
                   eventCauseOptions,
+<<<<<<< HEAD
                   isViewMode,
+=======
+>>>>>>> rahulsharma-dev
                 )}
               </div>
             </div>
@@ -171,8 +202,11 @@ export const AnnounceEventCard = ({
               id="eventFromDate"
               label="From Date"
               value={form.eventFromDate}
+<<<<<<< HEAD
               disabled
               readOnly
+=======
+>>>>>>> rahulsharma-dev
               onChange={value => onChange('eventFromDate', value)}
             />
           </div>
@@ -181,21 +215,31 @@ export const AnnounceEventCard = ({
               id="eventToDate"
               label="To Date"
               value={form.eventToDate}
+<<<<<<< HEAD
               disabled
               readOnly
+=======
+>>>>>>> rahulsharma-dev
               onChange={value => onChange('eventToDate', value)}
             />
           </div>
 
           <div className="col-md-4">
+<<<<<<< HEAD
+=======
+            {/* <label className="form-label fw-semibold">Event Time Range</label> */}
+>>>>>>> rahulsharma-dev
             <div className="row g-3">
               <div className="col-6">
                 <FloatingTimePicker
                   id="eventFromTime"
                   label="From Time"
                   value={form.eventFromTime}
+<<<<<<< HEAD
                   disabled
                   readOnly
+=======
+>>>>>>> rahulsharma-dev
                   onChange={value => onChange('eventFromTime', value)}
                 />
               </div>
@@ -204,8 +248,11 @@ export const AnnounceEventCard = ({
                   id="eventToTime"
                   label="To Time"
                   value={form.eventToTime}
+<<<<<<< HEAD
                   disabled
                   readOnly
+=======
+>>>>>>> rahulsharma-dev
                   onChange={value => onChange('eventToTime', value)}
                 />
               </div>
@@ -218,7 +265,10 @@ export const AnnounceEventCard = ({
               'Event City',
               form.eventCity,
               eventCityOptions,
+<<<<<<< HEAD
               true,
+=======
+>>>>>>> rahulsharma-dev
             )}
           </div>
 
@@ -228,7 +278,10 @@ export const AnnounceEventCard = ({
               'Channel',
               form.eventChannel,
               eventChannelOptions,
+<<<<<<< HEAD
               true,
+=======
+>>>>>>> rahulsharma-dev
             )}
           </div>
 
@@ -238,7 +291,10 @@ export const AnnounceEventCard = ({
               'Pandit Ji',
               form.panditJi,
               panditOptions,
+<<<<<<< HEAD
               true,
+=======
+>>>>>>> rahulsharma-dev
             )}
           </div>
 
@@ -250,7 +306,10 @@ export const AnnounceEventCard = ({
                 className="form-control form-control-solid ant-input-floating-control"
                 placeholder=" "
                 value={form.eventLocation}
+<<<<<<< HEAD
                 disabled
+=======
+>>>>>>> rahulsharma-dev
                 readOnly
               />
               <label htmlFor="eventLocation">Location / Venue (Display)</label>

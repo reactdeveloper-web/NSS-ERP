@@ -6,6 +6,19 @@ import {
   PersonalInfoForm,
 } from './types';
 
+<<<<<<< HEAD
+=======
+export const bankOptions = [];
+
+export const purposeOptions = [
+  { value: '', label: 'Select' },
+  { value: '15000', label: '1 Limb Sponsorship (Rs. 15,000)' },
+  { value: '7500', label: '1 Caliper Sponsorship (Rs. 7,500)' },
+  { value: '25000', label: '1 Surgery Support (Rs. 25,000)' },
+  { value: '11000', label: 'Food Seva 1 Day (Rs. 11,000)' },
+];
+
+>>>>>>> rahulsharma-dev
 export const createInitialDonorIdentificationForm = (
   today: string,
 ): DonorIdentificationForm => ({
@@ -25,17 +38,28 @@ export const createInitialAnnounceEventForm = (): AnnounceEventForm => ({
   eventToDate: '',
   eventFromTime: '',
   eventToTime: '',
+<<<<<<< HEAD
   eventCity: '',
   eventChannel: '',
   panditJi: '',
   eventLocation: '',
   currency: '',
+=======
+  eventCity: 'Udaipur',
+  eventChannel: 'Aastha',
+  panditJi: 'Pujya Prashant Agarwal Ji',
+  eventLocation: 'Sevamahodaya Badi, Udaipur, Rajasthan',
+  currency: 'INR',
+>>>>>>> rahulsharma-dev
 });
 
 export const createInitialPersonalInfoForm = (): PersonalInfoForm => ({
   salutation: '',
   salutationLocked: false,
+<<<<<<< HEAD
   otherSalutation: '',
+=======
+>>>>>>> rahulsharma-dev
   mobileNo: '',
   whatsappNo: '',
   announcerName: '',

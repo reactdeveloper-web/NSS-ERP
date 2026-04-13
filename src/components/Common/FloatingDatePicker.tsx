@@ -1,7 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 
 type FlatpickrInstance = {
+<<<<<<< HEAD
   open?: () => void;
+=======
+>>>>>>> rahulsharma-dev
   destroy?: () => void;
   setDate?: (
     date: string | Date | Array<string | Date>,
@@ -58,14 +61,18 @@ export const FloatingDatePicker = ({
 }: FloatingDatePickerProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const pickerRef = useRef<FlatpickrInstance | null>(null);
+<<<<<<< HEAD
   const hasFlatpickr =
     typeof window !== 'undefined' && typeof window.flatpickr === 'function';
+=======
+>>>>>>> rahulsharma-dev
 
   const handleOpenPicker = () => {
     if (disabled || readOnly) {
       return;
     }
 
+<<<<<<< HEAD
     pickerRef.current?.open?.();
 
     if (pickerRef.current?.open) {
@@ -74,11 +81,19 @@ export const FloatingDatePicker = ({
 
     inputRef.current?.focus();
     inputRef.current?.showPicker?.();
+=======
+    inputRef.current?.focus();
+    inputRef.current?.click();
+>>>>>>> rahulsharma-dev
   };
 
   useEffect(() => {
     const input = inputRef.current;
+<<<<<<< HEAD
     const canInitPicker = !disabled && !readOnly && hasFlatpickr;
+=======
+    const canInitPicker = !disabled && !readOnly && !!window.flatpickr;
+>>>>>>> rahulsharma-dev
 
     if (!input || !canInitPicker) {
       return;
@@ -100,7 +115,11 @@ export const FloatingDatePicker = ({
       pickerRef.current?.destroy?.();
       pickerRef.current = null;
     };
+<<<<<<< HEAD
   }, [disabled, hasFlatpickr, onChange, readOnly, value]);
+=======
+  }, [disabled, onChange, readOnly, value]);
+>>>>>>> rahulsharma-dev
 
   useEffect(() => {
     const picker = pickerRef.current;
@@ -127,7 +146,11 @@ export const FloatingDatePicker = ({
         <input
           ref={inputRef}
           id={id}
+<<<<<<< HEAD
           type={hasFlatpickr ? 'text' : 'date'}
+=======
+          type="text"
+>>>>>>> rahulsharma-dev
           className={className}
           data-kt-date-picker="true"
           data-kt-date-picker-input-mode="true"
@@ -136,8 +159,12 @@ export const FloatingDatePicker = ({
           value={value}
           disabled={disabled}
           readOnly={readOnly}
+<<<<<<< HEAD
           onClick={!hasFlatpickr ? handleOpenPicker : undefined}
           onFocus={!hasFlatpickr ? handleOpenPicker : undefined}
+=======
+          spellCheck={false}
+>>>>>>> rahulsharma-dev
           onChange={event => onChange?.(event.target.value)}
         />
         <button

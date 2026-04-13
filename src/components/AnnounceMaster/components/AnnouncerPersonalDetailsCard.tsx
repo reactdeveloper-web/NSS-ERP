@@ -23,7 +23,10 @@ import { PersonalInfoTab } from './PersonalInfoTab';
 
 interface AnnouncerPersonalDetailsCardProps {
   activeTab: AnnouncerTabKey;
+<<<<<<< HEAD
   saveResultItems?: Array<Record<string, unknown>>;
+=======
+>>>>>>> rahulsharma-dev
   donorIdentificationForm: DonorIdentificationForm;
   announceEventForm: AnnounceEventForm;
   personalInfoForm: PersonalInfoForm;
@@ -62,7 +65,10 @@ interface AnnouncerPersonalDetailsCardProps {
   quantityOptions: { value: number; label: string }[];
   isAddCauseDisabled: boolean;
   isSaving: boolean;
+<<<<<<< HEAD
   isViewMode?: boolean;
+=======
+>>>>>>> rahulsharma-dev
   onAmountChange: (value: string) => void;
   onAddCause: () => void;
   onEditCause: (causeId: number) => void;
@@ -96,12 +102,18 @@ interface AnnouncerPersonalDetailsCardProps {
   onAddFollowUp: () => void;
   onRemoveFollowUp: (id: number) => void;
   onReset: () => void;
+<<<<<<< HEAD
   onCancel?: () => void;
+=======
+>>>>>>> rahulsharma-dev
 }
 
 export const AnnouncerPersonalDetailsCard = ({
   activeTab,
+<<<<<<< HEAD
   saveResultItems,
+=======
+>>>>>>> rahulsharma-dev
   donorIdentificationForm,
   announceEventForm,
   personalInfoForm,
@@ -140,7 +152,10 @@ export const AnnouncerPersonalDetailsCard = ({
   quantityOptions,
   isAddCauseDisabled,
   isSaving,
+<<<<<<< HEAD
   isViewMode = false,
+=======
+>>>>>>> rahulsharma-dev
   onAmountChange,
   onAddCause,
   onEditCause,
@@ -159,16 +174,22 @@ export const AnnouncerPersonalDetailsCard = ({
   onAddFollowUp,
   onRemoveFollowUp,
   onReset,
+<<<<<<< HEAD
   onCancel,
+=======
+>>>>>>> rahulsharma-dev
 }: AnnouncerPersonalDetailsCardProps) => {
   const tabsRef = useRef<HTMLUListElement | null>(null);
   const previousActiveTabRef = useRef<AnnouncerTabKey>(activeTab);
   const showBankDetailsTab = ['Online', 'Pay-In-Slip'].includes(
     announceDetailsForm.paymentMode,
   );
+<<<<<<< HEAD
   const formattedAnnounceDate = donorIdentificationForm.announceDate
     ? donorIdentificationForm.announceDate.split('-').reverse().join('/')
     : '-';
+=======
+>>>>>>> rahulsharma-dev
   const donorSearchOptions = [
     { value: 'donorId', label: 'Donor ID' },
     { value: 'mobile', label: 'Mobile' },
@@ -241,8 +262,13 @@ export const AnnouncerPersonalDetailsCard = ({
     previousTabIndex === -1 || currentTabIndex === previousTabIndex
       ? ''
       : currentTabIndex > previousTabIndex
+<<<<<<< HEAD
       ? 'fade-right'
       : 'fade-left';
+=======
+        ? 'fade-right'
+        : 'fade-left';
+>>>>>>> rahulsharma-dev
 
   useEffect(() => {
     previousActiveTabRef.current = activeTab;
@@ -254,6 +280,7 @@ export const AnnouncerPersonalDetailsCard = ({
     }`.trim();
 
   return (
+<<<<<<< HEAD
     <>
       {saveResultItems?.length ? (
         <div className="mb-4 w-100">
@@ -578,10 +605,248 @@ export const AnnouncerPersonalDetailsCard = ({
                         </tbody>
                       </table>
                     </div>
+=======
+    <div className="card announce-master-card">
+      <div className="card-header announce-master-card-header">
+        <div className="card-title">
+          <h3 className="fw-bold mb-0">Announcer Personal Details</h3>
+        </div>
+        <div className="announce-master-header-tools">
+          <Select
+            className="announce-master-header-select"
+            value={donorIdentificationForm.donorSearchType || undefined}
+            onChange={nextValue =>
+              onDonorIdentificationChange(
+                'donorSearchType',
+                (nextValue as string) || 'donorId',
+              )
+            }
+            options={donorSearchOptions}
+          />
+          <div className="announce-master-search-wrap">
+            <input
+              id="donorSearchValue"
+              type="text"
+              className="form-control announce-master-search-input"
+              placeholder={
+                donorSearchOptions.find(
+                  option =>
+                    option.value === donorIdentificationForm.donorSearchType,
+                )?.label ?? 'Donor ID'
+              }
+              value={donorIdentificationForm.donorId}
+              onChange={event =>
+                onDonorIdentificationChange('donorId', event.target.value)
+              }
+            />
+            <span className="announce-master-search-icon">
+              {isSearchingDonor ? (
+                <span
+                  className="spinner-border spinner-border-sm text-muted"
+                  role="status"
+                  aria-label="Searching donor"
+                />
+              ) : (
+                <i className="fa fa-search" aria-hidden="true" />
+              )}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="card-body p-6">
+        <ul
+          ref={tabsRef}
+          className="nav announce-master-tabs fs-6 fw-semibold m-0 p-0 mb-4"
+        >
+          {tabs.map(tab => (
+            <li className="nav-item" key={tab.key}>
+              <button
+                className={`nav-link ${activeTab === tab.key ? 'active' : ''}`}
+                type="button"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-trigger="hover"
+                data-bs-title={tab.title}
+                title={tab.title}
+                aria-pressed={activeTab === tab.key}
+                onClick={() => onTabChange(tab.key)}
+              >
+                {tab.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <div className="tab-content">
+          <div className={getTabPaneClassName('personal')}>
+            <PersonalInfoTab
+              form={personalInfoForm}
+              salutations={salutations}
+              stateOptions={stateOptions}
+              districtOptions={districtOptions}
+              isPincodeLocationLocked={isPincodeLocationLocked}
+              errors={validationErrors}
+              onChange={onPersonalInfoChange}
+            />
+          </div>
+
+          <div className={getTabPaneClassName('announceEvent')}>
+            <AnnounceEventCard
+              form={announceEventForm}
+              eventOptions={eventOptions}
+              eventCauseOptions={eventCauseOptions}
+              eventCityOptions={eventCityOptions}
+              eventChannelOptions={eventChannelOptions}
+              panditOptions={panditOptions}
+              eventLoading={eventLoading}
+              eventError={eventError}
+              errors={validationErrors}
+              onChange={onAnnounceEventChange}
+            />
+          </div>
+
+          <div className={getTabPaneClassName('announceDetails')}>
+            <AnnounceDetailsTab
+              form={announceDetailsForm}
+              addedCauses={addedCauses}
+              editingCauseId={editingCauseId}
+              occasionTypeOptions={occasionTypeOptions}
+              causeHeadOptions={causeHeadOptions}
+              purposeOptions={purposeOptions}
+              howToDonateOptions={howToDonateOptions}
+              amount={amount}
+              isAmountEditable={isAmountEditable}
+              quantityControlMode={quantityControlMode}
+              quantityOptions={quantityOptions}
+              isAddCauseDisabled={isAddCauseDisabled}
+              errors={validationErrors}
+              onAmountChange={onAmountChange}
+              onAddCause={onAddCause}
+              onChange={onAnnounceDetailsChange}
+              onEditCause={onEditCause}
+              onDeleteCause={onDeleteCause}
+              onQuantityChange={onQuantityChange}
+            />
+          </div>
+
+          {showBankDetailsTab ? (
+            <div className={getTabPaneClassName('bankDetails')}>
+              <BankDetailsTab
+                banks={banks}
+                isLoading={bankLoading}
+                error={bankError}
+                validationError={validationErrors.bankSelection}
+                selectedBankIds={selectedBankIds}
+                onToggleBank={onToggleBank}
+              />
+            </div>
+          ) : null}
+
+          <div className={getTabPaneClassName('followUp')}>
+            <FollowUpTab
+              form={followUpForm}
+              items={followUpItems}
+              onChange={onFollowUpChange}
+              onAdd={onAddFollowUp}
+              onRemove={onRemoveFollowUp}
+            />
+          </div>
+        </div>
+
+        {donorSearchError ? (
+          <div className="text-danger fs-7 mt-4 px-7">{donorSearchError}</div>
+        ) : null}
+      </div>
+
+      <div className="card-body pt-0">
+        <div className="d-flex flex-wrap gap-3 announce-master-footer-actions">
+          <button
+            className="btn announce-master-btn announce-master-btn-save"
+            type="button"
+            onClick={onSave}
+            disabled={isSaving}
+          >
+            {isSaving ? 'Saving...' : 'Save'}
+          </button>
+          <button
+            className="btn announce-master-btn announce-master-btn-reset"
+            type="button"
+            onClick={onReset}
+          >
+            Reset
+          </button>
+          <button
+            className="btn announce-master-btn announce-master-btn-cancel"
+            type="button"
+            onClick={onReset}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      {showDonorModal ? (
+        <>
+          <div className="modal fade show d-block" tabIndex={-1} role="dialog">
+            <div
+              className="modal-dialog modal-dialog-centered modal-lg"
+              role="document"
+            >
+              <div className="modal-content">
+                <div className="modal-header p-4">
+                  <h4 className="modal-title">Multiple Donor IDs Found</h4>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={onCloseDonorModal}
+                  />
+                </div>
+                <div className="modal-body">
+                  <div className="text-muted fs-7 mb-4">
+                    Select the donor ID you want to use for this mobile number.
+                  </div>
+                  <div
+                    className="table-responsive"
+                    style={{ maxHeight: '320px', overflowY: 'auto' }}
+                  >
+                    <table className="table table-row-bordered align-middle">
+                      <thead>
+                        <tr className="fw-bold text-gray-800">
+                          <th>Donor ID</th>
+                          <th>Name</th>
+                          <th>Mobile</th>
+                          <th>Email</th>
+                          <th>Select</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {donorOptions.map(donor => (
+                          <tr key={`${donor.donorId}-${donor.mobileNo}`}>
+                            <td>{donor.donorId || '-'}</td>
+                            <td>{donor.donorName || '-'}</td>
+                            <td>{donor.mobileNo || '-'}</td>
+                            <td>{donor.email || '-'}</td>
+                            <td>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-primary"
+                                onClick={() => onSelectDonor(donor)}
+                              >
+                                Select
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+>>>>>>> rahulsharma-dev
                   </div>
                 </div>
               </div>
             </div>
+<<<<<<< HEAD
             <div
               className="modal-backdrop fade show"
               onClick={onCloseDonorModal}
@@ -590,5 +855,15 @@ export const AnnouncerPersonalDetailsCard = ({
         ) : null}
       </div>
     </>
+=======
+          </div>
+          <div
+            className="modal-backdrop fade show"
+            onClick={onCloseDonorModal}
+          />
+        </>
+      ) : null}
+    </div>
+>>>>>>> rahulsharma-dev
   );
 };

@@ -25,7 +25,10 @@ export interface AnnounceEventForm {
 export interface PersonalInfoForm {
   salutation: string;
   salutationLocked: boolean;
+<<<<<<< HEAD
   otherSalutation: string;
+=======
+>>>>>>> rahulsharma-dev
   mobileNo: string;
   whatsappNo: string;
   announcerName: string;

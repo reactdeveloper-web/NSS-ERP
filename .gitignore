@@ -231,3 +231,6 @@ dist/
 .boilerplate/
 # Local Netlify folder
 .netlify
+
+#vscode
+.vscode

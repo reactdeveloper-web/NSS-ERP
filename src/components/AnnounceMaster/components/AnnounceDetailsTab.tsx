@@ -6,8 +6,16 @@ import {
   AnnounceValidationErrors,
   EventOption,
 } from '../types';
+<<<<<<< HEAD
 import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
 import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
+=======
+// import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
+// import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
+import { FloatingDatePicker } from '../../Common/FloatingDatePicker';
+import { FloatingTimePicker } from '../../Common/FloatingTimePicker';
+import { FloatingInputField } from '../../Common/FloatingInputField';
+>>>>>>> rahulsharma-dev
 
 interface AnnounceDetailsTabProps {
   form: AnnounceDetailsForm;
@@ -22,7 +30,10 @@ interface AnnounceDetailsTabProps {
   quantityControlMode: 'disabled' | 'stepper' | 'select';
   quantityOptions: { value: number; label: string }[];
   isAddCauseDisabled: boolean;
+<<<<<<< HEAD
   isViewMode?: boolean;
+=======
+>>>>>>> rahulsharma-dev
   errors: AnnounceValidationErrors;
   onAmountChange: (value: string) => void;
   onChange: <K extends keyof AnnounceDetailsForm>(
@@ -48,7 +59,10 @@ export const AnnounceDetailsTab = ({
   quantityControlMode,
   quantityOptions,
   isAddCauseDisabled,
+<<<<<<< HEAD
   isViewMode = false,
+=======
+>>>>>>> rahulsharma-dev
   errors,
   onAmountChange,
   onChange,
@@ -70,9 +84,14 @@ export const AnnounceDetailsTab = ({
   ) => (
     <div>
       <div
+<<<<<<< HEAD
         className={`form-floating ant-select-floating ${
           value ? 'has-value' : ''
         } ${disabled ? 'is-disabled' : ''} ${error ? 'has-error' : ''}`}
+=======
+        className={`form-floating ant-select-floating ${value ? 'has-value' : ''
+          } ${disabled ? 'is-disabled' : ''} ${error ? 'has-error' : ''}`}
+>>>>>>> rahulsharma-dev
       >
         <Select
           id={id}
@@ -95,9 +114,13 @@ export const AnnounceDetailsTab = ({
         />
         <label htmlFor={id}>{label}</label>
       </div>
+<<<<<<< HEAD
       {error ? (
         <div className="announce-master-field-error">{error}</div>
       ) : null}
+=======
+      {error ? <div className="announce-master-field-error">{error}</div> : null}
+>>>>>>> rahulsharma-dev
     </div>
   );
 
@@ -109,9 +132,14 @@ export const AnnounceDetailsTab = ({
     quantityControlMode === 'select' ? (
       <div className="col-md-4">
         <div
+<<<<<<< HEAD
           className={`form-floating ant-select-floating ${
             quantity ? 'has-value' : ''
           } ${disabled ? 'is-disabled' : ''}`}
+=======
+          className={`form-floating ant-select-floating ${quantity ? 'has-value' : ''
+            } ${disabled ? 'is-disabled' : ''}`}
+>>>>>>> rahulsharma-dev
         >
           <Select
             id="quantity"
@@ -182,7 +210,11 @@ export const AnnounceDetailsTab = ({
             </>,
             form.occasionType,
             occasionTypeOptions,
+<<<<<<< HEAD
             isViewMode,
+=======
+            false,
+>>>>>>> rahulsharma-dev
             errors.occasionType,
           )}
         </div>
@@ -197,17 +229,26 @@ export const AnnounceDetailsTab = ({
             }
             value={form.occasionDate}
             onChange={value => onChange('occasionDate', value)}
+<<<<<<< HEAD
             disabled={isViewMode}
             readOnly={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
             error={errors.occasionDate}
           />
         </div>
 
         <div className="col-md-3">
+<<<<<<< HEAD
           <div
             className={`form-floating ant-input-floating ${
               errors.occasionRemark ? 'has-error' : ''
             }`}
+=======
+          {/* <div
+            className={`form-floating ant-input-floating ${errors.occasionRemark ? 'has-error' : ''
+              }`}
+>>>>>>> rahulsharma-dev
           >
             <input
               id="occasionRemark"
@@ -215,7 +256,11 @@ export const AnnounceDetailsTab = ({
               className="form-control ant-input-floating-control"
               placeholder=" "
               value={form.occasionRemark}
+<<<<<<< HEAD
               disabled={isViewMode}
+=======
+              spellCheck={true}
+>>>>>>> rahulsharma-dev
               onChange={event => onChange('occasionRemark', event.target.value)}
               aria-invalid={Boolean(errors.occasionRemark)}
             />
@@ -227,8 +272,25 @@ export const AnnounceDetailsTab = ({
             <div className="announce-master-field-error">
               {errors.occasionRemark}
             </div>
+<<<<<<< HEAD
           ) : null}
         </div>
+=======
+          ) : null} */}
+          <FloatingInputField
+            id='occasionRemark'
+            label={
+              <>
+                Remark <span className="text-danger">*</span>
+              </>
+            }
+            value={form.occasionRemark}
+            onChange={value => onChange('occasionRemark', value)}
+            error={errors.occasionRemark}
+          />
+        </div>
+
+>>>>>>> rahulsharma-dev
       </div>
 
       <div className="separator separator-dashed my-6"></div>
@@ -242,7 +304,11 @@ export const AnnounceDetailsTab = ({
             </>,
             form.causeHead,
             causeHeadOptions,
+<<<<<<< HEAD
             isViewMode,
+=======
+            false,
+>>>>>>> rahulsharma-dev
             errors.causeHead,
           )}
         </div>
@@ -255,7 +321,11 @@ export const AnnounceDetailsTab = ({
             </>,
             form.purpose,
             purposeOptions,
+<<<<<<< HEAD
             isViewMode,
+=======
+            false,
+>>>>>>> rahulsharma-dev
             errors.purpose,
           )}
           <div className="text-muted fs-8 mt-2">
@@ -265,16 +335,24 @@ export const AnnounceDetailsTab = ({
         <div className="col-md-5">
           <div className="row g-5">
             {quantityControlMode === 'stepper' ||
+<<<<<<< HEAD
             quantityControlMode === 'disabled' ? (
+=======
+              quantityControlMode === 'disabled' ? (
+>>>>>>> rahulsharma-dev
               <div className="col-md-4">
                 <div className="form-floating ant-input-floating quantity-floating">
                   <div className="input-group ant-input-floating-control quantity-input-group">
                     <button
                       className="btn btn-light quantity-input-btn"
                       type="button"
+<<<<<<< HEAD
                       disabled={
                         quantityControlMode === 'disabled' || isViewMode
                       }
+=======
+                      disabled={quantityControlMode === 'disabled'}
+>>>>>>> rahulsharma-dev
                       onClick={() => onQuantityChange(form.quantity - 1)}
                     >
                       -
@@ -286,9 +364,13 @@ export const AnnounceDetailsTab = ({
                       value={form.quantity}
                       inputMode="numeric"
                       placeholder=" "
+<<<<<<< HEAD
                       disabled={
                         quantityControlMode === 'disabled' || isViewMode
                       }
+=======
+                      disabled={quantityControlMode === 'disabled'}
+>>>>>>> rahulsharma-dev
                       onChange={event =>
                         onQuantityChange(Number(event.target.value) || 1)
                       }
@@ -296,9 +378,13 @@ export const AnnounceDetailsTab = ({
                     <button
                       className="btn btn-light quantity-input-btn"
                       type="button"
+<<<<<<< HEAD
                       disabled={
                         quantityControlMode === 'disabled' || isViewMode
                       }
+=======
+                      disabled={quantityControlMode === 'disabled'}
+>>>>>>> rahulsharma-dev
                       onClick={() => onQuantityChange(form.quantity + 1)}
                     >
                       +
@@ -310,18 +396,28 @@ export const AnnounceDetailsTab = ({
             ) : null}
 
             {quantityControlMode === 'select'
+<<<<<<< HEAD
               ? renderQuantityField(form.quantity, isViewMode, onQuantityChange)
+=======
+              ? renderQuantityField(form.quantity, false, onQuantityChange)
+>>>>>>> rahulsharma-dev
               : null}
 
             <div className="col-md-4">
               <div
+<<<<<<< HEAD
                 className={`form-floating ant-input-floating ${
                   errors.announceAmount ? 'has-error' : ''
                 }`}
+=======
+                className={`form-floating ant-input-floating ${errors.announceAmount ? 'has-error' : ''
+                  }`}
+>>>>>>> rahulsharma-dev
               >
                 <input
                   id="autoAmount"
                   type="text"
+<<<<<<< HEAD
                   className={`form-control ant-input-floating-control ${
                     isAmountEditable ? '' : 'form-control-solid'
                   }`}
@@ -329,6 +425,13 @@ export const AnnounceDetailsTab = ({
                   value={amount}
                   readOnly={!isAmountEditable || isViewMode}
                   disabled={isViewMode}
+=======
+                  className={`form-control ant-input-floating-control ${isAmountEditable ? '' : 'form-control-solid'
+                    }`}
+                  placeholder=" "
+                  value={amount}
+                  readOnly={!isAmountEditable}
+>>>>>>> rahulsharma-dev
                   onChange={event => onAmountChange(event.target.value)}
                   aria-invalid={Boolean(errors.announceAmount)}
                 />
@@ -351,11 +454,17 @@ export const AnnounceDetailsTab = ({
               <div className="col-md-4">
                 <FloatingDatePicker
                   id="causeHeadDate"
+<<<<<<< HEAD
                   label="Bhojan Miti Date"
                   value={form.causeHeadDate}
                   onChange={value => onChange('causeHeadDate', value)}
                   disabled={isViewMode}
                   readOnly={isViewMode}
+=======
+                  label="Cause Head Date"
+                  value={form.causeHeadDate}
+                  onChange={value => onChange('causeHeadDate', value)}
+>>>>>>> rahulsharma-dev
                   error={errors.causeHeadDate}
                 />
               </div>
@@ -366,7 +475,11 @@ export const AnnounceDetailsTab = ({
           <button
             className="btn btn-primary fs-6 px-0 w-100"
             type="button"
+<<<<<<< HEAD
             disabled={isAddCauseDisabled || isViewMode}
+=======
+            disabled={isAddCauseDisabled}
+>>>>>>> rahulsharma-dev
             onClick={onAddCause}
           >
             {editingCauseId === null ? 'Add Cause' : 'Update Cause'}
@@ -443,7 +556,11 @@ export const AnnounceDetailsTab = ({
                       <div className="col-md-4">
                         <FloatingDatePicker
                           id={`causeHeadDate-${cause.id}`}
+<<<<<<< HEAD
                           label="Bhojan Miti Date"
+=======
+                          label="Cause Head Date"
+>>>>>>> rahulsharma-dev
                           value={cause.causeHeadDate}
                           disabled
                         />
@@ -456,7 +573,10 @@ export const AnnounceDetailsTab = ({
                   <button
                     className="btn btn-light-primary text-center w-50"
                     type="button"
+<<<<<<< HEAD
                     disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
                     onClick={() => onEditCause(cause.id)}
                   >
                     <i className="fa fa-pen  fs-5"></i>
@@ -464,7 +584,10 @@ export const AnnounceDetailsTab = ({
                   <button
                     className="btn btn-light-danger  w-50 text-center"
                     type="button"
+<<<<<<< HEAD
                     disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
                     onClick={() => onDeleteCause(cause.id)}
                   >
                     <i className="fa fa-trash  fs-5"></i>
@@ -528,7 +651,11 @@ export const AnnounceDetailsTab = ({
               { value: 'Pay-In-Slip', label: 'Pay-In-Slip' },
               { value: 'Material', label: 'Material' },
             ],
+<<<<<<< HEAD
             isViewMode,
+=======
+            false,
+>>>>>>> rahulsharma-dev
             errors.paymentMode,
           )}
         </div>
@@ -539,7 +666,11 @@ export const AnnounceDetailsTab = ({
             'How To Donate',
             form.howToDonate,
             howToDonateOptions,
+<<<<<<< HEAD
             isViewMode,
+=======
+            false,
+>>>>>>> rahulsharma-dev
             errors.howToDonate,
           )}
         </div>
@@ -550,8 +681,11 @@ export const AnnounceDetailsTab = ({
             label="Expected Donation Date"
             value={form.expectedDate}
             onChange={value => onChange('expectedDate', value)}
+<<<<<<< HEAD
             disabled={isViewMode}
             readOnly={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
           />
         </div>
 
@@ -561,7 +695,10 @@ export const AnnounceDetailsTab = ({
             label="Expected Donation Time"
             value={form.expectedTime}
             onChange={value => onChange('expectedTime', value)}
+<<<<<<< HEAD
             disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
           />
         </div>
 
@@ -571,7 +708,10 @@ export const AnnounceDetailsTab = ({
               className="form-check-input"
               type="checkbox"
               checked={form.isMotivated}
+<<<<<<< HEAD
               disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
               onChange={event => onChange('isMotivated', event.target.checked)}
             />
             <span className="form-check-label fw-semibold">Motivated</span>
@@ -581,9 +721,14 @@ export const AnnounceDetailsTab = ({
         {form.isMotivated ? (
           <div className="col-md-3">
             <div
+<<<<<<< HEAD
               className={`form-floating ant-input-floating ${
                 errors.motivatedAmount ? 'has-error' : ''
               }`}
+=======
+              className={`form-floating ant-input-floating ${errors.motivatedAmount ? 'has-error' : ''
+                }`}
+>>>>>>> rahulsharma-dev
             >
               <input
                 id="motivatedAmount"
@@ -591,7 +736,10 @@ export const AnnounceDetailsTab = ({
                 className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.motivatedAmount}
+<<<<<<< HEAD
                 disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
                 onChange={event =>
                   onChange('motivatedAmount', event.target.value)
                 }
@@ -619,7 +767,10 @@ export const AnnounceDetailsTab = ({
                 className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.namePlateName}
+<<<<<<< HEAD
                 disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
                 onChange={event =>
                   onChange('namePlateName', event.target.value)
                 }
@@ -635,7 +786,10 @@ export const AnnounceDetailsTab = ({
                 className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.donorInstruction}
+<<<<<<< HEAD
                 disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
                 onChange={event =>
                   onChange('donorInstruction', event.target.value)
                 }

@@ -3,6 +3,10 @@ import { Menu, Grid } from 'antd';
 import { NavLink } from 'react-router-dom';
 import { connect, ConnectedProps } from 'react-redux';
 import { logout } from 'src/components/Auth/Auth.thunks';
+<<<<<<< HEAD
+=======
+import { PATH } from 'src/constants/paths';
+>>>>>>> rahulsharma-dev
 import { APP_MENU_ITEMS } from 'src/constants/appMenu';
 import { IMAGEPATH } from 'src/constants/img-paths';
 

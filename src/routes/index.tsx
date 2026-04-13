@@ -2,7 +2,11 @@ import React, { lazy, Suspense } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { PATH } from 'src/constants/paths';
 import { Loading } from 'src/components/Loading';
+<<<<<<< HEAD
 import { Redirect, Route, Switch } from 'react-router-dom';
+=======
+import { Route, Switch } from 'react-router-dom';
+>>>>>>> rahulsharma-dev
 import { MainLayout } from 'src/pages/layouts/MainLayout';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 
@@ -20,7 +24,10 @@ const ResetPassword = lazy(
 const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
+<<<<<<< HEAD
 const CitPage = lazy(() => import('src/pages/cit/CitPage'));
+=======
+>>>>>>> rahulsharma-dev
 
 const ProfileMasterPage = lazy(
   () => import('src/pages/MyProfilePage/ProfileMasterPage'),
@@ -55,18 +62,24 @@ export const Routes = () => {
               <Route exact path={PATH.PROFILE} component={ProfileMasterPage} />
               <Route exact path={PATH.FORGOT} component={ForgotPage} />
               <Route path={PATH.RESET_PASSWORD} component={ResetPassword} />
+<<<<<<< HEAD
               {/* <Route
                 exact
                 sensitive
                 path="/Announcement"
                 render={() => <Redirect to={PATH.ANNOUNCE_MASTER} />}
               /> */}
+=======
+>>>>>>> rahulsharma-dev
               <Route
                 exact
                 path={PATH.ANNOUNCE_MASTER}
                 component={AnnounceMasterPage}
               />
+<<<<<<< HEAD
               <Route exact path={PATH.CIT} component={CitPage} />
+=======
+>>>>>>> rahulsharma-dev
 
               {/* Error routes */}
               <Route component={NotFoundPage} />

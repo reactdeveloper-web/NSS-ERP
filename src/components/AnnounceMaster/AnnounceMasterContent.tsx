@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
+<<<<<<< HEAD
 import { useHistory } from 'react-router-dom';
 import { ContentTypes } from 'src/constants/content';
 import { PATH } from 'src/constants/paths';
@@ -12,6 +13,19 @@ import {
   AnnouncementListingItem,
 } from './components/AnnouncementListing';
 import {
+=======
+// import { ContentTypes } from 'src/constants/content';
+// import { masterApiHeaders } from 'src/utils/masterApiHeaders';
+// import { masterApiPaths } from 'src/utils/masterApiPaths';
+// import axiosInstance from 'src/redux/interceptor';
+import { ContentTypes } from '../../constants/content';
+import { masterApiHeaders } from '../../utils/masterApiHeaders';
+import { masterApiPaths } from '../../utils/masterApiPaths';
+import axiosInstance from '../../redux/interceptor';
+
+import { AnnounceMasterNav } from './AnnounceMasterNav';
+import {
+>>>>>>> rahulsharma-dev
   createInitialAnnounceDetailsForm,
   createInitialAnnounceEventForm,
   createInitialDonorIdentificationForm,
@@ -167,8 +181,12 @@ const extractDonorRecords = (payload: unknown): Record<string, unknown>[] => {
     }
   }
 
+<<<<<<< HEAD
   const donorRecord = extractDonorRecord(payload);
   return donorRecord ? [donorRecord] : [];
+=======
+  return extractDonorRecord(payload) ? [extractDonorRecord(payload)!] : [];
+>>>>>>> rahulsharma-dev
 };
 
 const mapDonorToPersonalInfo = (
@@ -323,6 +341,7 @@ const collectObjectArrayCandidates = (
   );
 };
 
+<<<<<<< HEAD
 const getPayloadRecordCandidates = (
   payload: unknown,
 ): Record<string, unknown>[] => [
@@ -333,6 +352,8 @@ const getPayloadRecordCandidates = (
     : []),
 ];
 
+=======
+>>>>>>> rahulsharma-dev
 const extractSalutationOptions = (payload: unknown): SalutationOption[] => {
   const salutationRecords = extractArrayPayload(payload);
 
@@ -690,7 +711,19 @@ const extractCurrencyId = (payload: unknown): string => {
 };
 
 const extractOperationAmount = (payload: unknown): string => {
+<<<<<<< HEAD
   for (const record of getPayloadRecordCandidates(payload)) {
+=======
+  const candidates = [
+    ...extractArrayPayload(payload),
+    ...collectObjectArrayCandidates(payload).flat(),
+    ...(payload && typeof payload === 'object'
+      ? [payload as Record<string, unknown>]
+      : []),
+  ];
+
+  for (const record of candidates) {
+>>>>>>> rahulsharma-dev
     const amountValue = getFirstValue(record, [
       'Amount',
       'AMOUNT',
@@ -882,7 +915,19 @@ const extractPincodeLocation = (
   stateCode: string;
   district: string;
 } | null => {
+<<<<<<< HEAD
   for (const record of getPayloadRecordCandidates(payload)) {
+=======
+  const candidates = [
+    ...extractArrayPayload(payload),
+    ...collectObjectArrayCandidates(payload).flat(),
+    ...(payload && typeof payload === 'object'
+      ? [payload as Record<string, unknown>]
+      : []),
+  ];
+
+  for (const record of candidates) {
+>>>>>>> rahulsharma-dev
     const country = getFirstValue(record, [
       'Country_Name',
       'CountryName',
@@ -1070,6 +1115,7 @@ const formatTimeForApi = (value: string): string | null => {
   return `${displayHours}:${minutes} ${period}`;
 };
 
+<<<<<<< HEAD
 const ANNOUNCEMENT_CACHE_KEY = 'announcement-list-cache';
 
 interface AnnouncementCacheRecord {
@@ -1173,6 +1219,8 @@ const extractAnnouncementId = (
     : fallbackValue;
 };
 
+=======
+>>>>>>> rahulsharma-dev
 const parseStoredUser = (): Partial<IUser> => {
   try {
     const userJson = localStorage.getItem('user');
@@ -1192,6 +1240,7 @@ const toDigitsNumber = (value: string): number => {
   return digits ? Number(digits) : 0;
 };
 
+<<<<<<< HEAD
 const inferCurrencyIdFromCode = (currencyCode: string): string => {
   const normalizedCurrencyCode = currencyCode.trim().toUpperCase();
 
@@ -1202,6 +1251,8 @@ const inferCurrencyIdFromCode = (currencyCode: string): string => {
   return '';
 };
 
+=======
+>>>>>>> rahulsharma-dev
 const getCurrentTimeValue = (): string => {
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, '0');
@@ -1352,6 +1403,7 @@ const mapBankRecord = (
 });
 
 export const AnnounceMasterContent = () => {
+<<<<<<< HEAD
   const history = useHistory();
   const queryParams = new URLSearchParams(window.location.search);
   const operation = (queryParams.get('Operation') || 'ADD').toUpperCase();
@@ -1359,6 +1411,8 @@ export const AnnounceMasterContent = () => {
   const isViewMode = operation === 'VIEW';
   const eventOperation = operation === 'ADD' ? 'ADD' : 'EDIT';
   const isListingMode = !queryParams.get('Operation');
+=======
+>>>>>>> rahulsharma-dev
   const [
     donorIdentificationForm,
     setDonorIdentificationForm,
@@ -1408,7 +1462,10 @@ export const AnnounceMasterContent = () => {
   const [bankLoading, setBankLoading] = useState(false);
   const [bankError, setBankError] = useState('');
   const [currencyId, setCurrencyId] = useState('');
+<<<<<<< HEAD
   const [persistedCurrencyId, setPersistedCurrencyId] = useState('');
+=======
+>>>>>>> rahulsharma-dev
   const [autoAmount, setAutoAmount] = useState('');
   const [isAmountEditable, setIsAmountEditable] = useState(false);
   const [addedCauses, setAddedCauses] = useState<AddedAnnounceCause[]>([]);
@@ -1427,6 +1484,7 @@ export const AnnounceMasterContent = () => {
   const [showSaveResultModal, setShowSaveResultModal] = useState(false);
   const [saveRequestPayload, setSaveRequestPayload] = useState<unknown>(null);
   const [saveResultPayload, setSaveResultPayload] = useState<unknown>(null);
+<<<<<<< HEAD
   const [announcementItems, setAnnouncementItems] = useState<
     AnnouncementListingItem[]
   >([]);
@@ -1439,19 +1497,31 @@ export const AnnounceMasterContent = () => {
     shouldNavigateToListingOnModalClose,
     setShouldNavigateToListingOnModalClose,
   ] = useState(false);
+=======
+>>>>>>> rahulsharma-dev
   const [causeIdPendingDelete, setCauseIdPendingDelete] = useState<
     number | null
   >(null);
   const donorSearchValueRef = useRef('');
+<<<<<<< HEAD
   const donorSearchTypeRef = useRef<DonorIdentificationForm['donorSearchType']>(
     'donorId',
   );
   const lastDonorSearchKeyRef = useRef('');
   const donorSearchRequestIdRef = useRef(0);
+=======
+  const donorSearchTypeRef =
+    useRef<DonorIdentificationForm['donorSearchType']>('donorId');
+  const lastDonorSearchKeyRef = useRef('');
+  const donorSearchRequestIdRef = useRef(0);
+  const lastPersonalMobileSearchRef = useRef('');
+  const personalMobileSearchRequestIdRef = useRef(0);
+>>>>>>> rahulsharma-dev
   const pincodeRequestIdRef = useRef(0);
   const purposeOptionsRequestIdRef = useRef(0);
   const amountRequestIdRef = useRef(0);
 
+<<<<<<< HEAD
   const openAnnouncementListing = useCallback(() => {
     history.push(PATH.ANNOUNCE_MASTER);
   }, [history]);
@@ -1525,22 +1595,32 @@ export const AnnounceMasterContent = () => {
     [loadAnnouncementListing],
   );
 
+=======
+>>>>>>> rahulsharma-dev
   const handleDonorIdentificationChange = <
     K extends keyof DonorIdentificationForm
   >(
     field: K,
     value: DonorIdentificationForm[K],
   ) => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     if (field === 'donorSearchType' || field === 'donorId') {
       setDonorSearchError('');
     }
 
     if (field === 'donorSearchType') {
+<<<<<<< HEAD
       donorSearchTypeRef.current = value as DonorIdentificationForm['donorSearchType'];
+=======
+      donorSearchTypeRef.current =
+        value as DonorIdentificationForm['donorSearchType'];
+>>>>>>> rahulsharma-dev
       donorSearchValueRef.current = '';
       lastDonorSearchKeyRef.current = '';
       donorSearchRequestIdRef.current += 1;
@@ -1568,10 +1648,13 @@ export const AnnounceMasterContent = () => {
     field: K,
     value: AnnounceEventForm[K],
   ) => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     setValidationErrors(current => {
       const nextErrors = { ...current };
 
@@ -1589,10 +1672,13 @@ export const AnnounceMasterContent = () => {
     field: K,
     value: PersonalInfoForm[K],
   ) => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     setValidationErrors(current => {
       const nextErrors = { ...current };
       const fieldKey = field as AnnounceValidationField;
@@ -1635,10 +1721,13 @@ export const AnnounceMasterContent = () => {
     field: K,
     value: AnnounceDetailsForm[K],
   ) => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     setValidationErrors(current => {
       const nextErrors = { ...current };
 
@@ -1748,10 +1837,13 @@ export const AnnounceMasterContent = () => {
   };
 
   const handleAmountChange = (value: string) => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     const normalizedValue = value.replace(/[^\d.]/g, '');
     setValidationErrors(current => {
       const nextErrors = { ...current };
@@ -1765,18 +1857,24 @@ export const AnnounceMasterContent = () => {
     field: K,
     value: FollowUpForm[K],
   ) => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     setFollowUpForm(current => ({ ...current, [field]: value }));
   };
 
   const handleQuantityChange = (nextQuantity: number) => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     setValidationErrors(current => {
       const nextErrors = { ...current };
       delete nextErrors.announceAmount;
@@ -1789,10 +1887,13 @@ export const AnnounceMasterContent = () => {
   };
 
   const handleAddCause = () => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     const selectedCauseHead = causeHeadOptions.find(
       option => option.value === announceDetailsForm.causeHead,
     );
@@ -1852,9 +1953,12 @@ export const AnnounceMasterContent = () => {
     setEditingCauseId(null);
     purposeOptionsRequestIdRef.current += 1;
     amountRequestIdRef.current += 1;
+<<<<<<< HEAD
     if (currencyId.trim()) {
       setPersistedCurrencyId(currencyId.trim());
     }
+=======
+>>>>>>> rahulsharma-dev
     setCurrencyId('');
     setPurposeOptions([]);
     setAutoAmount('');
@@ -1866,10 +1970,13 @@ export const AnnounceMasterContent = () => {
   };
 
   const handleEditCause = (causeId: number) => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     const cause = addedCauses.find(item => item.id === causeId);
 
     if (!cause) {
@@ -1890,10 +1997,13 @@ export const AnnounceMasterContent = () => {
   };
 
   const handleDeleteCause = (causeId: number) => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     setCauseIdPendingDelete(causeId);
   };
 
@@ -1902,10 +2012,13 @@ export const AnnounceMasterContent = () => {
   };
 
   const handleConfirmDeleteCause = () => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     if (causeIdPendingDelete === null) {
       return;
     }
@@ -1931,10 +2044,13 @@ export const AnnounceMasterContent = () => {
   };
 
   const handleToggleBank = (bankId: string) => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     setValidationErrors(current => {
       const nextErrors = { ...current };
       delete nextErrors.bankSelection;
@@ -1948,10 +2064,13 @@ export const AnnounceMasterContent = () => {
   };
 
   const handleAddFollowUp = () => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     if (!followUpForm.date && !followUpForm.note && !followUpForm.assignTo) {
       return;
     }
@@ -1967,10 +2086,13 @@ export const AnnounceMasterContent = () => {
   };
 
   const handleRemoveFollowUp = (id: number) => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     setFollowUpItems(current => current.filter(item => item.id !== id));
   };
 
@@ -2051,7 +2173,11 @@ export const AnnounceMasterContent = () => {
       eventChannel: '',
       panditJi: '',
       eventLocation: '',
+<<<<<<< HEAD
       currency: eventName.trim() ? current.currency || 'INR' : '',
+=======
+      currency: current.currency || 'INR',
+>>>>>>> rahulsharma-dev
     }));
   };
 
@@ -2248,6 +2374,67 @@ export const AnnounceMasterContent = () => {
   ]);
 
   useEffect(() => {
+<<<<<<< HEAD
+=======
+    const mobileNo = personalInfoForm.mobileNo.trim();
+
+    if (mobileNo.length < 10) {
+      lastPersonalMobileSearchRef.current = '';
+      personalMobileSearchRequestIdRef.current += 1;
+      return;
+    }
+
+    if (lastPersonalMobileSearchRef.current === mobileNo) {
+      return;
+    }
+
+    const requestId = personalMobileSearchRequestIdRef.current + 1;
+    personalMobileSearchRequestIdRef.current = requestId;
+
+    const timeoutId = window.setTimeout(() => {
+      lastPersonalMobileSearchRef.current = mobileNo;
+      setIsSearchingDonor(true);
+
+      void searchDonorByValue({
+        searchType: 'mobile',
+        searchData: mobileNo,
+        onNoData: () => {
+          if (requestId !== personalMobileSearchRequestIdRef.current) {
+            return;
+          }
+
+          resetPersonalInfo({ mobileNo });
+        },
+        onMultipleResults: options => {
+          if (requestId !== personalMobileSearchRequestIdRef.current) {
+            return;
+          }
+
+          setDonorOptions(options);
+          setShowDonorModal(true);
+        },
+      })
+        .catch(() => {
+          if (requestId !== personalMobileSearchRequestIdRef.current) {
+            return;
+          }
+
+          resetPersonalInfo({ mobileNo });
+        })
+        .finally(() => {
+          if (requestId === personalMobileSearchRequestIdRef.current) {
+            setIsSearchingDonor(false);
+          }
+        });
+    }, 600);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [personalInfoForm.mobileNo, resetPersonalInfo, searchDonorByValue]);
+
+  useEffect(() => {
+>>>>>>> rahulsharma-dev
     const loadEventCauses = async () => {
       try {
         const response = await axiosInstance.get(
@@ -2255,7 +2442,11 @@ export const AnnounceMasterContent = () => {
           {
             params: {
               DataFlag: ContentTypes.DataFlag,
+<<<<<<< HEAD
               Operation: eventOperation,
+=======
+              Operation: 'EDIT',
+>>>>>>> rahulsharma-dev
             },
           },
         );
@@ -2267,7 +2458,11 @@ export const AnnounceMasterContent = () => {
     };
 
     void loadEventCauses();
+<<<<<<< HEAD
   }, [eventOperation]);
+=======
+  }, []);
+>>>>>>> rahulsharma-dev
 
   useEffect(() => {
     const loadEventDetails = async () => {
@@ -2281,7 +2476,11 @@ export const AnnounceMasterContent = () => {
             params: {
               dataflag: ContentTypes.DataFlag,
               IsLive: announceEventForm.liveType === 'live' ? 'Y' : 'N',
+<<<<<<< HEAD
               Operation: eventOperation,
+=======
+              Operation: 'EDIT',
+>>>>>>> rahulsharma-dev
             },
           },
         );
@@ -2302,7 +2501,11 @@ export const AnnounceMasterContent = () => {
           record => record.eventName === announceEventForm.eventName,
         );
 
+<<<<<<< HEAD
         if (!matchedRecord && operation === 'ADD') {
+=======
+        if (!matchedRecord) {
+>>>>>>> rahulsharma-dev
           resetEventSelectionFields(announceEventForm.liveType);
         }
       } catch (error: any) {
@@ -2311,9 +2514,13 @@ export const AnnounceMasterContent = () => {
         setEventCityOptions([]);
         setEventChannelOptions([]);
         setPanditOptions([]);
+<<<<<<< HEAD
         if (operation === 'ADD' || !announceEventForm.eventName.trim()) {
           resetEventSelectionFields(announceEventForm.liveType);
         }
+=======
+        resetEventSelectionFields(announceEventForm.liveType);
+>>>>>>> rahulsharma-dev
         const message =
           error?.response?.data?.message ||
           error?.response?.data?.Message ||
@@ -2327,7 +2534,11 @@ export const AnnounceMasterContent = () => {
 
     void loadEventDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+<<<<<<< HEAD
   }, [announceEventForm.liveType, eventOperation]);
+=======
+  }, [announceEventForm.liveType]);
+>>>>>>> rahulsharma-dev
 
   useEffect(() => {
     if (!announceEventForm.eventName) {
@@ -2629,7 +2840,10 @@ export const AnnounceMasterContent = () => {
         }
 
         setCurrencyId(nextCurrencyId);
+<<<<<<< HEAD
         setPersistedCurrencyId(nextCurrencyId);
+=======
+>>>>>>> rahulsharma-dev
 
         const response = await axiosInstance.get(
           masterApiPaths.getYojnaByPurposeAndCurrency,
@@ -2885,10 +3099,13 @@ export const AnnounceMasterContent = () => {
   }, []);
 
   const handleReset = () => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
+=======
+>>>>>>> rahulsharma-dev
     setDonorIdentificationForm(
       createInitialDonorIdentificationForm(getToday()),
     );
@@ -2911,14 +3128,18 @@ export const AnnounceMasterContent = () => {
     setCauseIdPendingDelete(null);
     setAddedCauses([]);
     setEditingCauseId(null);
+<<<<<<< HEAD
     setCurrencyId('');
     setPersistedCurrencyId('');
+=======
+>>>>>>> rahulsharma-dev
     setIsPincodeLocationLocked(false);
     lastDonorSearchKeyRef.current = '';
     donorSearchRequestIdRef.current += 1;
     pincodeRequestIdRef.current += 1;
   };
 
+<<<<<<< HEAD
   const handleCancel = useCallback(() => {
     if (window.history.length > 1) {
       history.goBack();
@@ -2971,6 +3192,8 @@ export const AnnounceMasterContent = () => {
     operation,
   ]);
 
+=======
+>>>>>>> rahulsharma-dev
   const selectedPurposeOption = purposeOptions.find(
     option => option.value === announceDetailsForm.purpose,
   );
@@ -3049,11 +3272,14 @@ export const AnnounceMasterContent = () => {
 
   const handleCloseSaveResultModal = () => {
     setShowSaveResultModal(false);
+<<<<<<< HEAD
 
     if (shouldNavigateToListingOnModalClose) {
       setShouldNavigateToListingOnModalClose(false);
       openAnnouncementListing();
     }
+=======
+>>>>>>> rahulsharma-dev
   };
 
   const getTabForFieldError = (
@@ -3132,7 +3358,11 @@ export const AnnounceMasterContent = () => {
       nextErrors.salutation = 'Please Select Salutation.';
     }
 
+<<<<<<< HEAD
     if (operation !== 'EDIT' && !announceEventForm.eventName.trim()) {
+=======
+    if (!announceEventForm.eventName.trim()) {
+>>>>>>> rahulsharma-dev
       nextErrors.eventName = 'Please Select Event Name.';
     }
 
@@ -3170,7 +3400,11 @@ export const AnnounceMasterContent = () => {
       nextErrors.occasionRemark = 'Please Fill Remark.';
     }
 
+<<<<<<< HEAD
     if (operation !== 'EDIT' && !announceDetailsForm.causeHead.trim()) {
+=======
+    if (!announceDetailsForm.causeHead.trim()) {
+>>>>>>> rahulsharma-dev
       nextErrors.causeHead = 'Please Select Cause Head.';
     }
 
@@ -3181,7 +3415,11 @@ export const AnnounceMasterContent = () => {
       nextErrors.causeHeadDate = 'Please Select Cause Head Date.';
     }
 
+<<<<<<< HEAD
     if (operation !== 'EDIT' && !announceDetailsForm.purpose.trim()) {
+=======
+    if (!announceDetailsForm.purpose.trim()) {
+>>>>>>> rahulsharma-dev
       nextErrors.purpose = 'Please Select Purpose.';
     }
 
@@ -3215,11 +3453,16 @@ export const AnnounceMasterContent = () => {
   };
 
   const handleSave = async () => {
+<<<<<<< HEAD
     if (isViewMode) {
       return;
     }
 
     const currentUser = parseStoredUser();
+=======
+    const currentUser = parseStoredUser();
+    const queryParams = new URLSearchParams(window.location.search);
+>>>>>>> rahulsharma-dev
     const announceThroughParam = queryParams.get('ATHROUGH');
     const queryStringBid = queryParams.get('BID');
     const queryStringCrtObjectId =
@@ -3321,23 +3564,172 @@ export const AnnounceMasterContent = () => {
     const donorSearchValue = donorSearchValueRef.current.trim();
     const donorSearchType = donorSearchTypeRef.current;
     const searchedEmailId =
+<<<<<<< HEAD
       donorSearchType === 'email' && donorSearchValue ? donorSearchValue : null;
+=======
+      donorSearchType === 'email' && donorSearchValue
+        ? donorSearchValue
+        : null;
+>>>>>>> rahulsharma-dev
     const searchedAadharNumber =
       donorSearchType === 'aadhaar' && donorSearchValue
         ? donorSearchValue
         : null;
     const searchedPanNumber =
+<<<<<<< HEAD
       donorSearchType === 'pan' && donorSearchValue ? donorSearchValue : null;
+=======
+      donorSearchType === 'pan' && donorSearchValue
+        ? donorSearchValue
+        : null;
+>>>>>>> rahulsharma-dev
     const callingSadhakId = employeeCode;
     const callingSadhakName =
       (currentUser as Partial<IUser> & { empName?: string }).empName ||
       currentUser.username ||
       null;
     const ngCode = donorIdentificationForm.donorId.trim() || null;
+<<<<<<< HEAD
     const resolvedCurrencyId =
       currencyId.trim() ||
       persistedCurrencyId.trim() ||
       inferCurrencyIdFromCode(announceEventForm.currency);
+=======
+
+    /*
+      CreateAnnounce payload reference
+      Source: https://deverp.narayanseva.org/erp/CRM/CreateAnnounce
+
+      {
+        "annoucePurposeList": [
+          {
+            "yojna_id": "9",
+            "qty": "1",
+            "amount": "5000.0",
+            "bhojan_date": ""
+          }
+        ],
+        "announce_id": 0,
+        "ashri": "Shri",
+        "ashri_oth": null,
+        "announcer_name": "Rahul Suthar",
+        "announce_amount": 5000,
+        "address1": "Sector 14",
+        "address2": "Near Temple",
+        "address3": "Udaipur",
+        "ph_no": "0294-123456",
+        "mob_no": "9876543210",
+        "announce_through": "Phone",
+        "announce_date": "2026-04-08",
+        "announce_time": "10:30",
+        "std_code": "0294",
+        "email_id": "rahul@example.com",
+        "purpose": 1,
+        "due_date": "2026-04-15",
+        "due_time": "11:00",
+        "completed": "0",
+        "first_date": "",
+        "second_date": "",
+        "third_date": "",
+        "remark1": 0,
+        "first_remark": null,
+        "second_remark": null,
+        "third_remark": null,
+        "city_code": 0,
+        "district_code": 10,
+        "state_code": 8,
+        "remark2": null,
+        "channel_code": 0,
+        "pandit_code": 0,
+        "bhag_city_code": null,
+        "oth_name": null,
+        "mob_no_second": null,
+        "mob_no_third": null,
+        "user_name": "",
+        "ash_code": 0,
+        "emp_code": 8729,
+        "live": "L",
+        "provisional_no": null,
+        "chk_prov": null,
+        "rec_amount": 0,
+        "rec_date": null,
+        "allocate_date": null,
+        "ash_event_id": null,
+        "event_ash_id": 0,
+        "event_name": null,
+        "audit_confirm": "N",
+        "user_id": 1,
+        "audit_remark": null,
+        "allocated_to": null,
+        "followup_priority": 0,
+        "bank_code": null,
+        "future_donor": null,
+        "search_remark": null,
+        "search_empname": null,
+        "search_complete": null,
+        "complete_userid": null,
+        "complete_date": null,
+        "landmark": "Near School",
+        "cash_pickup": "N",
+        "other_type": null,
+        "currency_id": 4,
+        "cause_id": 1,
+        "ngcode": null,
+        "msg_banks": null,
+        "data_flag": "GANGOTRI",
+        "fy_id": 21,
+        "crtobjectid": "null",
+        "last_call_no": null,
+        "last_fp_remark": null,
+        "last_call_date": null,
+        "last_call_back_date": null,
+        "last_remark": null,
+        "fp_received": null,
+        "fp_org_rec_no": null,
+        "receive_id_by": null,
+        "receive_head_by": null,
+        "dmobile5": null,
+        "dmobilewhatsapp1": null,
+        "dmobilewhatsapp2": null,
+        "phoffice": null,
+        "aadhar_number": null,
+        "pan_number": null,
+        "in_memory_occasion": null,
+        "in_memocc_date": null,
+        "donor_instruction": null,
+        "name_plate": null,
+        "edit_user_id": null,
+        "edit_user_name": null,
+        "edit_datetime": null,
+        "pincode_code": 313001,
+        "country_code": 91,
+        "pincode": "313001",
+        "calling_sadhak_id": null,
+        "calling_sadhak_name": null,
+        "daan_patra_no": null,
+        "orderno": null,
+        "pay_mode": "Cash",
+        "docket_no": null,
+        "route_code": null,
+        "token_no": null,
+        "no_followup_require": "N",
+        "last_call_id": null,
+        "faked": "N",
+        "discarded": "N",
+        "self_deposit": "N",
+        "send_sadhak": "Y",
+        "online_bank_id": null,
+        "motivated": false,
+        "motivated_amount": 0,
+        "wfh_auto_id": null,
+        "PostType": "WebReact",
+        "QueryString_BID": null,
+        "QueryString_crtObjectId": null,
+        "QueryString_DReason": null,
+        "QueryString_THISCALLID": null
+      }
+    */
+>>>>>>> rahulsharma-dev
     const payload = {
       annoucePurposeList: causesForPayload.map(cause => ({
         yojna_id: cause.yojnaId || '0',
@@ -3345,7 +3737,11 @@ export const AnnounceMasterContent = () => {
         amount: String(parseAmountValue(cause.amount) || 0),
         bhojan_date: formatDateForApi(cause.causeHeadDate) || '',
       })),
+<<<<<<< HEAD
       announce_id: Number(announceIdParam || 0),
+=======
+      announce_id: 0,
+>>>>>>> rahulsharma-dev
       ashri: personalInfoForm.salutation || '',
       ashri_oth: personalInfoForm.salutation || null,
       announcer_name: personalInfoForm.announcerName.trim(),
@@ -3408,7 +3804,11 @@ export const AnnounceMasterContent = () => {
       landmark: null,
       cash_pickup: 'N',
       other_type: personalInfoForm.announceInOtherName ? 1 : null,
+<<<<<<< HEAD
       currency_id: resolvedCurrencyId ? Number(resolvedCurrencyId) : null,
+=======
+      currency_id: Number(currencyId || 0),
+>>>>>>> rahulsharma-dev
       cause_id: Number(causesForPayload[0]?.causeHeadPurposeId || 0),
       ngcode: ngCode,
       msg_banks: selectedBankIdsValue,
@@ -3473,15 +3873,20 @@ export const AnnounceMasterContent = () => {
 
     try {
       const response = await axiosInstance.post(
+<<<<<<< HEAD
         operation === 'EDIT'
           ? masterApiPaths.updateAnnounce
           : masterApiPaths.createAnnounce,
+=======
+        masterApiPaths.createAnnounce,
+>>>>>>> rahulsharma-dev
         payload,
         {
           headers: masterApiHeaders(),
         },
       );
 
+<<<<<<< HEAD
       const resolvedAnnouncementId = extractAnnouncementId(
         response.data,
         announceIdParam !== '0' ? announceIdParam : String(Date.now()),
@@ -3513,6 +3918,9 @@ export const AnnounceMasterContent = () => {
 
       setSaveResultPayload(response.data);
       setShouldNavigateToListingOnModalClose(true);
+=======
+      setSaveResultPayload(response.data);
+>>>>>>> rahulsharma-dev
       setShowSaveResultModal(true);
     } catch (error) {
       const errorPayload = axios.isAxiosError(error)
@@ -3520,13 +3928,17 @@ export const AnnounceMasterContent = () => {
         : { message: 'Failed to save announce.' };
 
       setSaveResultPayload(errorPayload);
+<<<<<<< HEAD
       setShouldNavigateToListingOnModalClose(false);
+=======
+>>>>>>> rahulsharma-dev
       setShowSaveResultModal(true);
     } finally {
       setIsSaving(false);
     }
   };
 
+<<<<<<< HEAD
   if (isListingMode) {
     return (
       <div
@@ -3553,6 +3965,8 @@ export const AnnounceMasterContent = () => {
     );
   }
 
+=======
+>>>>>>> rahulsharma-dev
   return (
     <div
       className="content d-flex flex-column flex-column-fluid"
@@ -3602,7 +4016,10 @@ export const AnnounceMasterContent = () => {
                 quantityOptions={quantityOptions}
                 isAddCauseDisabled={!isCauseReadyToAdd}
                 isSaving={isSaving}
+<<<<<<< HEAD
                 isViewMode={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
                 onAmountChange={handleAmountChange}
                 onAddCause={handleAddCause}
                 onEditCause={handleEditCause}
@@ -3623,7 +4040,10 @@ export const AnnounceMasterContent = () => {
                 onAddFollowUp={handleAddFollowUp}
                 onRemoveFollowUp={handleRemoveFollowUp}
                 onReset={handleReset}
+<<<<<<< HEAD
                 onCancel={handleCancel}
+=======
+>>>>>>> rahulsharma-dev
               />
             </div>
           </div>

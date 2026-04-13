@@ -13,6 +13,9 @@
         "printWidth": 80,
         "useTabs": false,
         "singleQuote": true
+      },
+      {
+        "usePrettierrc": false
       }
     ],
     "no-console": "off",

@@ -39,17 +39,29 @@ export const login = (payload: ReqLogin) => async dispatch => {
     const res = await axiosInstance.post(`/login/UserLogin`, payload);
     const allUsers = res.data;
     let user = allUsers.userData;
+<<<<<<< HEAD
     const isMatchingUser =
       String(user?.empNum ?? '').trim() === String(payload.username).trim();
     if (
       allUsers.userData.status === 'Success' &&
       user &&
       isMatchingUser
+=======
+    //console.log('login',allUsers);
+    if (
+      allUsers.userData.status === 'Success' &&
+      user &&
+      user.empNum == payload.username
+>>>>>>> rahulsharma-dev
     ) {
       dispatch(actions.loginSuccess(user));
       // ✅ store tokens
       localStorage.setItem('accessToken', res.data.token);
       localStorage.setItem('refreshToken', res.data.refreshToken);
+<<<<<<< HEAD
+=======
+      localStorage.setItem('loginTimestamp', Date.now().toString());
+>>>>>>> rahulsharma-dev
       dispatch(
         setAlert({
           msg: 'You are logged in!',
@@ -142,6 +154,13 @@ export const register = (payload: ReqLogin) => async dispatch => {
 };
 
 export const logout = () => async dispatch => {
+
+  //Clear all storage explicitly
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('loginTimestamp');
+  localStorage.removeItem('user');  
+
   dispatch(actions.logoutSuccess());
   dispatch(
     setAlert({
@@ -152,6 +171,20 @@ export const logout = () => async dispatch => {
 };
 
 // ================= TYPES =================
+<<<<<<< HEAD
+=======
+export interface ReqLogin {
+  username?: string | number;
+  password?: string;
+  [key: string]: any;
+}
+
+export interface ReqForgot {
+  userid?: string | number;
+  [key: string]: any;
+}
+
+>>>>>>> rahulsharma-dev
 export interface ReqSetupPassword {
   EmpNum: string;
   Token: string;

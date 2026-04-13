@@ -17,7 +17,10 @@ interface PersonalInfoTabProps {
   stateOptions: { value: string; label: string }[];
   districtOptions: { value: string; label: string }[];
   isPincodeLocationLocked: boolean;
+<<<<<<< HEAD
   isViewMode?: boolean;
+=======
+>>>>>>> rahulsharma-dev
   errors: AnnounceValidationErrors;
   onChange: <K extends keyof PersonalInfoForm>(
     field: K,
@@ -31,7 +34,10 @@ export const PersonalInfoTab = ({
   stateOptions,
   districtOptions,
   isPincodeLocationLocked,
+<<<<<<< HEAD
   isViewMode = false,
+=======
+>>>>>>> rahulsharma-dev
   errors,
   onChange,
 }: PersonalInfoTabProps) => {
@@ -74,7 +80,11 @@ export const PersonalInfoTab = ({
                 label="Salutation"
                 value={form.salutation}
                 options={salutationOptions}
+<<<<<<< HEAD
                 disabled={form.salutationLocked || isViewMode}
+=======
+                disabled={form.salutationLocked}
+>>>>>>> rahulsharma-dev
                 onChange={value => onChange('salutation', value)}
                 error={errors.salutation}
               />
@@ -89,7 +99,10 @@ export const PersonalInfoTab = ({
                 }
                 value={form.announcerName}
                 onChange={value => onChange('announcerName', value)}
+<<<<<<< HEAD
                 disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
                 error={errors.announcerName}
               />
             </div>
@@ -107,7 +120,10 @@ export const PersonalInfoTab = ({
             }
             value={form.mobileNo}
             onChange={value => onChange('mobileNo', value)}
+<<<<<<< HEAD
             disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
             error={errors.mobileNo}
           />
         </div>
@@ -119,7 +135,10 @@ export const PersonalInfoTab = ({
             label="WhatsApp No."
             value={form.whatsappNo}
             onChange={value => onChange('whatsappNo', value)}
+<<<<<<< HEAD
             disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
           />
         </div>
 
@@ -129,7 +148,10 @@ export const PersonalInfoTab = ({
               className="form-check-input"
               type="checkbox"
               checked={form.announceInOtherName}
+<<<<<<< HEAD
               disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
               onChange={event =>
                 onChange('announceInOtherName', event.target.checked)
               }
@@ -140,6 +162,7 @@ export const PersonalInfoTab = ({
         {form.announceInOtherName ? (
           <>
             <div className="col-lg-3 col-md-6">
+<<<<<<< HEAD
               <div className="row g-4">
                 <div className="col-lg-4">
                   <FloatingSelectField
@@ -167,6 +190,20 @@ export const PersonalInfoTab = ({
                   />
                 </div>
               </div>
+=======
+              <FloatingInputField
+                id="announcedForName"
+                label={
+                  <>
+                    Announcer In The Name Of{' '}
+                    <span className="text-danger">*</span>
+                  </>
+                }
+                value={form.announcedForName}
+                onChange={value => onChange('announcedForName', value)}
+                error={errors.announcedForName}
+              />
+>>>>>>> rahulsharma-dev
             </div>
 
             <div className="col-lg-3 col-md-6">
@@ -175,7 +212,10 @@ export const PersonalInfoTab = ({
                 label="Relation"
                 value={form.relationName}
                 onChange={value => onChange('relationName', value)}
+<<<<<<< HEAD
                 disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
               />
             </div>
           </>
@@ -185,7 +225,10 @@ export const PersonalInfoTab = ({
           <PincodeField
             value={form.pincode}
             onChange={value => onChange('pincode', value)}
+<<<<<<< HEAD
             disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
             error={errors.pincode}
           />
         </div>
@@ -194,7 +237,10 @@ export const PersonalInfoTab = ({
           <CountryField
             value={form.country}
             onChange={value => onChange('country', value)}
+<<<<<<< HEAD
             disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
             error={errors.country}
           />
         </div>
@@ -203,7 +249,11 @@ export const PersonalInfoTab = ({
           <StateField
             value={form.state}
             options={stateSelectOptions}
+<<<<<<< HEAD
             disabled={form.stateLocked || isPincodeLocationLocked || isViewMode}
+=======
+            disabled={form.stateLocked || isPincodeLocationLocked}
+>>>>>>> rahulsharma-dev
             onChange={value => onChange('state', value)}
             error={errors.state}
           />
@@ -213,7 +263,11 @@ export const PersonalInfoTab = ({
           <DistrictField
             value={form.district}
             options={districtSelectOptions}
+<<<<<<< HEAD
             disabled={isPincodeLocationLocked || isViewMode}
+=======
+            disabled={isPincodeLocationLocked}
+>>>>>>> rahulsharma-dev
             onChange={value => onChange('district', value)}
             error={errors.district}
           />

@@ -27,6 +27,41 @@ const dispatchError = (dispatch, error) => {
   );
 };
 
+<<<<<<< HEAD
+=======
+// export const getTodos = (payload: ReqUserActivity) => async dispatch => {
+//   const userJson = localStorage.getItem('user') || '{}';
+//   const user = JSON.parse(userJson);
+//   //console.log('userJson',userJson);
+
+//   const reqUserActivity: ReqUserActivity = {
+//   empnum: user.empNum,
+//   DataFlag: "GANGOTRI",
+//   Type: 1,
+//   Show : ""
+//   };
+
+//  //console.log('reqUserActivity',reqUserActivity)
+
+//   try {
+//     //console.log('call getTodos');
+//     const res = await axiosInstance.post(`/master/GetDashboard`,
+//       reqUserActivity
+//     );
+//       if (res) {
+//         console.log('res',res);
+//         const todos = res.data.Dashboard;
+//         console.log('todos',todos);
+//         dispatch(actions.getTodosSuccess(todos));
+//       }
+
+//     } catch (error) {
+//       dispatchError(dispatch, error);
+//     }
+
+// };
+
+>>>>>>> rahulsharma-dev
 export const getTodos = () => async dispatch => {
   try {
     const userJson = localStorage.getItem('user') || '{}';
@@ -42,8 +77,16 @@ export const getTodos = () => async dispatch => {
       `/master/GetDashboard`,
       reqUserActivity,
     );
+<<<<<<< HEAD
     const todos = res.data.Dashboard;
     dispatch(actions.getTodosSuccess(todos));
+=======
+    //const res = await axios.get(`${URL.baseAPIUrl}/api/products`);
+    const todos = res.data.Dashboard;
+    console.log('todo-thunk', todos);
+    dispatch(actions.getTodosSuccess(todos));
+    //console.log('aa',aa);
+>>>>>>> rahulsharma-dev
   } catch (error) {
     dispatchError(dispatch, error);
   }

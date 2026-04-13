@@ -1,13 +1,19 @@
 import React from 'react';
 import { Select } from 'antd';
+<<<<<<< HEAD
 import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
 import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
+=======
+>>>>>>> rahulsharma-dev
 import { FollowUpForm, FollowUpItem } from '../types';
 
 interface FollowUpTabProps {
   form: FollowUpForm;
   items: FollowUpItem[];
+<<<<<<< HEAD
   isViewMode?: boolean;
+=======
+>>>>>>> rahulsharma-dev
   onChange: <K extends keyof FollowUpForm>(
     field: K,
     value: FollowUpForm[K],
@@ -19,7 +25,10 @@ interface FollowUpTabProps {
 export const FollowUpTab = ({
   form,
   items,
+<<<<<<< HEAD
   isViewMode = false,
+=======
+>>>>>>> rahulsharma-dev
   onChange,
   onAdd,
   onRemove,
@@ -39,8 +48,12 @@ export const FollowUpTab = ({
         id={id}
         placeholder=""
         showSearch
+<<<<<<< HEAD
         allowClear={!isViewMode}
         disabled={isViewMode}
+=======
+        allowClear
+>>>>>>> rahulsharma-dev
         value={value || undefined}
         onChange={nextValue => onChange(id, (nextValue as string) || '')}
         optionFilterProp="label"
@@ -72,6 +85,7 @@ export const FollowUpTab = ({
       <div className="card-body">
         <div className="row g-5">
           <div className="col-md-3">
+<<<<<<< HEAD
             <FloatingDatePicker
               id="followupDate"
               label="Follow-up Date"
@@ -91,6 +105,33 @@ export const FollowUpTab = ({
               disabled={isViewMode}
               readOnly={isViewMode}
             />
+=======
+            <div className="form-floating ant-input-floating">
+              <input
+                id="followupDate"
+                type="date"
+                className="form-control ant-input-floating-control"
+                placeholder=" "
+                value={form.date}
+                onChange={event => onChange('date', event.target.value)}
+              />
+              <label htmlFor="followupDate">Follow-up Date</label>
+            </div>
+          </div>
+
+          <div className="col-md-3">
+            <div className="form-floating ant-input-floating">
+              <input
+                id="followupTime"
+                type="time"
+                className="form-control ant-input-floating-control"
+                placeholder=" "
+                value={form.time}
+                onChange={event => onChange('time', event.target.value)}
+              />
+              <label htmlFor="followupTime">Follow-up Time</label>
+            </div>
+>>>>>>> rahulsharma-dev
           </div>
 
           <div className="col-md-3">
@@ -123,7 +164,10 @@ export const FollowUpTab = ({
                 className="form-control ant-input-floating-control"
                 placeholder=" "
                 value={form.note}
+<<<<<<< HEAD
                 disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
                 onChange={event => onChange('note', event.target.value)}
               />
               <label htmlFor="followupNote">Follow-up Note</label>
@@ -134,7 +178,10 @@ export const FollowUpTab = ({
             <button
               className="btn btn-primary w-100"
               type="button"
+<<<<<<< HEAD
               disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
               onClick={onAdd}
             >
               Add Follow-up
@@ -167,7 +214,10 @@ export const FollowUpTab = ({
                       <button
                         className="btn btn-sm btn-light-danger"
                         type="button"
+<<<<<<< HEAD
                         disabled={isViewMode}
+=======
+>>>>>>> rahulsharma-dev
                         onClick={() => onRemove(item.id)}
                       >
                         Remove

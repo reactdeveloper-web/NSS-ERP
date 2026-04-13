@@ -1,7 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 
 type FlatpickrInstance = {
+<<<<<<< HEAD
   open?: () => void;
+=======
+>>>>>>> rahulsharma-dev
   destroy?: () => void;
   setDate?: (
     date: string | Date | Array<string | Date>,
@@ -59,6 +62,7 @@ export const FloatingTimePicker = ({
 }: FloatingTimePickerProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const pickerRef = useRef<FlatpickrInstance | null>(null);
+<<<<<<< HEAD
   const hasFlatpickr =
     typeof window !== 'undefined' && typeof window.flatpickr === 'function';
 
@@ -80,6 +84,12 @@ export const FloatingTimePicker = ({
   useEffect(() => {
     const input = inputRef.current;
     const canInitPicker = !disabled && !readOnly && hasFlatpickr;
+=======
+
+  useEffect(() => {
+    const input = inputRef.current;
+    const canInitPicker = !disabled && !readOnly && !!window.flatpickr;
+>>>>>>> rahulsharma-dev
 
     if (!input || !canInitPicker) {
       return;
@@ -104,7 +114,11 @@ export const FloatingTimePicker = ({
       pickerRef.current?.destroy?.();
       pickerRef.current = null;
     };
+<<<<<<< HEAD
   }, [disabled, hasFlatpickr, onChange, readOnly, value]);
+=======
+  }, [disabled, onChange, readOnly, value]);
+>>>>>>> rahulsharma-dev
 
   useEffect(() => {
     const picker = pickerRef.current;
@@ -122,16 +136,25 @@ export const FloatingTimePicker = ({
   }, [value]);
 
   return (
+<<<<<<< HEAD
     <div className={`${wrapperClassName} floating-date-picker`}>
       <input
         ref={inputRef}
         id={id}
         type={hasFlatpickr ? 'text' : 'time'}
+=======
+    <div className={wrapperClassName}>
+      <input
+        ref={inputRef}
+        id={id}
+        type="text"
+>>>>>>> rahulsharma-dev
         className={className}
         placeholder={placeholder}
         value={value}
         disabled={disabled}
         readOnly={readOnly}
+<<<<<<< HEAD
         onClick={!hasFlatpickr ? handleOpenPicker : undefined}
         onFocus={!hasFlatpickr ? handleOpenPicker : undefined}
         onChange={event => onChange?.(event.target.value)}
@@ -147,6 +170,11 @@ export const FloatingTimePicker = ({
       >
         <i className="fa fa-clock" aria-hidden="true" />
       </button>
+=======
+        spellCheck={false}
+        onChange={event => onChange?.(event.target.value)}
+      />
+>>>>>>> rahulsharma-dev
       <label htmlFor={id}>{label}</label>
     </div>
   );

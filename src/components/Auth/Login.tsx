@@ -14,7 +14,7 @@ const mapDispatchToProps = {
   login,
 };
 const connector = connect(mapStateToProps, mapDispatchToProps);
-interface Props extends ConnectedProps<typeof connector> {}
+interface Props extends ConnectedProps<typeof connector> { }
 
 const _Login = (props: Props) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -26,6 +26,11 @@ const _Login = (props: Props) => {
 
   const onFinish = async formData => {
     try {
+<<<<<<< HEAD
+=======
+      //console.log('hello',formData);
+      //setLoading(true);
+>>>>>>> rahulsharma-dev
       await login(formData);
     } catch (error) {
       message.error(error.message);
@@ -162,9 +167,14 @@ const _Login = (props: Props) => {
                     <button
                       type="submit"
                       id="kt_sign_in_submit"
+<<<<<<< HEAD
                       className={`btn btn-lg nssBtnColor text-white w-100 mb-5 ${
                         loading ? 'disabled' : ''
                       }`}
+=======
+                      className={`btn btn-lg nssBtnColor text-white w-100 mb-5 ${loading ? 'disabled' : ''
+                        }`}
+>>>>>>> rahulsharma-dev
                       disabled={loading}
                     >
                       {!loading ? (
