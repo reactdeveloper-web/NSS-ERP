@@ -1,11 +1,11 @@
-@import 'config';
-@import 'fonts';
-@import 'header';
-@import 'footer';
-@import 'home';
-@import 'staticPages';
-@import 'responsive';
-@import 'login';
+@use 'config' as *;
+@use 'fonts';
+@use 'header';
+@use 'footer';
+@use 'home';
+@use 'staticPages';
+@use 'responsive';
+@use 'login';
 
 * {
   box-sizing: border-box;
@@ -14,10 +14,14 @@
 }
 
 body {
-  font-size: 1rem;
-  line-height: 1.6;
-  background-color: #fff;
+  background-color: #f5f8fa !important;
 }
+
+// body {
+//   font-size: 1rem;
+//   line-height: 1.6;
+//   background-color: #fff;
+// }
 
 a {
   text-decoration: none;
@@ -26,9 +30,9 @@ a {
 ul {
   list-style: none;
 }
-img {
-  width: 100%;
-}
+// img {
+//   width: 100%;
+// }
 
 .container-fluid {
   margin: 0 auto;

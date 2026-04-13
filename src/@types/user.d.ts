@@ -1,8 +1,16 @@
+import { EnumType } from 'typescript';
+
 interface ReqLogin {
   username: string;
   password: string;
   email?: string;
 }
+
+interface ReqForgot {
+  empNum: number;
+  DataFlag: string;
+}
+
 interface ResLoginApi extends Res {
   data: {
     id: string;
@@ -14,10 +22,18 @@ interface ResLoginApi extends Res {
 
 interface IUser {
   id: string;
+  empNum: number;
   username: string;
   email?: string;
   password: string;
   accessToken?: string;
+}
+
+interface ReqUserActivity {
+  empnum: string;
+  DataFlag: string;
+  Type: EnumType;
+  Show: '';
 }
 
 interface DispatchAuth {

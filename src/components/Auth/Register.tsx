@@ -33,7 +33,7 @@ const _Register = (props: Props) => {
   };
 
   if (isAuthenticated) {
-    return <Redirect to={PATH.HOME} />;
+    return <Redirect to={PATH.DASHBOARD} />;
   }
   return (
     <div className="container">

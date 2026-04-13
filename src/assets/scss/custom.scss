@@ -1,72 +1,101 @@
-.ant-form-item {
-	&.ant-form-item-has-error {
-		.ant-input {
-			border-color: red;
-		}
+body {
+  font-family: 'Poppins';
+}
 
-		.ant-form-item-explain-error {
-			color: red;
-			position: absolute
-		}
-	}
+.ant-form-item {
+  &.ant-form-item-has-error {
+    .ant-input {
+      border-color: red;
+    }
+
+    .ant-form-item-explain {
+      position: absolute;
+      top: 100%;
+    }
+
+    .ant-form-item-explain-error {
+      color: red;
+    }
+  }
+}
+
+.ant-input.form-control {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #181c32;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #e4e6ef;
+  appearance: none;
+  border-radius: 0.475rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.ant-form-item {
+  margin: 0;
 }
 
 .nssTextColor {
-	color: #2A2B6B;
+  color: #2a2b6b;
 }
 
 .nssBtnColor {
-	background: #2A2B6B;
+  background: #2a2b6b;
 }
 
-.btn-check:active+.btn.btn-active-success,
-.btn-check:checked+.btn.btn-active-success,
+.btn-check:active + .btn.btn-active-success,
+.btn-check:checked + .btn.btn-active-success,
 .btn.btn-active-success.active,
 .btn.btn-active-success.show,
 .btn.btn-active-success:active:not(.btn-active),
 .btn.btn-active-success:focus:not(.btn-active),
 .btn.btn-active-success:hover:not(.btn-active),
-.show>.btn.btn-active-success {
-	color: #2A2B6B;
-	border-color: #F5FCFB;
-	background-color: #F5FCFB !important;
+.show > .btn.btn-active-success {
+  color: #2a2b6b;
+  border-color: #f5fcfb;
+  background-color: #f5fcfb !important;
 }
 
 .bottom-bg {
-	background-image: url(../images/login-bg.png);
-	background-size: 100%;
-	background-position: center 90%;
+  background-image: url(../images/login-bg.png);
+  background-size: 100%;
+  background-position: center 90%;
 }
 
-@media all and (min-width:1180px) {
-	.bottom-bg {
-		background-size: 80%;
-		background-position: center bottom;
-	}
+@media all and (min-width: 1180px) {
+  .bottom-bg {
+    background-size: 80%;
+    background-position: center bottom;
+  }
 }
 
-@media all and (min-width:1400px) {
-	.bottom-bg {
-		background-size: 90%;
-		background-position: center bottom;
-	}
+@media all and (min-width: 1400px) {
+  .bottom-bg {
+    background-size: 90%;
+    background-position: center bottom;
+  }
 }
 
-@media all and (min-width:1600px) {
-	.bottom-bg {
-		background-size: 85%;
-		background-position: center 130%;
-	}
+@media all and (min-width: 1600px) {
+  .bottom-bg {
+    background-size: 85%;
+    background-position: center 130%;
+  }
 }
 
 .custom-rounded {
-	border-radius: 0.5rem;
+  border-radius: 0.5rem;
 }
 
 @media (min-width: 768px) {
-	.custom-rounded {
-		border-radius: 50%;
-	}
+  .custom-rounded {
+    border-radius: 50%;
+  }
 }
 
 /* .login-form-page {
@@ -74,19 +103,623 @@
 } */
 
 .login-logo {
-	background: linear-gradient(to bottom, #ffffff 0%, #ffffff 35%, #00B79C10 35%, #00B79C10 100%);
+  background: linear-gradient(
+    to bottom,
+    #ffffff 0%,
+    #ffffff 35%,
+    #00b79c10 35%,
+    #00b79c10 100%
+  );
 }
 
 .aside-brand {
-	border-bottom: 1px solid #eff2f5;
+  border-bottom: 1px solid #eff2f5;
 }
 
 .nssBtnColorHover {
-	transition: all 0.2s ease-in-out !important;
+  transition: all 0.2s ease-in-out !important;
 }
 
 .nssBtnColorHover:hover {
-	background-color: #ff7a00;
-	border-color: #ff7a00;
-	transition: all 0.2s ease-in-out !important;
+  background-color: #ff7a00;
+  border-color: #ff7a00;
+  transition: all 0.2s ease-in-out !important;
 }
+
+.show-dropdown-menu {
+  // display: none;
+  position: absolute;
+  // top: calc(100% + 0.5rem);
+  right: 0;
+  // z-index: 105;
+}
+
+.show-dropdown-menu.show {
+  display: block;
+}
+
+.header-fixed.toolbar-fixed .wrapper {
+  padding-top: 120px;
+}
+@media (min-width: 992px) {
+  .header-fixed.toolbar-fixed .wrapper {
+    padding-top: calc(65px + 55px);
+  }
+}
+
+.toolbar-fixed .toolbar {
+  height: 55px;
+}
+
+iframe {
+  display: none !important;
+}
+
+/* Container smooth height */
+.announce-master-card .tab-content {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-line-tabs .nav-item .nav-link {
+  padding: 8px 10px;
+  margin: 0 5px;
+}
+
+.nav-line-tabs .nav-item .nav-link.active,
+.nav-line-tabs .nav-item .nav-link:hover {
+  background-color: #1cb8a1 !important;
+  color: #ffffff;
+}
+
+/* Base */
+.announce-master-card .tab-content > .tab-pane {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(0);
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+
+/* Active tab */
+.announce-master-card .tab-content > .tab-pane.active.show {
+  position: relative;
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 0s;
+}
+
+.announce-master-card .tab-content > .tab-pane.active.show.fade-left {
+  animation: announce-tab-fade-left 0.35s ease;
+}
+
+.announce-master-card .tab-content > .tab-pane.active.show.fade-right {
+  animation: announce-tab-fade-right 0.35s ease;
+}
+
+@keyframes announce-tab-fade-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes announce-tab-fade-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Smooth buttons feel */
+#prevTabBtn,
+#nextTabBtn {
+  min-width: 120px;
+}
+
+.form-floating {
+  position: relative;
+  margin-bottom: 5px;
+}
+
+.form-floating > .form-control,
+.form-floating > .form-control-plaintext,
+.form-floating > .form-select {
+}
+
+.form-floating > label {
+  font-weight: 500;
+  color: #5e6278;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label,
+.form-floating > .form-select ~ label {
+  opacity: 1;
+  transform: scale(0.85) translateY(-0.9rem) translateX(0.15rem);
+  background: #fff;
+  padding: 0px 8px 0px 8px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.form-floating > .form-control,
+.form-floating > .form-control:focus,
+.form-floating > .form-control:not(:placeholder-shown),
+.form-floating > .form-select {
+  padding: 0.75rem 1rem;
+  min-height: inherit;
+  height: inherit;
+  line-height: 1.5;
+}
+
+.form-floating > .form-control:read-only:focus ~ label,
+.form-floating > .form-select:read-only:focus ~ label {
+  background: transparent;
+}
+
+.form-floating.ant-select-floating {
+  margin-bottom: 0;
+}
+
+.form-floating.ant-select-floating .ant-select {
+  width: 100%;
+}
+
+.form-floating.ant-select-floating .ant-select-selector {
+  min-height: 3.5rem !important;
+  height: 3.5rem !important;
+  padding: 0.75rem 1rem !important;
+  border-color: #e1e3ea !important;
+  border-radius: 0.475rem !important;
+  box-shadow: none !important;
+  display: flex;
+  align-items: center;
+}
+
+.form-floating.ant-select-floating.has-error .ant-select-selector {
+  border-color: #f1416c !important;
+}
+
+.form-floating.ant-select-floating .ant-select-selection-placeholder,
+.form-floating.ant-select-floating .ant-select-selection-item {
+  font-size: 0.925rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #181c32;
+}
+
+.form-floating.ant-select-floating .ant-select-selection-placeholder {
+  color: #a1a5b7 !important;
+}
+
+.form-floating.ant-select-floating
+  .ant-select.ant-select-open
+  .ant-select-selection-item {
+  color: #a1a5b7;
+}
+
+.form-floating.ant-select-floating .ant-select-arrow {
+  inset-inline-end: 14px !important;
+}
+
+.form-floating.ant-select-floating > label {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.form-floating.ant-select-floating.has-value > label,
+.form-floating.ant-select-floating:focus-within > label {
+  opacity: 1;
+  transform: scale(0.9) translateY(-0.9rem) translateX(0.15rem);
+  background: #fff;
+  padding: 0px 8px 0px 8px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.form-floating.ant-input-floating {
+  margin-bottom: 5px;
+}
+
+.form-floating.ant-input-floating > .form-control.ant-input-floating-control,
+.form-floating.ant-input-floating
+  > .form-control-plaintext.ant-input-floating-control {
+  min-height: 3.5rem;
+  height: 3.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e1e3ea;
+  border-radius: 0.475rem;
+  box-shadow: none;
+  background-color: #fff;
+  font-size: 0.925rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #181c32;
+}
+
+.form-floating.ant-input-floating
+  > .form-control.ant-input-floating-control:focus,
+.form-floating.ant-input-floating
+  > .form-control.ant-input-floating-control:not(:placeholder-shown),
+.form-floating.ant-input-floating
+  > .form-control-plaintext.ant-input-floating-control:focus {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  box-shadow: none;
+  border-color: #b5b5c3;
+}
+
+.form-floating.ant-input-floating
+  > .form-control.ant-input-floating-control.form-control-solid {
+  background-color: #f5f8fa;
+}
+
+.form-floating.ant-input-floating.has-error
+  > .form-control.ant-input-floating-control,
+.quantity-floating.has-error .quantity-input-group.ant-input-floating-control {
+  border-color: #f1416c;
+}
+
+.form-floating.ant-input-floating > label {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.form-floating.ant-input-floating
+  > .form-control.ant-input-floating-control:focus
+  ~ label,
+.form-floating.ant-input-floating
+  > .form-control.ant-input-floating-control:not(:placeholder-shown)
+  ~ label,
+.form-floating.ant-input-floating
+  > .form-control-plaintext.ant-input-floating-control:focus
+  ~ label {
+  opacity: 1;
+  transform: scale(0.9) translateY(-0.9rem) translateX(0.15rem);
+  background: #fff;
+  padding: 0px 8px 0px 8px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.ant-select-single.ant-select-show-arrow .ant-select-selection-search {
+  right: 25px;
+  display: flex;
+  align-items: center;
+}
+
+.form-floating > label {
+  padding: 0.75rem 1rem;
+}
+
+.input-group > .form-control.ant-input-floating-control {
+  min-height: 3.5rem;
+  height: 3.5rem;
+  border-color: #e1e3ea;
+  box-shadow: none;
+  font-size: 1.065rem;
+  font-weight: 500;
+  color: #181c32;
+}
+
+.quantity-floating .quantity-input-group.ant-input-floating-control {
+  min-height: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
+  border: 1px solid #e1e3ea;
+  border-radius: 0.475rem;
+  box-shadow: none;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.quantity-floating .quantity-input-btn {
+  min-width: 42px;
+  border: 0;
+  border-radius: 0 !important;
+  background-color: #f5f8fa;
+  color: #181c32;
+  font-size: 1.15rem;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+
+.quantity-floating .quantity-input-btn:hover,
+.quantity-floating .quantity-input-btn:focus,
+.quantity-floating .quantity-input-btn:active {
+  background-color: #eef3f7;
+  color: #181c32;
+}
+
+.quantity-floating .quantity-input-field {
+  border: 0;
+  min-height: 3.5rem;
+  height: 3.5rem;
+  padding: 0.75rem 1rem;
+  box-shadow: none !important;
+  background-color: transparent;
+  font-size: 1.065rem;
+  font-weight: 500;
+  color: #181c32;
+}
+
+.quantity-floating .quantity-input-field:focus {
+  box-shadow: none;
+}
+
+.quantity-floating > label,
+.quantity-floating:focus-within > label,
+.quantity-floating .quantity-input-field:not(:placeholder-shown) ~ label {
+  opacity: 1;
+  transform: scale(0.85) translateY(-0.9rem) translateX(0.15rem);
+  background: #fff;
+  padding: 0px 8px 0px 8px;
+  height: auto;
+  border-radius: 4px;
+  left: 35%;
+}
+
+.ant-select-clear,
+.ant-select-arrow {
+  width: 18px;
+  height: 18px;
+  margin-top: -8px;
+  font-size: 15px;
+  top: 50%;
+}
+
+.announce-master-card {
+  border: 1px solid #edf1f7;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.announce-master-card-header {
+  min-height: auto;
+  padding: 1.15rem 1.75rem;
+  border-bottom: 1px solid #eef2f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.announce-master-header-tools {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.announce-master-header-select.ant-select {
+  width: 136px;
+}
+
+.announce-master-header-select .ant-select-selector,
+.announce-master-select .ant-select-selector {
+  min-height: 44px !important;
+  height: 44px !important;
+  border-radius: 8px !important;
+  border: 1px solid #d9e2ec !important;
+  box-shadow: none !important;
+  display: flex;
+  align-items: center;
+  padding: 0 14px !important;
+}
+
+.announce-master-search-wrap {
+  position: relative;
+  width: 270px;
+}
+
+.announce-master-search-input {
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid #d9e2ec;
+  padding-right: 48px;
+  color: #233255;
+}
+
+.announce-master-search-input::placeholder,
+.announce-master-input::placeholder {
+  color: #a2aec4;
+}
+
+.announce-master-search-icon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #9aa6bf;
+  border-left: 1px solid #d9e2ec;
+}
+
+.announce-master-tabs {
+  gap: 0.75rem;
+  padding: 1rem 1.75rem 0;
+  border-bottom: 2px solid #eef2f6;
+}
+
+.announce-master-tabs .nav-link {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  border: 0;
+  border-top-left-radius: 0.475rem;
+  border-top-right-radius: 0.475rem;
+  color: #8c96b0;
+  background: transparent;
+}
+
+.announce-master-tabs .nav-link.active,
+.announce-master-tabs .nav-link:hover {
+  background: #27baa7 !important;
+  color: #fff !important;
+}
+
+.announce-master-panel {
+  padding: 5px;
+}
+
+.announce-master-helper-text {
+  color: #95a2bd;
+  font-size: 0.95rem;
+  margin-bottom: 1.75rem;
+}
+
+.announce-master-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.announce-master-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #12213f;
+}
+
+.announce-master-input {
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid #d9e2ec;
+  box-shadow: none;
+  color: #233255;
+  font-size: 1rem;
+}
+
+.announce-master-input:focus,
+.announce-master-search-input:focus {
+  border-color: #27baa7;
+  box-shadow: 0 0 0 0.2rem rgba(39, 186, 167, 0.08);
+}
+
+.announce-master-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 44px;
+  color: #12213f;
+  font-weight: 500;
+}
+
+.announce-master-checkbox .form-check-input {
+  margin: 0;
+  border-radius: 6px;
+  border-color: #d9e2ec;
+  box-shadow: none;
+}
+
+.announce-master-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.announce-master-btn {
+  min-width: 78px;
+  border-radius: 8px;
+  padding: 0.8rem 1.15rem;
+  font-weight: 600;
+  border: 0;
+}
+
+.announce-master-btn-save {
+  background: #27baa7;
+  color: #fff;
+}
+
+.announce-master-btn-reset {
+  background: #eef2f6;
+  color: #74809b;
+}
+
+.announce-master-btn-cancel {
+  background: #f23f71;
+  color: #fff;
+}
+
+.announce-master-select {
+  width: 100%;
+}
+
+.announce-master-select .ant-select-selection-placeholder,
+.announce-master-select .ant-select-selection-item,
+.announce-master-header-select .ant-select-selection-item {
+  color: #233255;
+  font-size: 1rem;
+}
+
+.announce-master-select.ant-select-disabled .ant-select-selector,
+.announce-master-header-select.ant-select-disabled .ant-select-selector {
+  background: #f4f7fb !important;
+  color: #233255 !important;
+}
+
+.floating-date-picker > .form-control.ant-input-floating-control {
+  padding-right: 3.1rem;
+}
+
+.announce-master-field-error {
+  color: #f1416c;
+  font-size: 0.825rem;
+  margin-top: 0.35rem;
+}
+
+.floating-date-picker-icon {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #6b7790;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  transition: all 0.2s ease;
+}
+
+.floating-date-picker-icon .fa {
+  font-size: 1.5rem;
+  color: #27baa7;
+}
+
+@media (max-width: 991.98px) {
+  .announce-master-card-header,
+  .announce-master-tabs,
+  .announce-master-panel {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .announce-master-search-wrap {
+    width: 100%;
+  }
+}
+

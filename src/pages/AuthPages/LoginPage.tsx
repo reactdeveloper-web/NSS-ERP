@@ -5,7 +5,7 @@ import { Login } from 'src/components/Auth/Login';
 const _LoginPage = () => {
   return (
     // <PageLayout>
-      <Login />
+    <Login />
     // </PageLayout>
   );
 };

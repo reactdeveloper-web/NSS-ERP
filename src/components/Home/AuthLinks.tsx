@@ -1,6 +1,3 @@
 import React from 'react';
 
-
-export const AuthLinks = () => {
-
-};
+export const AuthLinks = () => {};

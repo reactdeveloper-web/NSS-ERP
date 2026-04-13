@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: '/erpapi', // use proxy
+  baseURL: '/erp/', // /erp/ // use proxy
 });
 
 export default axiosInstance;

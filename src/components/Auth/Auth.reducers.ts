@@ -1,18 +1,22 @@
 import * as types from './Auth.constants';
 import produce from 'immer';
 
+const savedUserJson = localStorage.getItem('user');
+const savedUser = savedUserJson ? JSON.parse(savedUserJson) : null;
+
 let userType: IUser = {
   id: '',
+  empNum: 0,
   username: '',
   email: undefined,
   password: '',
   accessToken: '',
 };
 const initialState = {
-  loading: true,
-  isAuthenticated: false,
-  token: null,
-  user: userType,
+  loading: false,
+  isAuthenticated: !!savedUser,
+  token: savedUser?.accessToken || null,
+  user: savedUser || userType,
 };
 
 export const authReducer = (state = initialState, action: ActionRedux) =>
@@ -39,8 +43,14 @@ export const authReducer = (state = initialState, action: ActionRedux) =>
         draft.isAuthenticated = false;
         draft.loading = false;
         break;
+      case types.FORGOT_SUCCESS:
+        draft.isforgot = true;
+        draft.loading = false;
+        break;
       case types.LOGOUT:
         localStorage.removeItem('user');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         draft.token = null;
         draft.isAuthenticated = false;
         draft.loading = false;

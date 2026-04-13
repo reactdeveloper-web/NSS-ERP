@@ -22,6 +22,10 @@ export const logoutSuccess = () => ({
   type: types.LOGOUT,
 });
 
+export const forgotSuccess = () => ({
+  type: types.FORGOT_SUCCESS,
+});
+
 export const registerSuccess = payload => ({
   type: types.REGISTER_SUCCESS,
   payload,
@@ -29,4 +33,8 @@ export const registerSuccess = payload => ({
 
 export const registerFailed = () => ({
   type: types.REGISTER_FAILED,
+});
+
+export const setupPasswordSuccess = () => ({
+  type: 'SETUP_PASSWORD_SUCCESS',
 });
