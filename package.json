@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "homepage": ".",
   "private": true,
-  "homepage": "https://deverp.narayanseva.org/erp/",
-  "proxy": "https://deverp.narayanseva.org/erp/",
+  "homepage": "https://deverp.narayanseva.org",
+  "proxy": "https://deverp.narayanseva.org",
   "dependencies": {
     "@ant-design/icons": "4.5.0",
     "antd": "4.13.1",
