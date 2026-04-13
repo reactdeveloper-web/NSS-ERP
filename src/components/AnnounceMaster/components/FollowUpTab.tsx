@@ -1,6 +1,6 @@
 import React from 'react';
 import { Select } from 'antd';
-import { FloatingDatePicker } from './FloatingDatePicker';
+import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
 import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 import { FollowUpForm, FollowUpItem } from '../types';
 
