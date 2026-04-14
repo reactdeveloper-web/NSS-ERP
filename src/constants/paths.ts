@@ -4,6 +4,7 @@ export const PATH = {
   LOGIN: '/login',
   ANNOUNCE_MASTER: '/announcement',
   RECEIVE_ID_CREATION: '/receive-id-creation',
+  RECEIVE_ID_Master: '/receive-id-master',
   CIT: '/cit',
   FORGOT: '/forgot',
   PROFILE: '/profile',

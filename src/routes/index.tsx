@@ -30,6 +30,10 @@ const ReceiveIdCreationPage = lazy(
   () => import('src/pages/MasterPages/ReceiveIdCreationPage'),
 );
 
+const ReceiveIdMasterPage = lazy(
+  () => import('src/pages/MasterPages/ReceiveIdMasterPage'),
+);
+
 // ---> Error pages
 const NotFoundPage = lazy(() => import('src/pages/ErrorPages/404Pages'));
 
@@ -74,6 +78,11 @@ export const Routes = () => {
                 exact
                 path={PATH.RECEIVE_ID_CREATION}
                 component={ReceiveIdCreationPage}
+              />
+              <Route
+                exact
+                path={PATH.RECEIVE_ID_Master}
+                component={ReceiveIdMasterPage}
               />
               <Route exact path={PATH.CIT} component={CitPage} />
 
