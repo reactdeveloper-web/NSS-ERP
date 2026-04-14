@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { PATH } from 'src/constants/paths';
+import axiosInstance from 'src/redux/interceptor';
+import { masterApiHeaders } from 'src/utils/masterApiHeaders';
+import { masterApiPaths } from 'src/utils/masterApiPaths';
 import { AnnounceMasterNav } from './AnnounceMasterNav';
 import { AnnouncementListing } from './components/AnnouncementListing';
 import {
@@ -35,9 +38,13 @@ import {
   AnnouncementCacheRecord,
   buildQuantityOptions,
   createEmptyCauseFields,
+  extractArrayPayload,
+  getFirstValue,
   getToday,
   inferCurrencyIdFromCode,
   mapEventDetailRecord,
+  normalizeApiDate,
+  normalizeApiTime,
   parseAmountValue,
   parseStoredUser,
   readAnnouncementCache,
@@ -69,6 +76,233 @@ import {
 } from './AnnounceMasterContent.save';
 import { useAnnounceCauseManagement } from './useAnnounceCauseManagement';
 import { useDonorSearchHandlers } from './useDonorSearchHandlers';
+
+const toBooleanFlag = (value: unknown) => {
+  const normalizedValue = String(value ?? '')
+    .trim()
+    .toLowerCase();
+
+  return ['y', 'yes', 'true', '1'].includes(normalizedValue);
+};
+
+const extractFirstApiRecord = (
+  payload: unknown,
+): Record<string, unknown> | null => {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  if (Array.isArray(payload)) {
+    const [first] = payload;
+    return first && typeof first === 'object'
+      ? (first as Record<string, unknown>)
+      : null;
+  }
+
+  const record = payload as Record<string, unknown>;
+  const nestedKeys = [
+    'data',
+    'Data',
+    'result',
+    'Result',
+    'table',
+    'Table',
+    'table1',
+    'Table1',
+    'item',
+    'Item',
+  ];
+
+  for (const key of nestedKeys) {
+    const nestedValue = record[key];
+
+    if (Array.isArray(nestedValue)) {
+      const matchingRecord = nestedValue.find(
+        (item): item is Record<string, unknown> =>
+          Boolean(item) &&
+          typeof item === 'object' &&
+          [
+            'announce_id',
+            'AnnounceID',
+            'announcer_name',
+            'AnnouncerName',
+            'ngcode',
+            'NGCode',
+          ].some(candidateKey =>
+            Object.prototype.hasOwnProperty.call(item, candidateKey),
+          ),
+      );
+
+      if (matchingRecord) {
+        return matchingRecord;
+      }
+
+      const [first] = nestedValue;
+      if (first && typeof first === 'object') {
+        return first as Record<string, unknown>;
+      }
+    }
+
+    if (nestedValue && typeof nestedValue === 'object') {
+      const nestedRecord = nestedValue as Record<string, unknown>;
+      if (
+        [
+          'announce_id',
+          'AnnounceID',
+          'announcer_name',
+          'AnnouncerName',
+          'ngcode',
+          'NGCode',
+        ].some(candidateKey =>
+          Object.prototype.hasOwnProperty.call(nestedRecord, candidateKey),
+        )
+      ) {
+        return nestedRecord;
+      }
+    }
+  }
+
+  return record;
+};
+
+const extractNestedRecords = (
+  record: Record<string, unknown>,
+  keys: string[],
+): Record<string, unknown>[] => {
+  for (const key of keys) {
+    const nestedValue = record[key];
+
+    if (Array.isArray(nestedValue)) {
+      return nestedValue.filter(
+        (item): item is Record<string, unknown> =>
+          Boolean(item) && typeof item === 'object',
+      );
+    }
+  }
+
+  return [];
+};
+
+const mapApiCauseRecords = (
+  responseData: unknown,
+  record: Record<string, unknown>,
+): AddedAnnounceCause[] => {
+  const causeRecords = [
+    ...extractNestedRecords(record, [
+      'annoucePurposeList',
+      'announcePurposeList',
+      'purposeList',
+      'causeList',
+      'addedCauses',
+    ]),
+    ...extractNestedRecords(
+      (responseData && typeof responseData === 'object'
+        ? (responseData as Record<string, unknown>)
+        : {}) as Record<string, unknown>,
+      ['annoucePurposeList', 'announcePurposeList', 'purposeList', 'causeList'],
+    ),
+  ];
+
+  return causeRecords.map((causeRecord, index) => ({
+    id: Date.now() + index,
+    causeHead:
+      getFirstValue(causeRecord, [
+        'cause_id',
+        'CauseId',
+        'purpose',
+        'Purpose',
+        'cause_head',
+        'CauseHead',
+        'purpose_id',
+        'PurposeId',
+      ]) ||
+      getFirstValue(record, ['cause_id', 'CauseId', 'purpose', 'Purpose']),
+    causeHeadLabel:
+      getFirstValue(causeRecord, [
+        'purpose_name',
+        'PurposeName',
+        'cause_head_name',
+        'CauseHeadName',
+        'cause_name',
+        'CauseName',
+      ]) ||
+      getFirstValue(record, [
+        'purpose_name',
+        'PurposeName',
+        'cause_head_name',
+        'CauseHeadName',
+        'cause_name',
+        'CauseName',
+      ]),
+    causeHeadPurposeId:
+      getFirstValue(causeRecord, [
+        'cause_id',
+        'CauseId',
+        'purpose_id',
+        'PurposeId',
+        'yojna_id',
+        'YojnaId',
+      ]) ||
+      getFirstValue(record, ['cause_id', 'CauseId', 'purpose', 'Purpose']),
+    purpose: getFirstValue(causeRecord, [
+      'yojna_id',
+      'YojnaId',
+      'purpose_id',
+      'PurposeId',
+      'cause_id',
+      'CauseId',
+    ]),
+    purposeLabel:
+      getFirstValue(causeRecord, [
+        'yojna_name',
+        'YojnaName',
+        'purpose_name',
+        'PurposeName',
+        'cause_name',
+        'CauseName',
+      ]) || getFirstValue(causeRecord, ['yojna_id', 'YojnaId']),
+    yojnaId: getFirstValue(causeRecord, [
+      'yojna_id',
+      'YojnaId',
+      'cause_id',
+      'CauseId',
+    ]),
+    quantity: Math.max(
+      1,
+      Number(
+        getFirstValue(causeRecord, ['qty', 'Qty', 'quantity', 'Quantity']) || 1,
+      ),
+    ),
+    amount: getFirstValue(causeRecord, ['amount', 'Amount']),
+    causeHeadDate: normalizeApiDate(
+      getFirstValue(causeRecord, [
+        'bhojan_date',
+        'BhojanDate',
+        'cause_head_date',
+        'CauseHeadDate',
+      ]),
+    ),
+    namePlateName:
+      getFirstValue(causeRecord, [
+        'name_plate',
+        'NamePlate',
+        'name_plate',
+        'name_plate_name',
+        'NamePlateName',
+        'third_remark',
+        'ThirdRemark',
+      ]) || getFirstValue(record, ['third_remark', 'ThirdRemark']),
+    donorInstruction:
+      getFirstValue(causeRecord, [
+        'donor_instruction',
+        'DonorInstruction',
+        'donor_instruction',
+        'DonorInstruction',
+        'second_remark',
+        'SecondRemark',
+      ]) || getFirstValue(record, ['second_remark', 'SecondRemark']),
+  }));
+};
 
 export const AnnounceMasterContent = () => {
   const history = useHistory();
@@ -166,6 +400,24 @@ export const AnnounceMasterContent = () => {
   const pincodeRequestIdRef = useRef(0);
   const purposeOptionsRequestIdRef = useRef(0);
   const amountRequestIdRef = useRef(0);
+  const hydratedCauseSelectionRef = useRef<{
+    causeId: string;
+    yojnaId: string;
+  }>({
+    causeId: '',
+    yojnaId: '',
+  });
+  const hydratedEventCodesRef = useRef<{
+    eventId: string;
+    cityCode: string;
+    channelCode: string;
+    panditCode: string;
+  }>({
+    eventId: '',
+    cityCode: '',
+    channelCode: '',
+    panditCode: '',
+  });
 
   const {
     handleAddCause,
@@ -231,6 +483,16 @@ export const AnnounceMasterContent = () => {
 
   const hydrateAnnouncementFromCache = useCallback(
     (cachedRecord: AnnouncementCacheRecord) => {
+      hydratedCauseSelectionRef.current = {
+        causeId: '',
+        yojnaId: '',
+      };
+      hydratedEventCodesRef.current = {
+        eventId: '',
+        cityCode: '',
+        channelCode: '',
+        panditCode: '',
+      };
       preservePersonalInfoOnEmptyDonorIdRef.current = !cachedRecord.donorIdentificationForm.donorId.trim();
       setDonorIdentificationForm(cachedRecord.donorIdentificationForm);
       setAnnounceEventForm(cachedRecord.announceEventForm);
@@ -253,6 +515,434 @@ export const AnnounceMasterContent = () => {
       setActiveTab('personal');
     },
     [],
+  );
+
+  const hydrateAnnouncementFromApi = useCallback(
+    (responseData: unknown) => {
+      const record = extractFirstApiRecord(responseData);
+
+      if (!record) {
+        return false;
+      }
+
+      const currentUser = parseStoredUser() as Partial<IUser> & {
+        empName?: string;
+      };
+      const currentCauseRecords = mapApiCauseRecords(responseData, record);
+      const primaryCauseRecord = currentCauseRecords[0];
+      const nextDonorIdentificationForm: DonorIdentificationForm = {
+        ...createInitialDonorIdentificationForm(getToday()),
+        announceDate:
+          normalizeApiDate(
+            getFirstValue(record, [
+              'announce_date',
+              'AnnounceDate',
+              'date',
+              'Date',
+            ]),
+          ) || getToday(),
+        donorSearchType: getFirstValue(record, ['ngcode', 'NGCode']).trim()
+          ? 'donorId'
+          : 'mobileNo',
+        donorId: getFirstValue(record, ['ngcode', 'NGCode', 'donor_id']),
+        callingSadhak:
+          getFirstValue(record, [
+            'calling_sadhak_name',
+            'CallingSadhakName',
+            'receive_id_by',
+            'ReceiveIdBy',
+          ]) ||
+          currentUser.empName ||
+          currentUser.username ||
+          'Logged-in User (Auto)',
+        urgentFollowup: toBooleanFlag(
+          getFirstValue(record, [
+            'urgent_followup',
+            'UrgentFollowup',
+            'followup_priority',
+            'FollowupPriority',
+          ]),
+        ),
+        followupNotRequired: toBooleanFlag(
+          getFirstValue(record, [
+            'no_followup_require',
+            'NoFollowupRequire',
+            'followup_not_required',
+          ]),
+        ),
+      };
+
+      const nextAnnounceEventForm: AnnounceEventForm = {
+        ...createInitialAnnounceEventForm(),
+        liveType:
+          ['L', 'Y'].includes(
+            getFirstValue(record, ['live', 'Live']).trim().toUpperCase(),
+          ) || toBooleanFlag(getFirstValue(record, ['is_live', 'IsLive']))
+            ? 'live'
+            : 'nonLive',
+        eventName: getFirstValue(record, [
+          'event_name',
+          'EventName',
+          'ename',
+          'EName',
+        ]),
+        eventCause: getFirstValue(record, [
+          'event_cause',
+          'EventCause',
+          'cause_name',
+          'CauseName',
+        ]),
+        eventFromDate: normalizeApiDate(
+          getFirstValue(record, [
+            'event_from_date',
+            'EventFromDate',
+            'event_start_date',
+            'EVENT_START_DATE',
+          ]),
+        ),
+        eventToDate: normalizeApiDate(
+          getFirstValue(record, [
+            'event_to_date',
+            'EventToDate',
+            'event_end_date',
+            'EVENT_END_DATE',
+          ]),
+        ),
+        eventFromTime: normalizeApiTime(
+          getFirstValue(record, [
+            'event_from_time',
+            'EventFromTime',
+            'event_start_time',
+            'EVENT_START_TIME',
+          ]),
+        ),
+        eventToTime: normalizeApiTime(
+          getFirstValue(record, [
+            'event_to_time',
+            'EventToTime',
+            'event_end_time',
+            'EVENT_END_TIME',
+          ]),
+        ),
+        eventCity: getFirstValue(record, ['event_city', 'EventCity']),
+        eventChannel: getFirstValue(record, [
+          'event_channel',
+          'EventChannel',
+          'channel_name',
+          'ChannelName',
+        ]),
+        panditJi: getFirstValue(record, [
+          'pandit_ji',
+          'PanditJi',
+          'pandit_name',
+          'PanditName',
+        ]),
+        eventLocation: getFirstValue(record, [
+          'event_location',
+          'EventLocation',
+          'location',
+          'Location',
+        ]),
+        currency: getFirstValue(record, [
+          'currency_id',
+          'CurrencyId',
+          'currency',
+          'Currency',
+          'currency_code',
+          'CurrencyCode',
+        ]),
+      };
+
+      const nextPersonalInfoForm: PersonalInfoForm = {
+        ...createInitialPersonalInfoForm(),
+        salutation: getFirstValue(record, [
+          'ashri',
+          'Ashri',
+          'salutation',
+          'Salutation',
+          'dshri',
+          'DShri',
+        ]),
+        salutationLocked: Boolean(
+          getFirstValue(record, [
+            'ashri',
+            'Ashri',
+            'salutation',
+            'Salutation',
+            'dshri',
+            'DShri',
+          ]).trim(),
+        ),
+        otherSalutation: getFirstValue(record, [
+          'ashri_oth',
+          'AshriOth',
+          'other_salutation',
+          'OtherSalutation',
+        ]),
+        mobileNo: getFirstValue(record, ['mob_no', 'MobileNo']),
+        whatsappNo: getFirstValue(record, [
+          'dmobilewhatsapp1',
+          'DMobileWhatsapp1',
+          'whatsapp_no',
+          'WhatsappNo',
+          'WhatsAppNo',
+          'mob_no',
+        ]),
+        announcerName: getFirstValue(record, [
+          'announcer_name',
+          'AnnouncerName',
+          'donor_name',
+          'DonorName',
+        ]),
+        announceInOtherName: toBooleanFlag(
+          getFirstValue(record, [
+            'announce_in_other_name',
+            'AnnounceInOtherName',
+          ]),
+        ),
+        announcedForName: getFirstValue(record, [
+          'announced_for_name',
+          'AnnouncedForName',
+        ]),
+        relationName: getFirstValue(record, ['relation_name', 'RelationName']),
+        pincode: getFirstValue(record, ['pincode', 'PinCode']),
+        country:
+          getFirstValue(record, [
+            'country_name',
+            'CountryName',
+            'country',
+            'country_code',
+            'CountryCode',
+          ]) || 'India',
+        state: getFirstValue(record, [
+          'state_code',
+          'StateCode',
+          'state_name',
+          'StateName',
+          'state',
+        ]),
+        stateLocked: Boolean(
+          getFirstValue(record, [
+            'state_code',
+            'StateCode',
+            'state_name',
+            'StateName',
+            'state',
+          ]).trim(),
+        ),
+        district: getFirstValue(record, [
+          'district_code',
+          'DistrictCode',
+          'district_name',
+          'DistrictName',
+          'district',
+          'city_name',
+          'CityName',
+        ]),
+      };
+
+      const nextAnnounceDetailsForm: AnnounceDetailsForm = {
+        ...createInitialAnnounceDetailsForm(),
+        occasionType: getFirstValue(record, [
+          'in_memory_occasion',
+          'InMemoryOccasion',
+          'occasion_type',
+          'OccasionType',
+        ]),
+        occasionDate: normalizeApiDate(
+          getFirstValue(record, [
+            'in_memocc_date',
+            'InMemoccDate',
+            'occasion_date',
+            'OccasionDate',
+            'bday_date',
+          ]),
+        ),
+        occasionRemark: getFirstValue(record, [
+          'remark2',
+          'Remark2',
+          'occasion_remark',
+          'OccasionRemark',
+        ]),
+        causeHead: getFirstValue(record, [
+          'cause_id',
+          'CauseId',
+          'purpose',
+          'Purpose',
+          'cause_head',
+          'CauseHead',
+        ]),
+        causeHeadDate: normalizeApiDate(
+          getFirstValue(record, [
+            'cause_head_date',
+            'CauseHeadDate',
+            'bhojan_date',
+            'BhojanDate',
+          ]),
+        ),
+        namePlateName: getFirstValue(record, [
+          'name_plate',
+          'NamePlate',
+          'third_remark',
+          'ThirdRemark',
+          'name_plate_name',
+          'NamePlateName',
+        ]),
+        donorInstruction: getFirstValue(record, [
+          'donor_instruction',
+          'DonorInstruction',
+          'second_remark',
+          'SecondRemark',
+        ]),
+        purpose:
+          primaryCauseRecord?.purpose ||
+          getFirstValue(record, [
+            'cause_id',
+            'CauseId',
+            'purpose_id',
+            'PurposeId',
+          ]),
+        quantity: primaryCauseRecord?.quantity || 1,
+        paymentMode: getFirstValue(record, [
+          'pay_mode',
+          'PayMode',
+          'payment_mode',
+          'PaymentMode',
+        ]),
+        howToDonate: getFirstValue(record, [
+          'remark1',
+          'Remark1',
+          'how_to_donate',
+          'HowToDonate',
+        ]),
+        expectedDate: normalizeApiDate(
+          getFirstValue(record, [
+            'due_date',
+            'DueDate',
+            'expected_date',
+            'ExpectedDate',
+          ]),
+        ),
+        expectedTime: normalizeApiTime(
+          getFirstValue(record, [
+            'due_time',
+            'DueTime',
+            'expected_time',
+            'ExpectedTime',
+          ]),
+        ),
+        isMotivated: toBooleanFlag(
+          getFirstValue(record, ['motivated', 'Motivated']),
+        ),
+        motivatedAmount: getFirstValue(record, [
+          'motivated_amount',
+          'MotivatedAmount',
+        ]),
+      };
+
+      preservePersonalInfoOnEmptyDonorIdRef.current = !nextDonorIdentificationForm.donorId.trim();
+      hydratedEventCodesRef.current = {
+        eventId: getFirstValue(record, [
+          'ash_event_id',
+          'AshEventId',
+          'event_ash_id',
+        ]),
+        cityCode: getFirstValue(record, [
+          'bhag_city_code',
+          'BhagCityCode',
+          'city_code',
+          'CityCode',
+        ]),
+        channelCode: getFirstValue(record, ['channel_code', 'ChannelCode']),
+        panditCode: getFirstValue(record, ['pandit_code', 'PanditCode']),
+      };
+      hydratedCauseSelectionRef.current = {
+        causeId: getFirstValue(record, [
+          'cause_id',
+          'CauseId',
+          'purpose',
+          'Purpose',
+        ]),
+        yojnaId:
+          primaryCauseRecord?.yojnaId ||
+          primaryCauseRecord?.purpose ||
+          getFirstValue(record, [
+            'yojna_id',
+            'YojnaId',
+            'purpose_id',
+            'PurposeId',
+          ]),
+      };
+      setDonorIdentificationForm(nextDonorIdentificationForm);
+      setAnnounceEventForm(nextAnnounceEventForm);
+      setPersonalInfoForm(nextPersonalInfoForm);
+      setAnnounceDetailsForm(
+        operation === 'ADD'
+          ? nextAnnounceDetailsForm
+          : {
+              ...nextAnnounceDetailsForm,
+              ...createEmptyCauseFields(),
+            },
+      );
+      setFollowUpForm({
+        ...createInitialFollowUpForm(),
+        date: normalizeApiDate(
+          getFirstValue(record, ['followup_date', 'FollowupDate']),
+        ),
+        time: normalizeApiTime(
+          getFirstValue(record, [
+            'followup_time',
+            'FollowupTime',
+            'announce_time',
+          ]),
+        ),
+        assignTo: getFirstValue(record, [
+          'calling_sadhak_name',
+          'CallingSadhakName',
+          'assign_to',
+          'AssignTo',
+        ]),
+        status:
+          getFirstValue(record, ['followup_status', 'FollowupStatus']) ||
+          'Open',
+        note: getFirstValue(record, ['last_remark', 'LastRemark', 'note']),
+      });
+      setFollowUpItems([]);
+      setAddedCauses(currentCauseRecords);
+      setSelectedBankIds(
+        getFirstValue(record, [
+          'msg_banks',
+          'MsgBanks',
+          'online_bank_id',
+          'OnlineBankId',
+        ]).trim()
+          ? getFirstValue(record, [
+              'msg_banks',
+              'MsgBanks',
+              'online_bank_id',
+              'OnlineBankId',
+            ])
+              .split(',')
+              .map(value => value.trim())
+              .filter(Boolean)
+          : [],
+      );
+      setPersistedCurrencyId(
+        getFirstValue(record, ['currency_id', 'CurrencyId']) ||
+          inferCurrencyIdFromCode(nextAnnounceEventForm.currency),
+      );
+      setCurrencyId(
+        getFirstValue(record, ['currency_id', 'CurrencyId']) ||
+          inferCurrencyIdFromCode(nextAnnounceEventForm.currency),
+      );
+      setEditingCauseId(null);
+      setAutoAmount('');
+      setIsAmountEditable(false);
+      setActiveTab('personal');
+
+      return true;
+    },
+    [operation],
   );
 
   const handleDeleteAnnouncement = useCallback((announcementId: string) => {
@@ -694,6 +1384,52 @@ export const AnnounceMasterContent = () => {
   }, [announceEventForm.eventName, announceEventForm.liveType, eventDetails]);
 
   useEffect(() => {
+    if (eventDetails.length === 0) {
+      return;
+    }
+
+    const hydratedCodes = hydratedEventCodesRef.current;
+    const matchedEvent =
+      eventDetails.find(record => record.id === hydratedCodes.eventId) ||
+      eventDetails.find(
+        record =>
+          record.channelCode === hydratedCodes.channelCode ||
+          record.cityCode === hydratedCodes.cityCode ||
+          record.panditCode === hydratedCodes.panditCode,
+      );
+
+    if (!matchedEvent) {
+      return;
+    }
+
+    setSelectedEventId(current => current || matchedEvent.id || null);
+    setAnnounceEventForm(current => ({
+      ...current,
+      eventName: current.eventName || matchedEvent.eventName,
+      eventCause: current.eventCause || matchedEvent.eventCause,
+      eventFromDate: current.eventFromDate || matchedEvent.eventFromDate,
+      eventToDate: current.eventToDate || matchedEvent.eventToDate,
+      eventFromTime: current.eventFromTime || matchedEvent.eventFromTime,
+      eventToTime: current.eventToTime || matchedEvent.eventToTime,
+      eventCity:
+        current.eventCity === hydratedCodes.cityCode || !current.eventCity
+          ? matchedEvent.eventCity
+          : current.eventCity,
+      eventChannel:
+        current.eventChannel === hydratedCodes.channelCode ||
+        !current.eventChannel
+          ? matchedEvent.eventChannel
+          : current.eventChannel,
+      panditJi:
+        current.panditJi === hydratedCodes.panditCode || !current.panditJi
+          ? matchedEvent.panditJi
+          : current.panditJi,
+      eventLocation: current.eventLocation || matchedEvent.eventLocation,
+      currency: current.currency || 'INR',
+    }));
+  }, [eventDetails]);
+
+  useEffect(() => {
     const loadOccasionTypes = async () => {
       try {
         setOccasionTypeOptions(await loadOccasionTypeOptions());
@@ -730,8 +1466,33 @@ export const AnnounceMasterContent = () => {
   }, []);
 
   useEffect(() => {
+    if (!personalInfoForm.state.trim() || stateOptions.length === 0) {
+      return;
+    }
+
+    const matchedState = stateOptions.find(
+      option =>
+        option.value === personalInfoForm.state ||
+        option.label === personalInfoForm.state ||
+        option.stateCode?.trim() === personalInfoForm.state.trim(),
+    );
+
+    if (!matchedState || matchedState.value === personalInfoForm.state) {
+      return;
+    }
+
+    setPersonalInfoForm(current => ({
+      ...current,
+      state: matchedState.value,
+    }));
+  }, [personalInfoForm.state, stateOptions]);
+
+  useEffect(() => {
     const selectedState = stateOptions.find(
-      option => option.value === personalInfoForm.state,
+      option =>
+        option.value === personalInfoForm.state ||
+        option.label === personalInfoForm.state ||
+        option.stateCode?.trim() === personalInfoForm.state.trim(),
     );
     const stateCode = selectedState?.stateCode?.trim();
 
@@ -750,6 +1511,31 @@ export const AnnounceMasterContent = () => {
 
     void loadDistrictOptions();
   }, [personalInfoForm.state, stateOptions]);
+
+  useEffect(() => {
+    if (!personalInfoForm.district.trim() || districtOptions.length === 0) {
+      return;
+    }
+
+    const matchedDistrict = districtOptions.find(
+      option =>
+        option.value === personalInfoForm.district ||
+        option.label === personalInfoForm.district ||
+        option.districtCode?.trim() === personalInfoForm.district.trim(),
+    );
+
+    if (
+      !matchedDistrict ||
+      matchedDistrict.value === personalInfoForm.district
+    ) {
+      return;
+    }
+
+    setPersonalInfoForm(current => ({
+      ...current,
+      district: matchedDistrict.value,
+    }));
+  }, [districtOptions, personalInfoForm.district]);
 
   useEffect(() => {
     const normalizedPincode = personalInfoForm.pincode.replace(/\D/g, '');
@@ -845,11 +1631,67 @@ export const AnnounceMasterContent = () => {
   }, []);
 
   useEffect(() => {
+    if (causeHeadOptions.length === 0 || announceDetailsForm.causeHead.trim()) {
+      return;
+    }
+
+    const hydratedCauseId = hydratedCauseSelectionRef.current.causeId.trim();
+
+    if (!hydratedCauseId) {
+      return;
+    }
+
+    const matchedCauseHead = causeHeadOptions.find(
+      option =>
+        option.value === hydratedCauseId ||
+        option.purposeId?.trim() === hydratedCauseId,
+    );
+
+    if (!matchedCauseHead) {
+      return;
+    }
+
+    setAnnounceDetailsForm(current => ({
+      ...current,
+      causeHead: matchedCauseHead.value,
+    }));
+  }, [announceDetailsForm.causeHead, causeHeadOptions]);
+
+  useEffect(() => {
+    if (
+      !announceDetailsForm.causeHead.trim() ||
+      causeHeadOptions.length === 0
+    ) {
+      return;
+    }
+
+    const matchedCauseHead = causeHeadOptions.find(
+      option =>
+        option.value === announceDetailsForm.causeHead ||
+        option.purposeId?.trim() === announceDetailsForm.causeHead.trim(),
+    );
+
+    if (
+      !matchedCauseHead ||
+      matchedCauseHead.value === announceDetailsForm.causeHead
+    ) {
+      return;
+    }
+
+    setAnnounceDetailsForm(current => ({
+      ...current,
+      causeHead: matchedCauseHead.value,
+    }));
+  }, [announceDetailsForm.causeHead, causeHeadOptions]);
+
+  useEffect(() => {
     const selectedCauseHead = causeHeadOptions.find(
-      option => option.value === announceDetailsForm.causeHead,
+      option =>
+        option.value === announceDetailsForm.causeHead ||
+        option.purposeId?.trim() === announceDetailsForm.causeHead.trim(),
     );
     const purposeId =
-      selectedCauseHead?.purposeId || announceDetailsForm.causeHead.trim();
+      selectedCauseHead?.value || announceDetailsForm.causeHead.trim();
 
     if (!purposeId) {
       purposeOptionsRequestIdRef.current += 1;
@@ -902,6 +1744,28 @@ export const AnnounceMasterContent = () => {
         setPurposeOptions(nextPurposeOptions);
         setIsAmountEditable(false);
         setAnnounceDetailsForm(current => {
+          const hydratedYojnaId = hydratedCauseSelectionRef.current.yojnaId.trim();
+          const matchedPurpose = hydratedYojnaId
+            ? nextPurposeOptions.find(
+                option =>
+                  option.value === hydratedYojnaId ||
+                  option.yojnaId?.trim() === hydratedYojnaId,
+              )
+            : null;
+
+          if (matchedPurpose && current.purpose !== matchedPurpose.value) {
+            return {
+              ...current,
+              purpose: matchedPurpose.value,
+              quantity: Math.max(
+                1,
+                Number(
+                  matchedPurpose.qtyValue?.trim() || current.quantity || 1,
+                ),
+              ),
+            };
+          }
+
           if (
             !current.purpose ||
             nextPurposeOptions.some(option => option.value === current.purpose)
@@ -934,6 +1798,93 @@ export const AnnounceMasterContent = () => {
 
     void loadPurposeOptions();
   }, [announceDetailsForm.causeHead, causeHeadOptions]);
+
+  useEffect(() => {
+    if (addedCauses.length === 0 || causeHeadOptions.length === 0) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const hydrateAddedCauseLabels = async () => {
+      const nextCauses = await Promise.all(
+        addedCauses.map(async cause => {
+          const matchedCauseHead = causeHeadOptions.find(
+            option =>
+              option.value === cause.causeHead ||
+              option.purposeId?.trim() === cause.causeHead.trim() ||
+              option.purposeId?.trim() === cause.causeHeadPurposeId.trim(),
+          );
+
+          if (!matchedCauseHead) {
+            return cause;
+          }
+
+          let purposeLabel = cause.purposeLabel;
+          let purposeValue = cause.purpose;
+          let yojnaId = cause.yojnaId;
+
+          try {
+            const {
+              purposeOptions: nextPurposeOptions,
+            } = await loadPurposeOptionsData(matchedCauseHead.value);
+            const matchedPurpose = nextPurposeOptions.find(
+              option =>
+                option.value === cause.purpose ||
+                option.value === cause.yojnaId ||
+                option.yojnaId?.trim() === cause.purpose.trim() ||
+                option.yojnaId?.trim() === cause.yojnaId.trim(),
+            );
+
+            if (matchedPurpose) {
+              purposeLabel = matchedPurpose.label;
+              purposeValue = matchedPurpose.value;
+              yojnaId = matchedPurpose.yojnaId?.trim() || matchedPurpose.value;
+            }
+          } catch {
+            // Keep existing cause values if purpose label hydration fails.
+          }
+
+          return {
+            ...cause,
+            causeHead: matchedCauseHead.value,
+            causeHeadLabel: matchedCauseHead.label,
+            causeHeadPurposeId:
+              matchedCauseHead.purposeId?.trim() || matchedCauseHead.value,
+            purpose: purposeValue,
+            purposeLabel,
+            yojnaId,
+          };
+        }),
+      );
+
+      if (isCancelled) {
+        return;
+      }
+
+      const hasChanged = nextCauses.some((cause, index) => {
+        const currentCause = addedCauses[index];
+        return (
+          cause.causeHead !== currentCause.causeHead ||
+          cause.causeHeadLabel !== currentCause.causeHeadLabel ||
+          cause.causeHeadPurposeId !== currentCause.causeHeadPurposeId ||
+          cause.purpose !== currentCause.purpose ||
+          cause.purposeLabel !== currentCause.purposeLabel ||
+          cause.yojnaId !== currentCause.yojnaId
+        );
+      });
+
+      if (hasChanged) {
+        setAddedCauses(nextCauses);
+      }
+    };
+
+    void hydrateAddedCauseLabels();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [addedCauses, causeHeadOptions, setAddedCauses]);
 
   useEffect(() => {
     const quantity = Math.max(1, Number(announceDetailsForm.quantity) || 1);
@@ -1076,6 +2027,16 @@ export const AnnounceMasterContent = () => {
       return;
     }
 
+    hydratedCauseSelectionRef.current = {
+      causeId: '',
+      yojnaId: '',
+    };
+    hydratedEventCodesRef.current = {
+      eventId: '',
+      cityCode: '',
+      channelCode: '',
+      panditCode: '',
+    };
     setDonorIdentificationForm(
       createInitialDonorIdentificationForm(getToday()),
     );
@@ -1122,6 +2083,16 @@ export const AnnounceMasterContent = () => {
 
     if (announceIdParam === '0') {
       if (operation === 'ADD') {
+        hydratedCauseSelectionRef.current = {
+          causeId: '',
+          yojnaId: '',
+        };
+        hydratedEventCodesRef.current = {
+          eventId: '',
+          cityCode: '',
+          channelCode: '',
+          panditCode: '',
+        };
         setDonorIdentificationForm(
           createInitialDonorIdentificationForm(getToday()),
         );
@@ -1142,20 +2113,78 @@ export const AnnounceMasterContent = () => {
       return;
     }
 
-    const cachedRecord = readAnnouncementCache().find(
-      record => record.announceId === announceIdParam,
-    );
+    let isMounted = true;
 
-    if (cachedRecord) {
-      hydrateAnnouncementFromCache(cachedRecord);
-    }
-  }, [announceIdParam, hydrateAnnouncementFromCache, isListingMode, operation]);
+    const loadAnnouncementDetails = async () => {
+      const currentUser = parseStoredUser() as Partial<IUser> & {
+        DataFlag?: string;
+        dataFlag?: string;
+        Data_Flag?: string;
+      };
+      const dataFlag =
+        currentUser.DataFlag ||
+        currentUser.dataFlag ||
+        currentUser.Data_Flag ||
+        'GANGOTRI';
+
+      try {
+        const response = await axiosInstance.get(
+          masterApiPaths.getAnnounceDetailsById,
+          {
+            params: {
+              announceId: Number(announceIdParam || 0) || null,
+              dataFlag,
+            },
+            headers: masterApiHeaders(),
+          },
+        );
+
+        if (!isMounted) {
+          return;
+        }
+
+        const hydrated = hydrateAnnouncementFromApi(response.data);
+
+        if (hydrated) {
+          return;
+        }
+      } catch (error) {
+        // Cache fallback below keeps edit/view usable when API hydration fails.
+      }
+
+      if (!isMounted) {
+        return;
+      }
+
+      const cachedRecord = readAnnouncementCache().find(
+        record => record.announceId === announceIdParam,
+      );
+
+      if (cachedRecord) {
+        hydrateAnnouncementFromCache(cachedRecord);
+      }
+    };
+
+    void loadAnnouncementDetails();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    announceIdParam,
+    hydrateAnnouncementFromApi,
+    hydrateAnnouncementFromCache,
+    isListingMode,
+    operation,
+  ]);
 
   const selectedPurposeOption = purposeOptions.find(
     option => option.value === announceDetailsForm.purpose,
   );
   const selectedCauseHeadOption = causeHeadOptions.find(
-    option => option.value === announceDetailsForm.causeHead,
+    option =>
+      option.value === announceDetailsForm.causeHead ||
+      option.purposeId?.trim() === announceDetailsForm.causeHead.trim(),
   );
   const selectedHowToDonateOption = howToDonateOptions.find(
     option => option.value === announceDetailsForm.howToDonate,
@@ -1163,12 +2192,14 @@ export const AnnounceMasterContent = () => {
   const selectedStateOption = stateOptions.find(
     option =>
       option.value === personalInfoForm.state ||
-      option.label === personalInfoForm.state,
+      option.label === personalInfoForm.state ||
+      option.stateCode?.trim() === personalInfoForm.state.trim(),
   );
   const selectedDistrictOption = districtOptions.find(
     option =>
       option.value === personalInfoForm.district ||
-      option.label === personalInfoForm.district,
+      option.label === personalInfoForm.district ||
+      option.districtCode?.trim() === personalInfoForm.district.trim(),
   );
   const selectedEventDetail = eventDetails.find(
     option => option.eventName === announceEventForm.eventName,
@@ -1384,8 +2415,6 @@ export const AnnounceMasterContent = () => {
           <div id="kt_content_container" className="container-fluid py-6">
             <AnnouncementListing
               deletingId={deletingAnnouncementId}
-              causeHeadOptions={causeHeadOptions}
-              howToDonateOptions={howToDonateOptions}
               onAdd={() => openAnnouncementForm('0', 'ADD')}
               onEdit={announceId => openAnnouncementForm(announceId, 'Edit')}
               onView={announceId => openAnnouncementForm(announceId, 'View')}
@@ -1410,6 +2439,8 @@ export const AnnounceMasterContent = () => {
             <div className="col-12">
               <AnnouncerPersonalDetailsCard
                 activeTab={activeTab}
+                operation={operation as 'ADD' | 'EDIT' | 'VIEW'}
+                announceId={announceIdParam}
                 donorIdentificationForm={donorIdentificationForm}
                 announceEventForm={announceEventForm}
                 personalInfoForm={personalInfoForm}

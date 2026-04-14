@@ -1,6 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import axiosInstance from 'src/redux/interceptor';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
+import { FloatingInputField } from 'src/components/Common/FloatingInputField';
 import { ContentTypes } from 'src/constants/content';
+import axiosInstance from 'src/redux/interceptor';
 import { masterApiPaths } from 'src/utils/masterApiPaths';
 import {
   extractArrayPayload,
@@ -8,42 +16,26 @@ import {
   normalizeApiDate,
   parseStoredUser,
 } from '../AnnounceMasterContent.helpers';
-import { EventOption } from '../types';
 
 export interface AnnouncementListingItem {
   announceId: string;
-  announcerCode: string;
   announcerName: string;
-  donorCity: string;
-  bhagwatCity: string;
+  mobileNo: string;
   announceAmount: string;
   announceDate: string;
-  remark: string;
-  cause: string;
-  receive: string;
-  userName: string;
-  lastEditBy: string;
 }
 
 interface AnnouncementListFilters {
   announceId: string;
+  announcerName: string;
   mobileNo: string;
-  emailId: string;
-  donorId: string;
+  amount: string;
   fromDate: string;
   toDate: string;
-  causeHeadId: string;
-  causeId: string;
-  purposeId: string;
-  eventId: string;
-  howToDonateId: string;
-  completed: boolean | null;
 }
 
 interface AnnouncementListingProps {
   deletingId: string | null;
-  causeHeadOptions: EventOption[];
-  howToDonateOptions: EventOption[];
   onAdd: () => void;
   onEdit: (announceId: string) => void;
   onView: (announceId: string) => void;
@@ -52,17 +44,11 @@ interface AnnouncementListingProps {
 
 const createInitialFilters = (): AnnouncementListFilters => ({
   announceId: '',
+  announcerName: '',
   mobileNo: '',
-  emailId: '',
-  donorId: '',
+  amount: '',
   fromDate: '',
   toDate: '',
-  causeHeadId: '',
-  causeId: '',
-  purposeId: '',
-  eventId: '',
-  howToDonateId: '',
-  completed: null,
 });
 
 const formatDisplayDate = (value: string) => {
@@ -76,167 +62,26 @@ const formatDisplayDate = (value: string) => {
   return trimmedValue || '-';
 };
 
-const formatDisplayDateTime = (value: string) => {
+const formatAmount = (value: string) => {
   const trimmedValue = value.trim();
+  const numericValue = Number(trimmedValue);
 
-  if (!trimmedValue) {
-    return '-';
+  if (!Number.isFinite(numericValue)) {
+    return trimmedValue || '-';
   }
 
-  const parsedDate = new Date(trimmedValue);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    const fallbackDate = normalizeApiDate(trimmedValue);
-
-    return fallbackDate
-      ? fallbackDate.split('-').reverse().join('/')
-      : trimmedValue;
-  }
-
-  const datePart = parsedDate.toLocaleDateString('en-GB');
-  const timePart = parsedDate.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true,
-  });
-
-  return `${datePart} ${timePart}`;
+  return numericValue.toFixed(2);
 };
-
-const formatCombinedText = (
-  record: Record<string, unknown>,
-  fieldGroups: string[][],
-) =>
-  fieldGroups
-    .map(fieldNames => getFirstValue(record, fieldNames))
-    .filter(part => part.trim() !== '')
-    .join(', ');
 
 const mapAnnouncementListItem = (
   record: Record<string, unknown>,
-): AnnouncementListingItem => {
-  const announceId = getFirstValue(record, [
-    'announce_id',
-    'AnnounceID',
-    'AnnounceId',
-    'announceId',
-    'ReceiveID',
-    'ReceiveId',
-  ]);
-  const announcerCode = getFirstValue(record, [
-    'AnnouncerCode',
-    'announcer_code',
-    'ReceiveID',
-    'ReceiveId',
-    'receive_id',
-    'RecieveID',
-    'RecieveId',
-    'announce_id',
-    'AnnounceID',
-  ]);
-  const announceDate = getFirstValue(record, [
-    'announce_date',
-    'AnnounceDate',
-    'Date',
-    'date',
-    'crt_datetime',
-    'edit_datetime',
-  ]);
-  const lastEditValue = getFirstValue(record, [
-    'edit_datetime',
-    'EditDateTime',
-    'last_edit_datetime',
-    'LastEditDateTime',
-    'modified_on',
-    'updated_at',
-    'crt_datetime',
-  ]);
-
-  return {
-    announceId,
-    announcerCode: announcerCode || announceId,
-    announcerName: getFirstValue(record, [
-      'announcer_name',
-      'AnnouncerName',
-      'DonorName',
-      'donor_name',
-      'DName',
-      'name',
-    ]),
-    donorCity: getFirstValue(record, [
-      'DonorCity',
-      'donor_city',
-      'CityName',
-      'city_name',
-      'City',
-      'city',
-    ]),
-    bhagwatCity: getFirstValue(record, [
-      'BhagwatCity',
-      'bhagwat_city',
-      'BhagwatCityName',
-      'bhagwat_city_name',
-      'Bhagwat_City',
-    ]),
-    announceAmount: getFirstValue(record, [
-      'announce_amount',
-      'AnnounceAmount',
-      'amount',
-      'Amount',
-    ]),
-    announceDate: formatDisplayDateTime(announceDate),
-    remark: formatCombinedText(record, [
-      ['remark', 'Remark', 'remark1', 'Remark1'],
-      ['remark2', 'Remark2', 'occasion_remark'],
-      ['second_remark', 'SecondRemark'],
-      ['third_remark', 'ThirdRemark'],
-    ]),
-    cause:
-      formatCombinedText(record, [
-        ['cause_name', 'CauseName', 'purpose_name', 'PurposeName'],
-        ['purpose', 'Purpose', 'cause_head_name', 'CauseHeadName'],
-        ['event_name', 'EventName'],
-        ['city_name', 'CityName'],
-        ['state_name', 'StateName'],
-      ]) ||
-      getFirstValue(record, [
-        'cause',
-        'Cause',
-        'cause_details',
-        'CauseDetails',
-      ]),
-    receive: getFirstValue(record, [
-      'receive_id_by',
-      'ReceiveIdBy',
-      'ReceiveBy',
-      'receive_by',
-      'receive_head_by',
-    ]),
-    userName: getFirstValue(record, [
-      'user_name',
-      'UserName',
-      'entry_by',
-      'EntryBy',
-      'crt_name',
-      'created_by_name',
-    ]),
-    lastEditBy:
-      [
-        getFirstValue(record, [
-          'edit_user_name',
-          'EditUserName',
-          'last_edit_by',
-          'LastEditBy',
-          'crt_name',
-        ]),
-        formatDisplayDateTime(lastEditValue),
-      ]
-        .filter(part => part.trim() !== '' && part !== '-')
-        .join(' ')
-        .trim() || '-',
-  };
-};
+): AnnouncementListingItem => ({
+  announceId: getFirstValue(record, ['announce_id']),
+  announcerName: getFirstValue(record, ['announcer_name']),
+  mobileNo: getFirstValue(record, ['mob_no']),
+  announceAmount: formatAmount(getFirstValue(record, ['announce_amount'])),
+  announceDate: formatDisplayDate(getFirstValue(record, ['announce_date'])),
+});
 
 const extractTotalCount = (payload: unknown, fallbackCount: number): number => {
   if (!payload || typeof payload !== 'object') {
@@ -261,13 +106,12 @@ const extractTotalCount = (payload: unknown, fallbackCount: number): number => {
 
 export const AnnouncementListing = ({
   deletingId,
-  causeHeadOptions,
-  howToDonateOptions,
   onAdd,
   onEdit,
   onView,
   onDelete,
 }: AnnouncementListingProps) => {
+  const listingRef = useRef<HTMLDivElement | null>(null);
   const [items, setItems] = useState<AnnouncementListingItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -293,6 +137,19 @@ export const AnnouncementListing = ({
     }));
   };
 
+  const handleApplyFilters = useCallback(() => {
+    setAppliedFilters(draftFilters);
+    setPageNumber(1);
+  }, [draftFilters]);
+
+  const handleResetFilters = useCallback(() => {
+    const initialFilters = createInitialFilters();
+    setDraftFilters(initialFilters);
+    setAppliedFilters(initialFilters);
+    setPageNumber(1);
+    setSearchText('');
+  }, []);
+
   const fetchAnnouncements = useCallback(async () => {
     const currentUser = parseStoredUser() as Partial<IUser> & {
       DataFlag?: string;
@@ -308,20 +165,10 @@ export const AnnouncementListing = ({
     const payload = {
       announce_id: Number(appliedFilters.announceId || 0) || null,
       mob_no: appliedFilters.mobileNo.trim() || null,
-      email_id: appliedFilters.emailId.trim() || null,
-      purpose: Number(appliedFilters.causeHeadId || 0) || null,
-      completed:
-        appliedFilters.completed === null
-          ? null
-          : appliedFilters.completed
-          ? 1
-          : 0,
-      remark1: Number(appliedFilters.howToDonateId || 0) || null,
       user_id:
         Number(
           currentUser.user_id || currentUser.UserId || currentUser.id || 0,
         ) || null,
-      ngcode: appliedFilters.donorId.trim() || null,
       data_flag:
         currentUser.DataFlag ||
         currentUser.dataFlag ||
@@ -334,9 +181,6 @@ export const AnnouncementListing = ({
       PostType: 'WebReact',
       from_date: appliedFilters.fromDate || null,
       to_date: appliedFilters.toDate || null,
-      cause_id: Number(appliedFilters.causeId || 0) || null,
-      purpose_id: Number(appliedFilters.purposeId || 0) || null,
-      ash_event_id: Number(appliedFilters.eventId || 0) || null,
       PageNumber: pageNumber,
       PageSize: pageSize,
     };
@@ -349,6 +193,11 @@ export const AnnouncementListing = ({
         masterApiPaths.getAnnounceList,
         payload,
       );
+      // console.log('CRM/GetAnnounceList response:', response.data);
+      // console.log(
+      //   'CRM/GetAnnounceList first 100 result rows:',
+      //   extractArrayPayload(response.data).slice(0, 100),
+      // );
       const records = extractArrayPayload(response.data);
       const mappedItems = records.map(mapAnnouncementListItem);
 
@@ -371,34 +220,96 @@ export const AnnouncementListing = ({
     void fetchAnnouncements();
   }, [fetchAnnouncements]);
 
-  const filteredItems = useMemo(() => {
-    const normalizedSearch = searchText.trim().toLowerCase();
+  useEffect(() => {
+    const bootstrap = (window as Window & {
+      bootstrap?: {
+        Tooltip?: new (element: Element, options?: Record<string, unknown>) => {
+          dispose?: () => void;
+        };
+      };
+    }).bootstrap;
 
-    if (!normalizedSearch) {
-      return items;
+    if (!bootstrap?.Tooltip || !listingRef.current) {
+      return;
     }
 
-    return items.filter(item =>
-      [
-        item.announcerCode,
-        item.announcerName,
-        item.donorCity,
-        item.bhagwatCity,
-        item.announceDate,
-        item.announceAmount,
-        item.remark,
-        item.cause,
-        item.receive,
-        item.userName,
-        item.lastEditBy,
-      ].some(field => field.toLowerCase().includes(normalizedSearch)),
+    const tooltipElements = Array.from(
+      listingRef.current.querySelectorAll('[data-bs-toggle="tooltip"]'),
     );
-  }, [items, searchText]);
+    const tooltips = tooltipElements.map(
+      element => new bootstrap.Tooltip!(element, { trigger: 'hover' }),
+    );
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const startRecord = totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
+    return () => {
+      tooltips.forEach(tooltip => tooltip.dispose?.());
+    };
+  }, [isFilterOpen, loading, items.length, pageNumber, pageSize, searchText]);
+
+  const filteredItems = useMemo(() => {
+    const normalizedSearch = searchText.trim().toLowerCase();
+    const normalizedAnnouncerName = appliedFilters.announcerName
+      .trim()
+      .toLowerCase();
+    const normalizedAmount = appliedFilters.amount.trim().toLowerCase();
+    const normalizedFromDate = normalizeApiDate(appliedFilters.fromDate);
+    const normalizedToDate = normalizeApiDate(appliedFilters.toDate);
+
+    return items.filter(item => {
+      const normalizedItemDate = normalizeApiDate(item.announceDate);
+      const matchesSearch =
+        !normalizedSearch ||
+        [
+          item.announceId,
+          item.announcerName,
+          item.mobileNo,
+          item.announceAmount,
+          item.announceDate,
+        ].some(field => field.toLowerCase().includes(normalizedSearch));
+      const matchesAnnouncerName =
+        !normalizedAnnouncerName ||
+        item.announcerName.toLowerCase().includes(normalizedAnnouncerName);
+      const matchesAmount =
+        !normalizedAmount ||
+        item.announceAmount.toLowerCase().includes(normalizedAmount);
+      const matchesFromDate =
+        !normalizedFromDate ||
+        (!!normalizedItemDate && normalizedItemDate >= normalizedFromDate);
+      const matchesToDate =
+        !normalizedToDate ||
+        (!!normalizedItemDate && normalizedItemDate <= normalizedToDate);
+
+      return (
+        matchesSearch &&
+        matchesAnnouncerName &&
+        matchesAmount &&
+        matchesFromDate &&
+        matchesToDate
+      );
+    });
+  }, [
+    appliedFilters.amount,
+    appliedFilters.announcerName,
+    appliedFilters.fromDate,
+    appliedFilters.toDate,
+    items,
+    searchText,
+  ]);
+
+  const paginatedItems = useMemo(() => {
+    const startIndex = Math.max(0, (pageNumber - 1) * pageSize);
+    return filteredItems.slice(startIndex, startIndex + pageSize);
+  }, [filteredItems, pageNumber, pageSize]);
+
+  const effectiveTotalCount = searchText.trim()
+    ? filteredItems.length
+    : Math.max(totalCount, items.length);
+  const totalPages = Math.max(1, Math.ceil(effectiveTotalCount / pageSize));
+  const startRecord =
+    effectiveTotalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
   const endRecord =
-    totalCount === 0 ? 0 : Math.min(pageNumber * pageSize, totalCount);
+    effectiveTotalCount === 0
+      ? 0
+      : Math.min(pageNumber * pageSize, effectiveTotalCount);
   const pageNumbers = Array.from(
     { length: Math.min(totalPages, 5) },
     (_, index) => {
@@ -411,8 +322,8 @@ export const AnnouncementListing = ({
   );
 
   return (
-    <div className="card card-xl-stretch mb-5 mb-xl-8">
-      <div className="card-header border-0 p-4 pt-2 pb-0">
+    <div className="card announce-master-card" ref={listingRef}>
+      <div className="card-header announce-master-card-header">
         <div className="card-title p-0">
           <h3 className="card-title align-items-start flex-column">
             <span className="card-label fw-bolder fs-3 mb-1">
@@ -424,27 +335,12 @@ export const AnnouncementListing = ({
         <div className="card-toolbar p-0">
           <div className="d-flex align-items-center flex-wrap gap-3 justify-content-end">
             <div className="position-relative">
-              <span className="svg-icon svg-icon-3 svg-icon-gray-500 position-absolute top-50 translate-middle-y ms-4">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <rect
-                    opacity="0.5"
-                    x="17.0365"
-                    y="15.1223"
-                    width="8.15546"
-                    height="2"
-                    rx="1"
-                    transform="rotate(45 17.0365 15.1223)"
-                    fill="currentColor"
-                  ></rect>
-                  <path
-                    d="M11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11C19 15.4183 15.4183 19 11 19Z"
-                    fill="currentColor"
-                  ></path>
-                </svg>
+              <span className="svg-icon svg-icon-3 svg-icon-gray-500 position-absolute top-50 translate-middle-y ms-3">
+                <i className="fas fa-search fs-3" aria-hidden="true"></i>
               </span>
               <input
                 type="text"
-                className="form-control w-250px ps-12"
+                className="form-control w-250px ps-10"
                 placeholder="Search records..."
                 value={searchText}
                 onChange={event => setSearchText(event.target.value)}
@@ -453,45 +349,26 @@ export const AnnouncementListing = ({
 
             <button
               id="toggleFilter"
-              className="btn btn-sm btn-flex btn-light btn-active-primary fw-bolder p-3"
+              className="btn btn-sm btn-flex btn-light btn-active-primary fw-bolder p-6"
               type="button"
               onClick={() => setIsFilterOpen(current => !current)}
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              data-bs-trigger="hover"
+              data-bs-title="Open filters"
+              title="Open filters"
+              aria-pressed={isFilterOpen}
             >
               <i className="fas fa-filter fs-4" />
             </button>
 
             <button
-              className="btn btn-sm btn-primary btn-active-primary p-3"
+              className="btn btn-sm btn-primary btn-active-primary p-3 fs-6"
               type="button"
               onClick={onAdd}
             >
               <span className="svg-icon svg-icon-3 me-0">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <rect
-                    opacity="0.5"
-                    x="11.364"
-                    y="20.364"
-                    width="16"
-                    height="2"
-                    rx="1"
-                    transform="rotate(-90 11.364 20.364)"
-                    fill="black"
-                  ></rect>
-                  <rect
-                    x="4.36396"
-                    y="11.364"
-                    width="16"
-                    height="2"
-                    rx="1"
-                    fill="black"
-                  ></rect>
-                </svg>
+                <i className="fa fa-plus fs-7" aria-hidden="true"></i>
               </span>
               Add
             </button>
@@ -499,169 +376,77 @@ export const AnnouncementListing = ({
         </div>
       </div>
 
-      {isFilterOpen ? (
-        <div className="px-5 pb-5">
+      <div
+        className={`announce-listing-filter-wrap ${
+          isFilterOpen ? 'is-open' : ''
+        }`}
+      >
+        <div className="0 announce-listing-filter-inner">
           <div className="card card-bordered bg-light">
-            <div className="card-body">
-              <div className="row g-5">
-                <div className="col-md-3">
-                  <label className="fw-bold mb-2">Announce ID</label>
-                  <input
-                    type="text"
-                    className="form-control"
+            <div
+              className="card-body p-6"
+              onKeyDown={event => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  handleApplyFilters();
+                }
+              }}
+            >
+              <div className="row g-3">
+                <div className="col-md-2">
+                  <FloatingInputField
+                    id="filterAnnounceId"
+                    label="Announce ID"
                     value={draftFilters.announceId}
-                    onChange={event =>
-                      updateDraftFilter('announceId', event.target.value)
+                    onChange={value => updateDraftFilter('announceId', value)}
+                  />
+                </div>
+
+                <div className="col-md-2">
+                  <FloatingInputField
+                    id="filterAnnouncerName"
+                    label="Announcer Name"
+                    value={draftFilters.announcerName}
+                    onChange={value =>
+                      updateDraftFilter('announcerName', value)
                     }
                   />
                 </div>
 
-                <div className="col-md-3">
-                  <label className="fw-bold mb-2">Donor ID</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={draftFilters.donorId}
-                    onChange={event =>
-                      updateDraftFilter('donorId', event.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="col-md-3">
-                  <label className="fw-bold mb-2">Mobile No.</label>
-                  <input
-                    type="text"
-                    className="form-control"
+                <div className="col-md-2">
+                  <FloatingInputField
+                    id="filterMobileNo"
+                    label="Mobile No."
                     value={draftFilters.mobileNo}
-                    onChange={event =>
-                      updateDraftFilter('mobileNo', event.target.value)
-                    }
+                    onChange={value => updateDraftFilter('mobileNo', value)}
                   />
                 </div>
 
-                <div className="col-md-3">
-                  <label className="fw-bold mb-2">Email ID</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={draftFilters.emailId}
-                    onChange={event =>
-                      updateDraftFilter('emailId', event.target.value)
-                    }
+                <div className="col-md-2">
+                  <FloatingInputField
+                    id="filterAmount"
+                    label="Amount"
+                    value={draftFilters.amount}
+                    onChange={value => updateDraftFilter('amount', value)}
                   />
                 </div>
 
-                <div className="col-md-3">
-                  <label className="fw-bold mb-2">From Date</label>
-                  <input
-                    type="date"
-                    className="form-control"
+                <div className="col-md-2">
+                  <FloatingDatePicker
+                    id="filterFromDate"
+                    label="From Date"
                     value={draftFilters.fromDate}
-                    onChange={event =>
-                      updateDraftFilter('fromDate', event.target.value)
-                    }
+                    onChange={value => updateDraftFilter('fromDate', value)}
                   />
                 </div>
 
-                <div className="col-md-3">
-                  <label className="fw-bold mb-2">To Date</label>
-                  <input
-                    type="date"
-                    className="form-control"
+                <div className="col-md-2">
+                  <FloatingDatePicker
+                    id="filterToDate"
+                    label="To Date"
                     value={draftFilters.toDate}
-                    onChange={event =>
-                      updateDraftFilter('toDate', event.target.value)
-                    }
+                    onChange={value => updateDraftFilter('toDate', value)}
                   />
-                </div>
-
-                <div className="col-md-3">
-                  <label className="fw-bold mb-2">Cause Head</label>
-                  <select
-                    className="form-select"
-                    value={draftFilters.causeHeadId}
-                    onChange={event =>
-                      updateDraftFilter('causeHeadId', event.target.value)
-                    }
-                  >
-                    <option value="">All</option>
-                    {causeHeadOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-md-3">
-                  <label className="fw-bold mb-2">How To Donate</label>
-                  <select
-                    className="form-select"
-                    value={draftFilters.howToDonateId}
-                    onChange={event =>
-                      updateDraftFilter('howToDonateId', event.target.value)
-                    }
-                  >
-                    <option value="">All</option>
-                    {howToDonateOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-md-3">
-                  <label className="fw-bold mb-2">Cause ID</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={draftFilters.causeId}
-                    onChange={event =>
-                      updateDraftFilter('causeId', event.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="col-md-3">
-                  <label className="fw-bold mb-2">Purpose ID</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={draftFilters.purposeId}
-                    onChange={event =>
-                      updateDraftFilter('purposeId', event.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="col-md-3">
-                  <label className="fw-bold mb-2">Event ID</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={draftFilters.eventId}
-                    onChange={event =>
-                      updateDraftFilter('eventId', event.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="col-md-3 d-flex align-items-end">
-                  <label className="form-check form-check-custom form-check-solid mb-2">
-                    <input
-                      className="form-check-input me-2"
-                      type="checkbox"
-                      checked={Boolean(draftFilters.completed)}
-                      onChange={event =>
-                        updateDraftFilter('completed', event.target.checked)
-                      }
-                    />
-                    <span className="form-check-label fw-bold">
-                      Completed Only
-                    </span>
-                  </label>
                 </div>
               </div>
 
@@ -669,23 +454,14 @@ export const AnnouncementListing = ({
                 <button
                   className="btn btn-light me-3"
                   type="button"
-                  onClick={() => {
-                    const initialFilters = createInitialFilters();
-                    setDraftFilters(initialFilters);
-                    setAppliedFilters(initialFilters);
-                    setPageNumber(1);
-                    setSearchText('');
-                  }}
+                  onClick={handleResetFilters}
                 >
                   Reset
                 </button>
                 <button
                   className="btn btn-primary"
                   type="button"
-                  onClick={() => {
-                    setAppliedFilters(draftFilters);
-                    setPageNumber(1);
-                  }}
+                  onClick={handleApplyFilters}
                 >
                   Search
                 </button>
@@ -693,7 +469,7 @@ export const AnnouncementListing = ({
             </div>
           </div>
         </div>
-      ) : null}
+      </div>
 
       <div className="card-body p-3">
         {error ? <div className="alert alert-warning m-3">{error}</div> : null}
@@ -704,40 +480,54 @@ export const AnnouncementListing = ({
             className="table table-row-bordered align-middle gs-0 gy-2 mb-0"
           >
             <thead>
-              <tr
-                className="fw-bolder text-uppercase text-nowrap"
-                style={{ backgroundColor: '#22b8ad', color: '#ffffff' }}
-              >
-                <th className="min-w-40px text-center text-white"></th>
-                <th className="min-w-40px text-center text-white"></th>
-                <th className="min-w-40px text-center text-white"></th>
-                <th className="min-w-140px text-white">Announce ID</th>
-                <th className="min-w-140px text-white">Announcer Name</th>
-                <th className="min-w-110px text-white">Donor City</th>
-                <th className="min-w-110px text-white">Bhagwat City</th>
-                <th className="min-w-110px text-white">Amount</th>
-                <th className="min-w-160px text-white">Announce Date</th>
-                <th className="min-w-250px text-white">Remark</th>
-                <th className="min-w-350px text-white">Cause</th>
-                <th className="min-w-90px text-white">Receive</th>
-                <th className="min-w-120px text-white">User Name</th>
-                <th className="min-w-190px text-white">Last Edit By</th>
+              <tr className="fw-bolder text-uppercase text-nowrap">
+                <th
+                  className="min-w-100px text-center"
+                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                ></th>
+                <th
+                  className="text-center"
+                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                >
+                  Announce ID
+                </th>
+                <th
+                  className="text-center"
+                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                >
+                  Announcer Name
+                </th>
+                <th
+                  className="text-center"
+                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                >
+                  Mobile No
+                </th>
+                <th
+                  className="text-center"
+                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                >
+                  Amount
+                </th>
+                <th
+                  className="text-center"
+                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                >
+                  Announce Date
+                </th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={14} className="text-center py-10 text-muted">
+                  <td colSpan={8} className="text-center py-10 text-muted">
                     Loading announcements...
                   </td>
                 </tr>
-              ) : filteredItems.length ? (
-                filteredItems.map(item => (
-                  <tr
-                    key={`${item.announceId}-${item.announcerCode}`}
-                    valign="top"
-                  >
-                    <td className="text-center">
+              ) : paginatedItems.length ? (
+                paginatedItems.map(item => (
+                  <tr key={item.announceId} valign="top">
+                    <td className="d-flex gap-6">
                       <button
                         type="button"
                         className="btn btn-icon btn-sm btn-light"
@@ -749,8 +539,6 @@ export const AnnouncementListing = ({
                           aria-hidden="true"
                         ></i>
                       </button>
-                    </td>
-                    <td className="text-center">
                       <button
                         type="button"
                         className="btn btn-icon btn-sm btn-light"
@@ -762,8 +550,6 @@ export const AnnouncementListing = ({
                           aria-hidden="true"
                         ></i>
                       </button>
-                    </td>
-                    <td className="text-center">
                       <button
                         type="button"
                         className="btn btn-icon btn-sm btn-light"
@@ -777,29 +563,18 @@ export const AnnouncementListing = ({
                         ></i>
                       </button>
                     </td>
-                    <td>
-                      <div className="fw-semibold text-dark">
-                        {item.announceId || '-'}
-                      </div>
-                      <div className="text-muted fs-8">
-                        {item.announcerCode || '-'}
-                      </div>
+                    <td className="text-center">{item.announceId || '-'}</td>
+                    <td className="text-center">{item.announcerName || '-'}</td>
+                    <td className="text-center">{item.mobileNo || '-'}</td>
+                    <td className="text-center">
+                      {item.announceAmount || '-'}
                     </td>
-                    <td>{item.announcerName || '-'}</td>
-                    <td>{item.donorCity || '-'}</td>
-                    <td>{item.bhagwatCity || '-'}</td>
-                    <td>{item.announceAmount || '-'}</td>
-                    <td>{item.announceDate || '-'}</td>
-                    <td className="mw-250px">{item.remark || '-'}</td>
-                    <td className="mw-350px">{item.cause || '-'}</td>
-                    <td>{item.receive || '-'}</td>
-                    <td>{item.userName || '-'}</td>
-                    <td>{item.lastEditBy || '-'}</td>
+                    <td className="text-center">{item.announceDate || '-'}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={14} className="text-center py-10 text-muted">
+                  <td colSpan={8} className="text-center py-10 text-muted">
                     No announcements found.
                   </td>
                 </tr>
@@ -829,8 +604,7 @@ export const AnnouncementListing = ({
 
           <div className="d-flex align-items-center gap-4">
             <span className="text-muted fs-7">
-              Showing {startRecord} to {endRecord} of{' '}
-              {totalCount || filteredItems.length}
+              Showing {startRecord} to {endRecord} of {effectiveTotalCount}
             </span>
             <ul className="pagination pagination-circle pagination-outline mb-0">
               <li className={`page-item ${pageNumber === 1 ? 'disabled' : ''}`}>

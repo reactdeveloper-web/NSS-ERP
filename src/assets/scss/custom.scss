@@ -556,6 +556,25 @@ iframe {
   border-left: 1px solid #d9e2ec;
 }
 
+.announce-listing-filter-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: grid-template-rows 0.35s ease, opacity 0.25s ease,
+    transform 0.35s ease;
+}
+
+.announce-listing-filter-wrap.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.announce-listing-filter-inner {
+  overflow: hidden;
+}
+
 .announce-master-tabs {
   gap: 0.75rem;
   padding: 1rem 1.75rem 0;

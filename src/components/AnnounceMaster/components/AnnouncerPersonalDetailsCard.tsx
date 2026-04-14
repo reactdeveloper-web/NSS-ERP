@@ -23,6 +23,8 @@ import { PersonalInfoTab } from './PersonalInfoTab';
 
 interface AnnouncerPersonalDetailsCardProps {
   activeTab: AnnouncerTabKey;
+  operation?: 'ADD' | 'EDIT' | 'VIEW';
+  announceId?: string;
   saveResultItems?: Array<Record<string, unknown>>;
   donorIdentificationForm: DonorIdentificationForm;
   announceEventForm: AnnounceEventForm;
@@ -101,6 +103,8 @@ interface AnnouncerPersonalDetailsCardProps {
 
 export const AnnouncerPersonalDetailsCard = ({
   activeTab,
+  operation = 'ADD',
+  announceId = '0',
   saveResultItems,
   donorIdentificationForm,
   announceEventForm,
@@ -176,6 +180,8 @@ export const AnnouncerPersonalDetailsCard = ({
     { value: 'aadhaar', label: 'Aadhaar' },
     { value: 'pan', label: 'PAN Number' },
   ];
+  const shouldShowAnnounceIdBadge =
+    ['EDIT', 'VIEW'].includes(operation) && announceId !== '0';
 
   useEffect(() => {
     const bootstrap = (window as Window & {
@@ -284,7 +290,16 @@ export const AnnouncerPersonalDetailsCard = ({
               <h3 className="fw-bold mb-0">
                 Announcer Personal Details
                 <span className="text-muted fs-6 px-2">
-                  | {formattedAnnounceDate}
+                  {shouldShowAnnounceIdBadge ? (
+                    <span className="badge badge-light-primary fs-6 fw-semibold px-4 py-2 me-3">
+                      <i className="fas fa-receipt text-primary me-2"></i>
+                      Announce ID: {announceId}
+                    </span>
+                  ) : null}
+                  <span className="badge badge-light-info fs-6 fw-semibold px-4 py-2">
+                    <i className="fas fa-calendar-alt text-info me-2"></i>
+                    {formattedAnnounceDate}
+                  </span>
                 </span>
               </h3>
             </div>
