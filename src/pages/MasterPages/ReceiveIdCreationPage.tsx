@@ -1,12 +1,12 @@
-import React from "react";
-import ReceiveIdCreation from "src/components/Header/ReceiveIdCreation";
+import React from 'react';
+import ReceiveIdCreation from 'src/components/Header/ReceiveIdCreation';
 
 function ReceiveIdCreationPage() {
-    return (
-        <>
-            <ReceiveIdCreation />
-        </>
-    );
+  return (
+    <>
+      <ReceiveIdCreation />
+    </>
+  );
 }
 
-export default ReceiveIdCreationPage;   
+export default ReceiveIdCreationPage;

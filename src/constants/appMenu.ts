@@ -22,7 +22,7 @@ export const APP_MENU_ITEMS: AppMenuItem[] = [
   },
   {
     key: 'receive-id-creation',
-    label: 'Receive ID Creation',
+    label: 'Receive ID',
     path: PATH.RECEIVE_ID_CREATION,
     iconClass: 'fas fa-clipboard-check fs-4',
   },

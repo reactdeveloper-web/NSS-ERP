@@ -26,8 +26,10 @@ const _Login = (props: Props) => {
 
   const onFinish = async formData => {
     try {
+      //console.log('hello',formData);
+      //setLoading(true);
       await login(formData);
-    } catch (error) {
+    } catch (error: any) {
       message.error(error.message);
       setError(error.payload.message);
     } finally {
@@ -67,7 +69,7 @@ const _Login = (props: Props) => {
                     <ul className="nav nssBtnColor rounded-pill p-1 p-md-2 justify-content-between">
                       <li className="nav-item">
                         <a
-                          className="nav-link btn btn-sm btn-color-white btn-active btn-active-success fw-normal px-4 px-md-10 active rounded-pill  fs-6 fs-md-7 fs-xxl-5"
+                          className="nav-link btn btn-sm btn-color-blue btn-active btn-active-success fw-normal px-4 px-md-10 active rounded-pill  fs-6 fs-md-7 fs-xxl-5"
                           data-bs-toggle="tab"
                           href="#kt_table_widget_5_tab_1"
                           onClick={() => setActiveTab('NSS')}
@@ -77,7 +79,7 @@ const _Login = (props: Props) => {
                       </li>
                       <li className="nav-item">
                         <a
-                          className="nav-link btn btn-sm btn-color-white btn-active btn-active-success fw-normal px-4 px-md-10  rounded-pill  fs-6 fs-md-7 fs-xxl-5"
+                          className="nav-link btn btn-sm btn-color-blue btn-active btn-active-success fw-normal px-4 px-md-10  rounded-pill  fs-6 fs-md-7 fs-xxl-5"
                           data-bs-toggle="tab"
                           href="#kt_table_widget_5_tab_3"
                           onClick={() => setActiveTab('FOREIGN NSS')}
@@ -87,7 +89,7 @@ const _Login = (props: Props) => {
                       </li>
                       <li className="nav-item">
                         <a
-                          className="nav-link btn btn-sm btn-color-white btn-active btn-active-success fw-normal px-4 px-md-10 rounded-pill  fs-6 fs-md-7 fs-xxl-5"
+                          className="nav-link btn btn-sm btn-color-blue btn-active btn-active-success fw-normal px-4 px-md-10 rounded-pill  fs-6 fs-md-7 fs-xxl-5"
                           data-bs-toggle="tab"
                           href="#kt_table_widget_5_tab_5"
                           onClick={() => setActiveTab('HOSPITAL')}
@@ -178,10 +180,10 @@ const _Login = (props: Props) => {
                         </span>
                       )}
                     </button>
-                    <div className="login-form-register-link-wrapper">
+                    <div className="login-form-register-link-wrapper ">
                       <Link
                         to={PATH.FORGOT}
-                        className="login-form-register-link"
+                        className="login-form-register-link nssTextColor fs-4 fw-normal text-decoration-underline"
                       >
                         Forgot Password?
                       </Link>
