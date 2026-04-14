@@ -1,3 +1,5 @@
+/* eslint-disable eqeqeq */
+/* eslint-disable prettier/prettier */
 import axios from 'axios';
 import { URL } from 'src/constants/urls';
 import * as actions from './Auth.actions';
@@ -38,10 +40,12 @@ export const login = (payload: ReqLogin) => async dispatch => {
   try {
     const res = await axiosInstance.post(`/login/UserLogin`, payload);
     const allUsers = res.data;
-    let user = allUsers?.userData;
+    let user = allUsers.userData;
+    //console.log('login',allUsers);
     if (
-      user?.status === 'Success' &&
-      String(user.empNum) === String(payload.username)
+      allUsers.userData.status === 'Success' &&
+      user &&
+      user.empNum == payload.username
     ) {
       dispatch(actions.loginSuccess(user));
       // ✅ store tokens
