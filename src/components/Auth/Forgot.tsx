@@ -28,7 +28,7 @@ const _Forgot = (props: Props) => {
   const onFinish = async formData => {
     try {
       await forgot(formData);
-    } catch (error) {
+    } catch (error: any) {
       setError(error.payload.message);
     }
   };
@@ -95,7 +95,10 @@ const _Forgot = (props: Props) => {
                   </button>
 
                   <div className="login-form-register-link-wrapper">
-                    <Link to={PATH.LOGIN} className="login-form-register-link">
+                    <Link
+                      to={PATH.LOGIN}
+                      className="login-form-register-link nssTextColor fs-4 fw-normal text-decoration-underline"
+                    >
                       Back to Login
                     </Link>
                   </div>

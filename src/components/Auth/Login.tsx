@@ -180,10 +180,10 @@ const _Login = (props: Props) => {
                         </span>
                       )}
                     </button>
-                    <div className="login-form-register-link-wrapper">
+                    <div className="login-form-register-link-wrapper ">
                       <Link
                         to={PATH.FORGOT}
-                        className="login-form-register-link"
+                        className="login-form-register-link nssTextColor fs-4 fw-normal text-decoration-underline"
                       >
                         Forgot Password?
                       </Link>

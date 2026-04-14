@@ -41,7 +41,7 @@ const ResetPassword = () => {
     const success = await dispatch(setupNewPassword(payload));
     setLoading(false);
 
-    if (success) {
+    if (!success) {
       message.success('Password changed successfully ✅');
       setTimeout(() => history.push('/login'), 1500);
     }
