@@ -38,11 +38,10 @@ export const login = (payload: ReqLogin) => async dispatch => {
   try {
     const res = await axiosInstance.post(`/login/UserLogin`, payload);
     const allUsers = res.data;
-    let user = allUsers.userData;
+    let user = allUsers?.userData;
     if (
-      allUsers.userData.status === 'Success' &&
-      user &&
-      user.empNum === payload.username
+      user?.status === 'Success' &&
+      String(user.empNum) === String(payload.username)
     ) {
       dispatch(actions.loginSuccess(user));
       // ✅ store tokens
