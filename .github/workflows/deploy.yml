@@ -23,6 +23,8 @@ jobs:
 
       - name: Build the React App
         run: npm run build
+        env:
+          REACT_APP_API_BASE_URL: 'https://deverp.narayanseva.org'
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4

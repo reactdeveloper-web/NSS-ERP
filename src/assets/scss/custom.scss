@@ -45,7 +45,7 @@ body {
 }
 
 .nssBtnColor {
-  background: #2a2b6b;
+  background: #1cb8a1;
 }
 
 .btn-check:active + .btn.btn-active-success,
@@ -58,7 +58,10 @@ body {
 .show > .btn.btn-active-success {
   color: #2a2b6b;
   border-color: #f5fcfb;
-  background-color: #f5fcfb !important;
+  background-color: #ffffff !important;
+  border-bottom: 3px solid #1cb8a1 !important;
+  border-radius: 0 !important;
+  font-weight: 600 !important;
 }
 
 .bottom-bg {
@@ -88,16 +91,6 @@ body {
   }
 }
 
-.custom-rounded {
-  border-radius: 0.5rem;
-}
-
-@media (min-width: 768px) {
-  .custom-rounded {
-    border-radius: 50%;
-  }
-}
-
 /* .login-form-page {
   max-width: 0px;
 } */
@@ -110,6 +103,26 @@ body {
     #00b79c10 35%,
     #00b79c10 100%
   );
+}
+
+.loginTabs ul {
+  border-bottom: 1px solid #e4e6ef;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  background: #ffffff !important;
+}
+.btn.btn-color-blue {
+  color: #2a2b6b;
+}
+
+.custom-rounded {
+  border-radius: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .custom-rounded {
+    border-radius: 50%;
+  }
 }
 
 .aside-brand {
