@@ -38,30 +38,30 @@ export const SaveResultModal = ({
         >
           <div className="modal-content">
             <div className="modal-header p-4">
-              <h4 className="modal-title">Create Announce Response</h4>
+              <h4 className="modal-title">Announcement Response</h4>
               <button
                 type="button"
                 className="btn btn-sm btn-icon btn-active-color-primary"
                 aria-label="Close"
                 onClick={onClose}
               >
-                <i className="ki-duotone ki-cross fs-1">
+                <i className="fa fa-times fs-1">
                   <span className="path1"></span>
                   <span className="path2"></span>
                 </i>
               </button>
             </div>
 
-            <div className="modal-body">
-              <div className="bg-light-primary rounded p-4 mb-5">
+            <div className="modal-body p-0">
+              {/* <div className="bg-light-primary rounded p-4 mb-5">
                 <div className="fw-bold mb-2">Request Payload</div>
                 <pre className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
                   {JSON.stringify(requestPayload, null, 2)}
                 </pre>
-              </div>
+              </div> */}
 
               {resultItems.length ? (
-                <div className="mb-5">
+                <div className="text-center">
                   {resultItems.map((item, index) => (
                     <div
                       key={`${String(item.code ?? index)}-${index}`}
@@ -83,15 +83,15 @@ export const SaveResultModal = ({
                 </div>
               ) : null}
 
-              <div className="bg-light rounded p-4">
+              {/* <div className="bg-light rounded p-4">
                 <div className="fw-bold mb-2">Raw Response</div>
                 <pre className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
                   {JSON.stringify(resultPayload, null, 2)}
                 </pre>
-              </div>
+              </div> */}
             </div>
 
-            <div className="modal-footer">
+            {/* <div className="modal-footer">
               <button
                 type="button"
                 className="btn btn-primary"
@@ -99,7 +99,7 @@ export const SaveResultModal = ({
               >
                 Close
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
