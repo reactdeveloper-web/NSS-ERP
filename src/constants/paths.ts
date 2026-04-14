@@ -3,9 +3,9 @@ export const PATH = {
   DASHBOARD: '/dashboard',
   LOGIN: '/login',
   ANNOUNCE_MASTER: '/announcement',
+  RECEIVE_ID_CREATION: '/receive-id-creation',
   CIT: '/cit',
   FORGOT: '/forgot',
   PROFILE: '/profile',
   RESET_PASSWORD: '/reset-password',
-  RECEIVE_ID_CREATION: '/receive-id-creation',
 };
