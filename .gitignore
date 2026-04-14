@@ -234,6 +234,3 @@ dist/
 
 #vscode folder ignore
 .vscode
-
-#.github/workflows ignore
-.github/workflows
