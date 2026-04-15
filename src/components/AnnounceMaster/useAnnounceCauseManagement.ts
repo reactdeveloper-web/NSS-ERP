@@ -54,6 +54,8 @@ export const useAnnounceCauseManagement = ({
   setPurposeOptions,
   setValidationErrors,
 }: UseAnnounceCauseManagementArgs) => {
+  const normalizeValue = (value: string | undefined) => value?.trim() || '';
+
   const resetCauseDraft = useCallback(() => {
     purposeOptionsRequestIdRef.current += 1;
     amountRequestIdRef.current += 1;
@@ -88,23 +90,37 @@ export const useAnnounceCauseManagement = ({
       return;
     }
 
+    const normalizedCauseHead = normalizeValue(announceDetailsForm.causeHead);
+    const normalizedPurpose = normalizeValue(announceDetailsForm.purpose);
     const selectedCauseHead = causeHeadOptions.find(
-      option => option.value === announceDetailsForm.causeHead,
+      option =>
+        normalizeValue(option.value) === normalizedCauseHead ||
+        normalizeValue(option.purposeId) === normalizedCauseHead,
     );
     const selectedPurpose = purposeOptions.find(
-      option => option.value === announceDetailsForm.purpose,
+      option =>
+        normalizeValue(option.value) === normalizedPurpose ||
+        normalizeValue(option.yojnaId) === normalizedPurpose,
     );
     const yojnaId =
-      selectedPurpose?.yojnaId?.trim() || announceDetailsForm.purpose.trim();
+      normalizeValue(selectedPurpose?.yojnaId) || normalizedPurpose;
     const causeAmount =
-      autoAmount.trim() || selectedPurpose?.amountValue?.trim() || '';
+      autoAmount.trim() || normalizeValue(selectedPurpose?.amountValue) || '';
+    const causeHeadPurposeId =
+      normalizeValue(selectedCauseHead?.purposeId) ||
+      normalizeValue(selectedCauseHead?.value) ||
+      normalizedCauseHead;
+    const causeHeadValue =
+      normalizeValue(selectedCauseHead?.value) || causeHeadPurposeId;
+    const purposeValue =
+      normalizeValue(selectedPurpose?.value) || yojnaId;
 
     if (
-      !announceDetailsForm.causeHead.trim() ||
-      !announceDetailsForm.purpose.trim() ||
+      !normalizedCauseHead ||
+      !normalizedPurpose ||
       !yojnaId ||
       !causeAmount ||
-      (announceDetailsForm.causeHead === '150' &&
+      (causeHeadPurposeId === '150' &&
         !announceDetailsForm.causeHeadDate.trim())
     ) {
       return;
@@ -112,15 +128,11 @@ export const useAnnounceCauseManagement = ({
 
     const nextCause: AddedAnnounceCause = {
       id: editingCauseId ?? Date.now(),
-      causeHead: announceDetailsForm.causeHead,
-      causeHeadLabel:
-        selectedCauseHead?.label || announceDetailsForm.causeHead.trim(),
-      causeHeadPurposeId:
-        selectedCauseHead?.purposeId?.trim() ||
-        announceDetailsForm.causeHead.trim(),
-      purpose: announceDetailsForm.purpose,
-      purposeLabel:
-        selectedPurpose?.label || announceDetailsForm.purpose.trim(),
+      causeHead: causeHeadValue,
+      causeHeadLabel: selectedCauseHead?.label || normalizedCauseHead,
+      causeHeadPurposeId,
+      purpose: purposeValue,
+      purposeLabel: selectedPurpose?.label || normalizedPurpose,
       yojnaId,
       quantity: Math.max(1, Number(announceDetailsForm.quantity) || 1),
       amount: causeAmount,

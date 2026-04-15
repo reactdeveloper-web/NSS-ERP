@@ -7,6 +7,7 @@ import { v4 as uuid } from 'uuid';
 import { setAlert } from 'src/components/Alert/Alert.thunks';
 import { AlertTypes } from 'src/constants/alerts';
 import { ContentTypes } from 'src/constants/content';
+import { clearAnnouncementCache } from 'src/components/AnnounceMaster/AnnounceMasterContent.helpers';
 
 import axiosInstance from 'src/redux/axiosInstance';
 
@@ -150,6 +151,7 @@ export const logout = () => async dispatch => {
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('loginTimestamp');
   localStorage.removeItem('user');
+  clearAnnouncementCache();
 
   dispatch(actions.logoutSuccess());
   dispatch(

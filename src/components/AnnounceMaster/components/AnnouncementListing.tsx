@@ -89,18 +89,34 @@ const extractTotalCount = (payload: unknown, fallbackCount: number): number => {
   }
 
   const record = payload as Record<string, unknown>;
-  const totalCount = Number(
-    getFirstValue(record, [
-      'TotalCount',
-      'totalCount',
-      'total_count',
-      'RecordCount',
-      'recordCount',
-    ]),
-  );
+  const countKeys = [
+    'TotalCount',
+    'totalCount',
+    'total_count',
+    'RecordCount',
+    'recordCount',
+    'TotalRecord',
+    'totalRecord',
+    'total_record',
+    'TotalRecords',
+    'totalRecords',
+    'total_records',
+    'Total_Row',
+    'total_row',
+    'RowsCount',
+    'rowsCount',
+  ];
+  const topLevelCount = Number(getFirstValue(record, countKeys));
 
-  return Number.isFinite(totalCount) && totalCount > 0
-    ? totalCount
+  if (Number.isFinite(topLevelCount) && topLevelCount > 0) {
+    return topLevelCount;
+  }
+
+  const [firstRow] = extractArrayPayload(payload);
+  const rowLevelCount = firstRow ? Number(getFirstValue(firstRow, countKeys)) : NaN;
+
+  return Number.isFinite(rowLevelCount) && rowLevelCount > 0
+    ? rowLevelCount
     : fallbackCount;
 };
 
@@ -295,21 +311,33 @@ export const AnnouncementListing = ({
     searchText,
   ]);
 
+  const hasClientSideFilters = Boolean(
+    searchText.trim() ||
+      appliedFilters.announcerName.trim() ||
+      appliedFilters.amount.trim() ||
+      appliedFilters.fromDate.trim() ||
+      appliedFilters.toDate.trim(),
+  );
+
   const paginatedItems = useMemo(() => {
+    if (!hasClientSideFilters) {
+      return filteredItems;
+    }
+
     const startIndex = Math.max(0, (pageNumber - 1) * pageSize);
     return filteredItems.slice(startIndex, startIndex + pageSize);
-  }, [filteredItems, pageNumber, pageSize]);
+  }, [filteredItems, hasClientSideFilters, pageNumber, pageSize]);
 
-  const effectiveTotalCount = searchText.trim()
+  const effectiveTotalCount = hasClientSideFilters
     ? filteredItems.length
     : Math.max(totalCount, items.length);
   const totalPages = Math.max(1, Math.ceil(effectiveTotalCount / pageSize));
-  const startRecord =
-    effectiveTotalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
-  const endRecord =
-    effectiveTotalCount === 0
-      ? 0
-      : Math.min(pageNumber * pageSize, effectiveTotalCount);
+  const startRecord = effectiveTotalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
+  const endRecord = effectiveTotalCount === 0
+    ? 0
+    : hasClientSideFilters
+      ? Math.min(pageNumber * pageSize, effectiveTotalCount)
+      : Math.min(startRecord + items.length - 1, effectiveTotalCount);
   const pageNumbers = Array.from(
     { length: Math.min(totalPages, 5) },
     (_, index) => {
@@ -320,6 +348,12 @@ export const AnnouncementListing = ({
       return adjustedStartPage + index;
     },
   );
+
+  useEffect(() => {
+    if (pageNumber > totalPages) {
+      setPageNumber(totalPages);
+    }
+  }, [pageNumber, totalPages]);
 
   return (
     <div className="card announce-master-card" ref={listingRef}>

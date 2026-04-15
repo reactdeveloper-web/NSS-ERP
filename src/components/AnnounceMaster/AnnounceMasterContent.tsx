@@ -203,72 +203,91 @@ const mapApiCauseRecords = (
     ),
   ];
 
-  return causeRecords.map((causeRecord, index) => ({
-    id: Date.now() + index,
-    causeHead:
+  return causeRecords.map((causeRecord, index) => {
+    const causeHeadValue =
       getFirstValue(causeRecord, [
+        'Purpose_id',
+        'PurposeId',
+        'purpose_id',
         'cause_id',
         'CauseId',
-        'purpose',
         'Purpose',
+        'purpose',
         'cause_head',
         'CauseHead',
-        'purpose_id',
-        'PurposeId',
-      ]) ||
-      getFirstValue(record, ['cause_id', 'CauseId', 'purpose', 'Purpose']),
-    causeHeadLabel:
-      getFirstValue(causeRecord, [
-        'purpose_name',
-        'PurposeName',
-        'cause_head_name',
-        'CauseHeadName',
-        'cause_name',
-        'CauseName',
       ]) ||
       getFirstValue(record, [
-        'purpose_name',
-        'PurposeName',
-        'cause_head_name',
-        'CauseHeadName',
-        'cause_name',
-        'CauseName',
-      ]),
-    causeHeadPurposeId:
-      getFirstValue(causeRecord, [
+        'Purpose_id',
+        'PurposeId',
+        'purpose_id',
         'cause_id',
         'CauseId',
-        'purpose',
         'Purpose',
+        'purpose',
+      ]);
+    const yojnaValue =
+      getFirstValue(causeRecord, [
+        'Yojna_ID',
+        'YojnaId',
+        'yojna_id',
+        'YOJNA_ID',
         'purpose_id',
+        'Purpose_id',
         'PurposeId',
       ]) ||
-      getFirstValue(record, ['cause_id', 'CauseId', 'purpose', 'Purpose']),
-    purpose: getFirstValue(causeRecord, [
-      'yojna_id',
-      'YojnaId',
-      'purpose_id',
-      'PurposeId',
-      'cause_id',
-      'CauseId',
-    ]),
-    purposeLabel:
-      getFirstValue(causeRecord, [
-        'yojna_name',
-        'YojnaName',
-        'Yojna',
-        'purpose_name',
-        'PurposeName',
-        'cause_name',
-        'CauseName',
-      ]) || getFirstValue(causeRecord, ['yojna_id', 'YojnaId']),
-    yojnaId: getFirstValue(causeRecord, [
-      'yojna_id',
-      'YojnaId',
-      'Yojna_ID',
-      'cause_id',
-      'CauseId',
-    ]),
+      getFirstValue(record, [
+        'Yojna_ID',
+        'YojnaId',
+        'yojna_id',
+        'purpose_id',
+        'Purpose_id',
+        'PurposeId',
+      ]);
+
+    return {
+      id: Date.now() + index,
+      causeHead: causeHeadValue,
+      causeHeadLabel:
+        getFirstValue(causeRecord, [
+          'Purpose',
+          'purpose',
+          'purpose_name',
+          'PurposeName',
+          'cause_head_name',
+          'CauseHeadName',
+          'cause_name',
+          'CauseName',
+        ]) ||
+        getFirstValue(record, [
+          'Purpose',
+          'purpose',
+          'purpose_name',
+          'PurposeName',
+          'cause_head_name',
+          'CauseHeadName',
+          'cause_name',
+          'CauseName',
+        ]),
+      causeHeadPurposeId: causeHeadValue,
+      purpose: yojnaValue,
+      purposeLabel:
+        getFirstValue(causeRecord, [
+          'yojna_name',
+          'YojnaName',
+          'Yojna',
+          'purpose_name',
+          'PurposeName',
+          'cause_name',
+          'CauseName',
+        ]) ||
+        getFirstValue(causeRecord, [
+          'Yojna_ID',
+          'YojnaId',
+          'yojna_id',
+          'YOJNA_ID',
+        ]) ||
+        yojnaValue,
+      yojnaId: yojnaValue,
     quantity: Math.max(
       1,
       Number(
@@ -303,8 +322,11 @@ const mapApiCauseRecords = (
         'second_remark',
         'SecondRemark',
       ]) || getFirstValue(record, ['second_remark', 'SecondRemark']),
-  }));
+    };
+  });
 };
+
+const normalizeOptionValue = (value?: string) => value?.trim() || '';
 
 export const AnnounceMasterContent = () => {
   const history = useHistory();
@@ -379,6 +401,8 @@ export const AnnounceMasterContent = () => {
     setValidationErrors,
   ] = useState<AnnounceValidationErrors>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isEditDataLoading, setIsEditDataLoading] = useState(false);
+  const [isCauseDataHydrating, setIsCauseDataHydrating] = useState(false);
   const [showSaveResultModal, setShowSaveResultModal] = useState(false);
   const [saveRequestPayload, setSaveRequestPayload] = useState<unknown>(null);
   const [saveResultPayload, setSaveResultPayload] = useState<unknown>(null);
@@ -402,6 +426,7 @@ export const AnnounceMasterContent = () => {
   const pincodeRequestIdRef = useRef(0);
   const purposeOptionsRequestIdRef = useRef(0);
   const amountRequestIdRef = useRef(0);
+  const purposeOptionsCacheRef = useRef<Record<string, EventOption[]>>({});
   const hydratedCauseSelectionRef = useRef<{
     causeId: string;
     yojnaId: string;
@@ -784,6 +809,9 @@ export const AnnounceMasterContent = () => {
           'OccasionRemark',
         ]),
         causeHead: getFirstValue(record, [
+          'Purpose_id',
+          'PurposeId',
+          'purpose_id',
           'cause_id',
           'CauseId',
           'purpose',
@@ -818,6 +846,10 @@ export const AnnounceMasterContent = () => {
         purpose:
           primaryCauseRecord?.purpose ||
           getFirstValue(record, [
+            'Yojna_ID',
+            'YojnaId',
+            'yojna_id',
+            'Purpose_id',
             'cause_id',
             'CauseId',
             'purpose_id',
@@ -856,7 +888,13 @@ export const AnnounceMasterContent = () => {
         ),
         isMotivated: toBooleanFlag(
           getFirstValue(record, ['motivated', 'Motivated']),
-        ),
+        ) ||
+          Boolean(
+            getFirstValue(record, [
+              'motivated_amount',
+              'MotivatedAmount',
+            ]).trim(),
+          ),
         motivatedAmount: getFirstValue(record, [
           'motivated_amount',
           'MotivatedAmount',
@@ -881,17 +919,22 @@ export const AnnounceMasterContent = () => {
       };
       hydratedCauseSelectionRef.current = {
         causeId: getFirstValue(record, [
+          'Purpose_id',
+          'PurposeId',
+          'purpose_id',
           'cause_id',
           'CauseId',
-          'purpose',
           'Purpose',
+          'purpose',
         ]),
         yojnaId:
           primaryCauseRecord?.yojnaId ||
           primaryCauseRecord?.purpose ||
           getFirstValue(record, [
+            'Yojna_ID',
             'yojna_id',
             'YojnaId',
+            'Purpose_id',
             'purpose_id',
             'PurposeId',
           ]),
@@ -1135,9 +1178,9 @@ export const AnnounceMasterContent = () => {
         delete nextErrors.announceAmount;
       }
 
-      if (field === 'motivatedAmount') {
-        delete nextErrors.motivatedAmount;
-      }
+    if (field === 'motivatedAmount') {
+      delete nextErrors.motivatedAmount;
+    }
 
       if (field === 'isMotivated' && !value) {
         delete nextErrors.motivatedAmount;
@@ -1145,6 +1188,26 @@ export const AnnounceMasterContent = () => {
 
       return nextErrors;
     });
+
+    if (field === 'motivatedAmount') {
+      const nextMotivatedAmount = String(value);
+
+      setAnnounceDetailsForm(current => ({
+        ...current,
+        motivatedAmount: nextMotivatedAmount,
+        isMotivated: nextMotivatedAmount.trim() ? true : current.isMotivated,
+      }));
+      return;
+    }
+
+    if (field === 'isMotivated') {
+      setAnnounceDetailsForm(current => ({
+        ...current,
+        isMotivated: Boolean(value),
+        motivatedAmount: value ? current.motivatedAmount : '',
+      }));
+      return;
+    }
 
     if (field === 'causeHead') {
       const nextCauseHead = String(value).trim();
@@ -1828,45 +1891,112 @@ export const AnnounceMasterContent = () => {
 
   useEffect(() => {
     if (addedCauses.length === 0 || causeHeadOptions.length === 0) {
+      setIsCauseDataHydrating(false);
       return;
     }
 
     let isCancelled = false;
+    setIsCauseDataHydrating(true);
 
     const hydrateAddedCauseLabels = async () => {
+      const loadPurposeOptionsForCauseHead = async (purposeId: string) => {
+        const normalizedPurposeId = normalizeOptionValue(purposeId);
+
+        if (!normalizedPurposeId) {
+          return [] as EventOption[];
+        }
+
+        const cachedOptions = purposeOptionsCacheRef.current[normalizedPurposeId];
+
+        if (cachedOptions) {
+          return cachedOptions;
+        }
+
+        const { purposeOptions: nextPurposeOptions } =
+          await loadPurposeOptionsData(normalizedPurposeId);
+
+        purposeOptionsCacheRef.current[normalizedPurposeId] = nextPurposeOptions;
+
+        return nextPurposeOptions;
+      };
+
       const nextCauses = await Promise.all(
         addedCauses.map(async cause => {
+          const normalizedCauseHead = normalizeOptionValue(
+            cause.causeHeadPurposeId || cause.causeHead,
+          );
+          const normalizedYojnaId = normalizeOptionValue(
+            cause.yojnaId || cause.purpose,
+          );
           const matchedCauseHead = causeHeadOptions.find(
             option =>
-              option.value === cause.causeHead ||
-              option.purposeId?.trim() === cause.causeHead.trim() ||
-              option.purposeId?.trim() === cause.causeHeadPurposeId.trim(),
+              normalizeOptionValue(option.value) === normalizedCauseHead ||
+              normalizeOptionValue(option.purposeId) === normalizedCauseHead ||
+              normalizeOptionValue(option.value) ===
+                normalizeOptionValue(cause.causeHead) ||
+              normalizeOptionValue(option.purposeId) ===
+                normalizeOptionValue(cause.causeHead),
           );
           const purposeIdForLookup =
-            matchedCauseHead?.value ||
-            cause.causeHeadPurposeId.trim() ||
-            cause.causeHead.trim();
+            normalizeOptionValue(matchedCauseHead?.purposeId) ||
+            normalizeOptionValue(matchedCauseHead?.value) ||
+            normalizedCauseHead;
 
+          let resolvedCauseHeadOption = matchedCauseHead;
           let purposeLabel = cause.purposeLabel;
-          let purposeValue = cause.purpose;
-          let yojnaId = cause.yojnaId;
+          let purposeValue = normalizedYojnaId;
+          let yojnaId = normalizedYojnaId;
 
           try {
-            const {
-              purposeOptions: nextPurposeOptions,
-            } = await loadPurposeOptionsData(purposeIdForLookup);
-            const matchedPurpose = nextPurposeOptions.find(
-              option =>
-                option.value === cause.purpose ||
-                option.value === cause.yojnaId ||
-                option.yojnaId?.trim() === cause.purpose.trim() ||
-                option.yojnaId?.trim() === cause.yojnaId.trim(),
+            let nextPurposeOptions = await loadPurposeOptionsForCauseHead(
+              purposeIdForLookup,
             );
+            let matchedPurpose = nextPurposeOptions.find(
+              option =>
+                normalizeOptionValue(option.value) === normalizedYojnaId ||
+                normalizeOptionValue(option.yojnaId) === normalizedYojnaId ||
+                normalizeOptionValue(option.value) ===
+                  normalizeOptionValue(cause.purpose) ||
+                normalizeOptionValue(option.yojnaId) ===
+                  normalizeOptionValue(cause.purpose),
+            );
+
+            if (!matchedPurpose && normalizedYojnaId) {
+              for (const causeHeadOption of causeHeadOptions) {
+                const candidatePurposeId =
+                  normalizeOptionValue(causeHeadOption.purposeId) ||
+                  normalizeOptionValue(causeHeadOption.value);
+
+                if (
+                  !candidatePurposeId ||
+                  candidatePurposeId === purposeIdForLookup
+                ) {
+                  continue;
+                }
+
+                const candidatePurposeOptions =
+                  await loadPurposeOptionsForCauseHead(candidatePurposeId);
+                const candidateMatchedPurpose = candidatePurposeOptions.find(
+                  option =>
+                    normalizeOptionValue(option.value) === normalizedYojnaId ||
+                    normalizeOptionValue(option.yojnaId) === normalizedYojnaId,
+                );
+
+                if (candidateMatchedPurpose) {
+                  resolvedCauseHeadOption = causeHeadOption;
+                  nextPurposeOptions = candidatePurposeOptions;
+                  matchedPurpose = candidateMatchedPurpose;
+                  break;
+                }
+              }
+            }
 
             if (matchedPurpose) {
               purposeLabel = matchedPurpose.label;
-              purposeValue = matchedPurpose.value;
-              yojnaId = matchedPurpose.yojnaId?.trim() || matchedPurpose.value;
+              purposeValue =
+                normalizeOptionValue(matchedPurpose.value) || normalizedYojnaId;
+              yojnaId =
+                normalizeOptionValue(matchedPurpose.yojnaId) || purposeValue;
             }
           } catch {
             // Keep existing cause values if purpose label hydration fails.
@@ -1875,18 +2005,16 @@ export const AnnounceMasterContent = () => {
           return {
             ...cause,
             causeHead:
-              matchedCauseHead?.value ||
-              cause.causeHeadPurposeId ||
-              cause.causeHead,
+              normalizeOptionValue(resolvedCauseHeadOption?.value) ||
+              normalizedCauseHead,
             causeHeadLabel:
-              matchedCauseHead?.label ||
+              resolvedCauseHeadOption?.label ||
               cause.causeHeadLabel ||
-              cause.causeHead,
+              normalizedCauseHead,
             causeHeadPurposeId:
-              matchedCauseHead?.purposeId?.trim() ||
-              matchedCauseHead?.value ||
-              cause.causeHeadPurposeId ||
-              cause.causeHead,
+              normalizeOptionValue(resolvedCauseHeadOption?.purposeId) ||
+              normalizeOptionValue(resolvedCauseHeadOption?.value) ||
+              normalizedCauseHead,
             purpose: purposeValue,
             purposeLabel,
             yojnaId,
@@ -1913,6 +2041,8 @@ export const AnnounceMasterContent = () => {
       if (hasChanged) {
         setAddedCauses(nextCauses);
       }
+
+      setIsCauseDataHydrating(false);
     };
 
     void hydrateAddedCauseLabels();
@@ -2114,10 +2244,12 @@ export const AnnounceMasterContent = () => {
 
   useEffect(() => {
     if (isListingMode) {
+      setIsEditDataLoading(false);
       return;
     }
 
     if (announceIdParam === '0') {
+      setIsEditDataLoading(false);
       if (operation === 'ADD') {
         hydratedCauseSelectionRef.current = {
           causeId: '',
@@ -2150,6 +2282,7 @@ export const AnnounceMasterContent = () => {
     }
 
     let isMounted = true;
+    setIsEditDataLoading(true);
 
     const loadAnnouncementDetails = async () => {
       const currentUser = parseStoredUser() as Partial<IUser> & {
@@ -2182,6 +2315,7 @@ export const AnnounceMasterContent = () => {
         const hydrated = hydrateAnnouncementFromApi(response.data);
 
         if (hydrated) {
+          setIsEditDataLoading(false);
           return;
         }
       } catch (error) {
@@ -2198,6 +2332,10 @@ export const AnnounceMasterContent = () => {
 
       if (cachedRecord) {
         hydrateAnnouncementFromCache(cachedRecord);
+      }
+
+      if (isMounted) {
+        setIsEditDataLoading(false);
       }
     };
 
@@ -2462,6 +2600,9 @@ export const AnnounceMasterContent = () => {
     );
   }
 
+  const shouldShowEditLoader =
+    operation !== 'ADD' && (isEditDataLoading || isCauseDataHydrating);
+
   return (
     <div
       className="content d-flex flex-column flex-column-fluid"
@@ -2513,6 +2654,7 @@ export const AnnounceMasterContent = () => {
                 quantityOptions={quantityOptions}
                 isAddCauseDisabled={!isCauseReadyToAdd}
                 isSaving={isSaving}
+                isTabContentLoading={shouldShowEditLoader}
                 isViewMode={isViewMode}
                 onAmountChange={handleAmountChange}
                 onAddCause={handleAddCause}

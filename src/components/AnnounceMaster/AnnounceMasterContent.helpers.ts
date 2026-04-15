@@ -1078,6 +1078,10 @@ const writeAnnouncementCache = (records: AnnouncementCacheRecord[]) => {
   localStorage.setItem(ANNOUNCEMENT_CACHE_KEY, JSON.stringify(records));
 };
 
+const clearAnnouncementCache = () => {
+  localStorage.removeItem(ANNOUNCEMENT_CACHE_KEY);
+};
+
 const mapCacheToListingItem = (
   record: AnnouncementCacheRecord,
 ): AnnouncementListingItem => ({
@@ -1362,5 +1366,6 @@ export {
   resolveStateOption,
   toDigitsNumber,
   toNullableText,
+  clearAnnouncementCache,
   writeAnnouncementCache,
 };
