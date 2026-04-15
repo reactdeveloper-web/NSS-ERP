@@ -9,7 +9,7 @@ module.exports = function (app) {
       secure: true,
       pathRewrite: { '^/api': '' },
       onProxyReq: (proxyReq, req) => {
-        //console.log('[PROXY]', req.method, req.url, '→', proxyReq.path);
+        // console.log('[PROXY]', req.method, req.url, '→', proxyReq.path);
       },
     }),
   );
