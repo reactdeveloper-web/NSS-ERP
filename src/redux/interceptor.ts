@@ -6,12 +6,13 @@ axiosInstance.interceptors.request.use(
   config => {
     const token = localStorage.getItem('accessToken');
     //console.log('token',token);
-    if (token) {
+    if (token && config.url !== '/login/UserLogin') {
       config.headers.Authorization = `Bearer ${token}`;
       config.headers['Content-Type'] = 'application/json';
+      // config.withCredentials = false;
     }
     // ✅ Custom header
-    config.headers.APIKey = 'NSSAPI4SANSTHANUAT';
+    // config.headers.APIKey = 'NSSAPI4SANSTHANUAT';
     return config;
   },
   // eslint-disable-next-line prettier/prettier
