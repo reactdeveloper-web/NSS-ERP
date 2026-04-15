@@ -23,6 +23,8 @@ import { PersonalInfoTab } from './PersonalInfoTab';
 
 interface AnnouncerPersonalDetailsCardProps {
   activeTab: AnnouncerTabKey;
+  operation?: 'ADD' | 'EDIT' | 'VIEW';
+  announceId?: string;
   saveResultItems?: Array<Record<string, unknown>>;
   donorIdentificationForm: DonorIdentificationForm;
   announceEventForm: AnnounceEventForm;
@@ -62,6 +64,7 @@ interface AnnouncerPersonalDetailsCardProps {
   quantityOptions: { value: number; label: string }[];
   isAddCauseDisabled: boolean;
   isSaving: boolean;
+  isTabContentLoading?: boolean;
   isViewMode?: boolean;
   onAmountChange: (value: string) => void;
   onAddCause: () => void;
@@ -101,6 +104,8 @@ interface AnnouncerPersonalDetailsCardProps {
 
 export const AnnouncerPersonalDetailsCard = ({
   activeTab,
+  operation = 'ADD',
+  announceId = '0',
   saveResultItems,
   donorIdentificationForm,
   announceEventForm,
@@ -140,6 +145,7 @@ export const AnnouncerPersonalDetailsCard = ({
   quantityOptions,
   isAddCauseDisabled,
   isSaving,
+  isTabContentLoading = false,
   isViewMode = false,
   onAmountChange,
   onAddCause,
@@ -176,6 +182,8 @@ export const AnnouncerPersonalDetailsCard = ({
     { value: 'aadhaar', label: 'Aadhaar' },
     { value: 'pan', label: 'PAN Number' },
   ];
+  const shouldShowAnnounceIdBadge =
+    ['EDIT', 'VIEW'].includes(operation) && announceId !== '0';
 
   useEffect(() => {
     const bootstrap = (window as Window & {
@@ -284,7 +292,16 @@ export const AnnouncerPersonalDetailsCard = ({
               <h3 className="fw-bold mb-0">
                 Announcer Personal Details
                 <span className="text-muted fs-6 px-2">
-                  | {formattedAnnounceDate}
+                  {shouldShowAnnounceIdBadge ? (
+                    <span className="badge badge-light-primary fs-6 fw-semibold px-4 py-2 me-3">
+                      <i className="fas fa-receipt text-primary me-2"></i>
+                      Announce ID: {announceId}
+                    </span>
+                  ) : null}
+                  <span className="badge badge-light-info fs-6 fw-semibold px-4 py-2">
+                    <i className="fas fa-calendar-alt text-info me-2"></i>
+                    {formattedAnnounceDate}
+                  </span>
                 </span>
               </h3>
             </div>
@@ -363,84 +380,99 @@ export const AnnouncerPersonalDetailsCard = ({
           </div>
 
           <div className="tab-content">
-            <div className={getTabPaneClassName('personal')}>
-              <PersonalInfoTab
-                form={personalInfoForm}
-                salutations={salutations}
-                stateOptions={stateOptions}
-                districtOptions={districtOptions}
-                isPincodeLocationLocked={isPincodeLocationLocked}
-                errors={validationErrors}
-                isViewMode={isViewMode}
-                onChange={onPersonalInfoChange}
-              />
-            </div>
-
-            <div className={getTabPaneClassName('announceEvent')}>
-              <AnnounceEventCard
-                form={announceEventForm}
-                eventOptions={eventOptions}
-                eventCauseOptions={eventCauseOptions}
-                eventCityOptions={eventCityOptions}
-                eventChannelOptions={eventChannelOptions}
-                panditOptions={panditOptions}
-                eventLoading={eventLoading}
-                eventError={eventError}
-                isViewMode={isViewMode}
-                errors={validationErrors}
-                onChange={onAnnounceEventChange}
-              />
-            </div>
-
-            <div className={getTabPaneClassName('announceDetails')}>
-              <AnnounceDetailsTab
-                form={announceDetailsForm}
-                addedCauses={addedCauses}
-                editingCauseId={editingCauseId}
-                occasionTypeOptions={occasionTypeOptions}
-                causeHeadOptions={causeHeadOptions}
-                purposeOptions={purposeOptions}
-                howToDonateOptions={howToDonateOptions}
-                amount={amount}
-                isAmountEditable={isAmountEditable}
-                quantityControlMode={quantityControlMode}
-                quantityOptions={quantityOptions}
-                isAddCauseDisabled={isAddCauseDisabled}
-                isViewMode={isViewMode}
-                errors={validationErrors}
-                onAmountChange={onAmountChange}
-                onAddCause={onAddCause}
-                onChange={onAnnounceDetailsChange}
-                onEditCause={onEditCause}
-                onDeleteCause={onDeleteCause}
-                onQuantityChange={onQuantityChange}
-              />
-            </div>
-
-            {showBankDetailsTab ? (
-              <div className={getTabPaneClassName('bankDetails')}>
-                <BankDetailsTab
-                  banks={banks}
-                  isLoading={bankLoading}
-                  error={bankError}
-                  validationError={validationErrors.bankSelection}
-                  selectedBankIds={selectedBankIds}
-                  isViewMode={isViewMode}
-                  onToggleBank={onToggleBank}
+            {isTabContentLoading ? (
+              <div className="d-flex flex-column align-items-center justify-content-center py-20">
+                <span
+                  className="spinner-border text-primary mb-4"
+                  role="status"
+                  aria-label="Loading announcement details"
                 />
+                <div className="text-muted fs-6">
+                  Loading announcement details...
+                </div>
               </div>
-            ) : null}
+            ) : (
+              <>
+                <div className={getTabPaneClassName('personal')}>
+                  <PersonalInfoTab
+                    form={personalInfoForm}
+                    salutations={salutations}
+                    stateOptions={stateOptions}
+                    districtOptions={districtOptions}
+                    isPincodeLocationLocked={isPincodeLocationLocked}
+                    errors={validationErrors}
+                    isViewMode={isViewMode}
+                    onChange={onPersonalInfoChange}
+                  />
+                </div>
 
-            <div className={getTabPaneClassName('followUp')}>
-              <FollowUpTab
-                form={followUpForm}
-                items={followUpItems}
-                isViewMode={isViewMode}
-                onChange={onFollowUpChange}
-                onAdd={onAddFollowUp}
-                onRemove={onRemoveFollowUp}
-              />
-            </div>
+                <div className={getTabPaneClassName('announceEvent')}>
+                  <AnnounceEventCard
+                    form={announceEventForm}
+                    eventOptions={eventOptions}
+                    eventCauseOptions={eventCauseOptions}
+                    eventCityOptions={eventCityOptions}
+                    eventChannelOptions={eventChannelOptions}
+                    panditOptions={panditOptions}
+                    eventLoading={eventLoading}
+                    eventError={eventError}
+                    isViewMode={isViewMode}
+                    errors={validationErrors}
+                    onChange={onAnnounceEventChange}
+                  />
+                </div>
+
+                <div className={getTabPaneClassName('announceDetails')}>
+                  <AnnounceDetailsTab
+                    form={announceDetailsForm}
+                    addedCauses={addedCauses}
+                    editingCauseId={editingCauseId}
+                    occasionTypeOptions={occasionTypeOptions}
+                    causeHeadOptions={causeHeadOptions}
+                    purposeOptions={purposeOptions}
+                    howToDonateOptions={howToDonateOptions}
+                    amount={amount}
+                    isAmountEditable={isAmountEditable}
+                    quantityControlMode={quantityControlMode}
+                    quantityOptions={quantityOptions}
+                    isAddCauseDisabled={isAddCauseDisabled}
+                    isViewMode={isViewMode}
+                    errors={validationErrors}
+                    onAmountChange={onAmountChange}
+                    onAddCause={onAddCause}
+                    onChange={onAnnounceDetailsChange}
+                    onEditCause={onEditCause}
+                    onDeleteCause={onDeleteCause}
+                    onQuantityChange={onQuantityChange}
+                  />
+                </div>
+
+                {showBankDetailsTab ? (
+                  <div className={getTabPaneClassName('bankDetails')}>
+                    <BankDetailsTab
+                      banks={banks}
+                      isLoading={bankLoading}
+                      error={bankError}
+                      validationError={validationErrors.bankSelection}
+                      selectedBankIds={selectedBankIds}
+                      isViewMode={isViewMode}
+                      onToggleBank={onToggleBank}
+                    />
+                  </div>
+                ) : null}
+
+                <div className={getTabPaneClassName('followUp')}>
+                  <FollowUpTab
+                    form={followUpForm}
+                    items={followUpItems}
+                    isViewMode={isViewMode}
+                    onChange={onFollowUpChange}
+                    onAdd={onAddFollowUp}
+                    onRemove={onRemoveFollowUp}
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           {donorSearchError ? (

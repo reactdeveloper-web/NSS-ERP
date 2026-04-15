@@ -53,12 +53,12 @@ export const SaveResultModal = ({
             </div>
 
             <div className="modal-body p-0">
-              {/* <div className="bg-light-primary rounded p-4 mb-5">
+              <div className="bg-light-primary rounded p-4 mb-5">
                 <div className="fw-bold mb-2">Request Payload</div>
                 <pre className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
                   {JSON.stringify(requestPayload, null, 2)}
                 </pre>
-              </div> */}
+              </div>
 
               {resultItems.length ? (
                 <div className="text-center">

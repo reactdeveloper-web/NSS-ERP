@@ -23,6 +23,31 @@ import {
 } from './AnnounceMasterContent.helpers';
 import { DepositBank, EventOption } from './types';
 
+const readSessionCache = <T,>(key: string): T | null => {
+  try {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    const rawValue = window.sessionStorage.getItem(key);
+    return rawValue ? (JSON.parse(rawValue) as T) : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeSessionCache = (key: string, value: unknown) => {
+  try {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.sessionStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Ignore cache write failures.
+  }
+};
+
 const getErrorMessage = (error: any, fallback: string) =>
   error?.response?.data?.message ||
   error?.response?.data?.Message ||
@@ -145,6 +170,13 @@ const loadPincodeLocationData = async ({
 };
 
 const loadCauseHeadMasterOptions = async (): Promise<EventOption[]> => {
+  const cacheKey = `announce:cause-head-options:${ContentTypes.DataFlag}`;
+  const cachedOptions = readSessionCache<EventOption[]>(cacheKey);
+
+  if (cachedOptions?.length) {
+    return cachedOptions;
+  }
+
   const response = await axiosInstance.get(
     masterApiPaths.getPurposeByDataFlag,
     {
@@ -155,27 +187,51 @@ const loadCauseHeadMasterOptions = async (): Promise<EventOption[]> => {
     },
   );
 
-  return extractCauseHeadOptions(response.data);
+  const options = extractCauseHeadOptions(response.data);
+  writeSessionCache(cacheKey, options);
+  return options;
 };
 
 const loadPurposeOptionsData = async (purposeId: string) => {
-  const currencyResponse = await axiosInstance.get(
-    masterApiPaths.getCurrencyByCountry,
-    {
-      params: {
-        countryCode: 22,
-        DataFlag: ContentTypes.DataFlag,
-      },
-      headers: masterApiHeaders(),
-    },
-  );
+  const normalizedPurposeId = purposeId.trim();
+  const currencyCacheKey = `announce:currency-id:${ContentTypes.DataFlag}`;
+  const cachedCurrencyId = readSessionCache<string>(currencyCacheKey);
 
-  const currencyId = extractCurrencyId(currencyResponse.data);
+  let currencyId = cachedCurrencyId || '';
+
+  if (!currencyId) {
+    const currencyResponse = await axiosInstance.get(
+      masterApiPaths.getCurrencyByCountry,
+      {
+        params: {
+          countryCode: 22,
+          DataFlag: ContentTypes.DataFlag,
+        },
+        headers: masterApiHeaders(),
+      },
+    );
+
+    currencyId = extractCurrencyId(currencyResponse.data);
+
+    if (currencyId) {
+      writeSessionCache(currencyCacheKey, currencyId);
+    }
+  }
 
   if (!currencyId) {
     return {
       currencyId: '',
       purposeOptions: [],
+    };
+  }
+
+  const optionsCacheKey = `announce:yojna-options:${ContentTypes.DataFlag}:${currencyId}:${normalizedPurposeId}`;
+  const cachedOptions = readSessionCache<EventOption[]>(optionsCacheKey);
+
+  if (cachedOptions) {
+    return {
+      currencyId,
+      purposeOptions: cachedOptions,
     };
   }
 
@@ -185,15 +241,18 @@ const loadPurposeOptionsData = async (purposeId: string) => {
       params: {
         DataFlag: ContentTypes.DataFlag,
         CurrencyId: currencyId,
-        PurposeId: purposeId,
+        PurposeId: normalizedPurposeId,
       },
       headers: masterApiHeaders(),
     },
   );
 
+  const purposeOptions = extractYojnaOptions(response.data);
+  writeSessionCache(optionsCacheKey, purposeOptions);
+
   return {
     currencyId,
-    purposeOptions: extractYojnaOptions(response.data),
+    purposeOptions,
   };
 };
 
