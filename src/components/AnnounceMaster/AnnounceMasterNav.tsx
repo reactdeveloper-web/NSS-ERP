@@ -3,6 +3,6 @@ import { PageToolbar } from 'src/components/Common/PageToolbar';
 
 export const AnnounceMasterNav = () => {
   return (
-    <PageToolbar title="National Gangotri" description="Call Center Ticket" />
+    <PageToolbar title="National Gangotri" description="Announce Master" />
   );
 };

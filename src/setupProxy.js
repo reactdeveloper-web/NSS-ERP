@@ -8,7 +8,9 @@ module.exports = function (app) {
       changeOrigin: true,
       secure: true,
       pathRewrite: { '^/api': '' },
-      logLevel: 'debug', // ← add this to see proxy logs in terminal
+      onProxyReq: (proxyReq, req) => {
+        console.log('[PROXY]', req.method, req.url, '→', proxyReq.path);
+      },
     }),
   );
 };

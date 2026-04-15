@@ -58,6 +58,36 @@ export const AnnounceDetailsTab = ({
   onDeleteCause,
   onQuantityChange,
 }: AnnounceDetailsTabProps) => {
+  const buildSelectedOptions = (
+    value: string,
+    label: string,
+    options: EventOption[],
+    alternateValues: string[] = [],
+  ) => {
+    const normalizedAlternates = alternateValues
+      .map(optionValue => optionValue.trim())
+      .filter(Boolean);
+    const selectedOption = options.find(
+      option =>
+        option.value === value ||
+        normalizedAlternates.includes(option.value.trim()) ||
+        (option.purposeId?.trim() &&
+          normalizedAlternates.includes(option.purposeId.trim())) ||
+        (option.yojnaId?.trim() &&
+          normalizedAlternates.includes(option.yojnaId.trim())),
+    );
+
+    if (selectedOption) {
+      return options;
+    }
+
+    if (!value.trim() || !label.trim()) {
+      return options;
+    }
+
+    return [{ value, label }, ...options];
+  };
+
   const renderQuantityField = (
     quantity: number,
     disabled: boolean,
@@ -317,98 +347,116 @@ export const AnnounceDetailsTab = ({
         <div className="mt-6">
           {addedCauses.map(cause => (
             <div className="card border-0 mb-5" key={cause.id}>
-              <div className="row g-5">
-                <div className="col-md-3">
-                  <FloatingSelectField
-                    id={`causeHead-${cause.id}`}
-                    label={
-                      <>
-                        Cause Head <span className="text-danger">*</span>
-                      </>
-                    }
-                    value={cause.causeHead}
-                    options={causeHeadOptions}
-                    disabled
-                    onChange={() => undefined}
-                  />
-                </div>
+              {(() => {
+                const causeHeadFieldValue =
+                  cause.causeHeadPurposeId || cause.causeHead;
+                const causeHeadFieldOptions = buildSelectedOptions(
+                  causeHeadFieldValue,
+                  cause.causeHeadLabel,
+                  causeHeadOptions,
+                  [cause.causeHead, cause.causeHeadPurposeId],
+                );
+                const purposeFieldValue = cause.yojnaId || cause.purpose;
+                const purposeFieldOptions = buildSelectedOptions(
+                  purposeFieldValue,
+                  cause.purposeLabel,
+                  [],
+                  [cause.purpose, cause.yojnaId],
+                );
+                const normalizedCauseHeadValue = cause.causeHeadPurposeId || cause.causeHead;
 
-                <div className="col-md-3">
-                  <FloatingSelectField
-                    id={`purpose-${cause.id}`}
-                    label={
-                      <>
-                        Purpose <span className="text-danger">*</span>
-                      </>
-                    }
-                    value={cause.purpose}
-                    options={[
-                      {
-                        value: cause.purpose,
-                        label: cause.purposeLabel,
-                      },
-                    ]}
-                    disabled
-                    onChange={() => undefined}
-                  />
-                </div>
-                <div className="col-md-5">
+                return (
                   <div className="row g-5">
-                    <div className="col-md-4">
-                      <FloatingInputField
-                        id={`quantity-${cause.id}`}
-                        label="Quantity"
-                        value={String(cause.quantity)}
-                        onChange={() => undefined}
+                    <div className="col-md-3">
+                      <FloatingSelectField
+                        id={`causeHead-${cause.id}`}
+                        label={
+                          <>
+                            Cause Head <span className="text-danger">*</span>
+                          </>
+                        }
+                        value={causeHeadFieldValue}
+                        options={causeHeadFieldOptions}
                         disabled
-                      />
-                    </div>
-
-                    <div className="col-md-4">
-                      <FloatingInputField
-                        id={`autoAmount-${cause.id}`}
-                        label="Amount (Auto)"
-                        value={cause.amount}
                         onChange={() => undefined}
-                        readOnly
-                        className="form-control ant-input-floating-control form-control-solid"
                       />
                     </div>
 
-                    {cause.causeHead === '150' ? (
-                      <div className="col-md-4">
-                        <FloatingDatePicker
-                          id={`causeHeadDate-${cause.id}`}
-                          label="Bhojan Miti Date"
-                          value={cause.causeHeadDate}
-                          disabled
-                        />
+                    <div className="col-md-3">
+                      <FloatingSelectField
+                        id={`purpose-${cause.id}`}
+                        label={
+                          <>
+                            Purpose <span className="text-danger">*</span>
+                          </>
+                        }
+                        value={purposeFieldValue}
+                        options={purposeFieldOptions}
+                        disabled
+                        onChange={() => undefined}
+                      />
+                    </div>
+                    <div className="col-md-5">
+                      <div className="row g-5">
+                        <div className="col-md-4">
+                          <FloatingInputField
+                            id={`quantity-${cause.id}`}
+                            label="Quantity"
+                            value={String(cause.quantity)}
+                            onChange={() => undefined}
+                            disabled
+                          />
+                        </div>
+
+                        <div className="col-md-4">
+                          <FloatingInputField
+                            id={`autoAmount-${cause.id}`}
+                            label="Amount (Auto)"
+                            value={cause.amount}
+                            onChange={() => undefined}
+                            readOnly
+                            className="form-control ant-input-floating-control form-control-solid"
+                          />
+                        </div>
+
+                        {normalizedCauseHeadValue === '150' ? (
+                          <div className="col-md-4">
+                            <FloatingDatePicker
+                              id={`causeHeadDate-${cause.id}`}
+                              label="Bhojan Miti Date"
+                              value={cause.causeHeadDate}
+                              disabled
+                            />
+                          </div>
+                        ) : null}
                       </div>
-                    ) : null}
+                    </div>
+
+                    <div className="col-md-1 d-flex">
+                      <button
+                        className="btn btn-light-primary text-center w-50"
+                        type="button"
+                        disabled={isViewMode}
+                        onClick={() => onEditCause(cause.id)}
+                      >
+                        <i className="fa fa-pen  fs-5"></i>
+                      </button>
+                      <button
+                        className="btn btn-light-danger  w-50 text-center"
+                        type="button"
+                        disabled={isViewMode}
+                        onClick={() => onDeleteCause(cause.id)}
+                      >
+                        <i className="fa fa-trash  fs-5"></i>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                );
+              })()}
 
-                <div className="col-md-1 d-flex">
-                  <button
-                    className="btn btn-light-primary text-center w-50"
-                    type="button"
-                    disabled={isViewMode}
-                    onClick={() => onEditCause(cause.id)}
-                  >
-                    <i className="fa fa-pen  fs-5"></i>
-                  </button>
-                  <button
-                    className="btn btn-light-danger  w-50 text-center"
-                    type="button"
-                    disabled={isViewMode}
-                    onClick={() => onDeleteCause(cause.id)}
-                  >
-                    <i className="fa fa-trash  fs-5"></i>
-                  </button>
-                </div>
-              </div>
-
-              {['162', '167', '168'].includes(cause.causeHead) ? (
+              {['162', '167', '168'].includes(
+                cause.causeHeadPurposeId || cause.causeHead,
+              ) ? (
                 <div className="row g-5 mt-1">
                   <div className="col-md-3">
                     <FloatingInputField
@@ -502,7 +550,7 @@ export const AnnounceDetailsTab = ({
             <input
               className="form-check-input"
               type="checkbox"
-              checked={form.isMotivated}
+              checked={form.isMotivated || Boolean(form.motivatedAmount.trim())}
               disabled={isViewMode}
               onChange={event => onChange('isMotivated', event.target.checked)}
             />
@@ -510,7 +558,7 @@ export const AnnounceDetailsTab = ({
           </label>
         </div>
 
-        {form.isMotivated ? (
+        {form.isMotivated || form.motivatedAmount.trim() ? (
           <div className="col-md-3">
             <FloatingInputField
               id="motivatedAmount"
