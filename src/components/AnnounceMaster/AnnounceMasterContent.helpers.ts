@@ -440,19 +440,19 @@ const extractCauseHeadOptions = (payload: unknown): EventOption[] => {
             'ID',
             'PurposeName',
             'PURPOSE_NAME',
+            'Purpose',
             'PurposeHeadName',
             'PURPOSEHEADNAME',
-            'Purpose',
             'Name',
             'Text',
           ]),
         label: getFirstValue(record, [
           'PurposeName',
           'PURPOSE_NAME',
+          'Purpose',
           'PurposeHeadName',
           'PURPOSEHEADNAME',
           'PName',
-          'Purpose',
           'HeadName',
           'Description',
           'Name',
@@ -493,13 +493,13 @@ const extractYojnaOptions = (payload: unknown): EventOption[] => {
         'DonationAmount',
       ]);
       const yojnaName = getFirstValue(record, [
+        'Yojna',
         'YojnaName',
         'YOJNA_NAME',
         'SchemeName',
         'SCHEME_NAME',
         'PlanName',
         'PLAN_NAME',
-        'Yojna',
         'PurposeName',
         'Name',
         'Text',
@@ -522,12 +522,7 @@ const extractYojnaOptions = (payload: unknown): EventOption[] => {
 
       return {
         value: yojnaId || amountValue || yojnaName,
-        label:
-          yojnaName && amountValue
-            ? `${yojnaName} (Rs. ${Number(amountValue).toLocaleString(
-                'en-IN',
-              )})`
-            : yojnaName || amountValue || yojnaId,
+        label: yojnaName || amountValue || yojnaId,
         yojnaId,
         qtyValue,
         amountValue,
@@ -1083,6 +1078,10 @@ const writeAnnouncementCache = (records: AnnouncementCacheRecord[]) => {
   localStorage.setItem(ANNOUNCEMENT_CACHE_KEY, JSON.stringify(records));
 };
 
+const clearAnnouncementCache = () => {
+  localStorage.removeItem(ANNOUNCEMENT_CACHE_KEY);
+};
+
 const mapCacheToListingItem = (
   record: AnnouncementCacheRecord,
 ): AnnouncementListingItem => ({
@@ -1367,5 +1366,6 @@ export {
   resolveStateOption,
   toDigitsNumber,
   toNullableText,
+  clearAnnouncementCache,
   writeAnnouncementCache,
 };

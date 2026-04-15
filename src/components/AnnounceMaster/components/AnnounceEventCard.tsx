@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Select } from 'antd';
 import {
   AnnounceEventForm,
@@ -39,6 +39,33 @@ export const AnnounceEventCard = ({
   errors,
   onChange,
 }: AnnounceEventCardProps) => {
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const bootstrap = (window as Window & {
+      bootstrap?: {
+        Tooltip?: new (element: Element, options?: Record<string, unknown>) => {
+          dispose?: () => void;
+        };
+      };
+    }).bootstrap;
+
+    if (!bootstrap?.Tooltip || !panelRef.current) {
+      return;
+    }
+
+    const tooltipElements = Array.from(
+      panelRef.current.querySelectorAll('[data-bs-toggle="tooltip"]'),
+    );
+    const tooltips = tooltipElements.map(
+      element => new bootstrap.Tooltip!(element, { trigger: 'hover' }),
+    );
+
+    return () => {
+      tooltips.forEach(tooltip => tooltip.dispose?.());
+    };
+  }, []);
+
   const renderFloatingSelect = (
     id: keyof Pick<
       AnnounceEventForm,
@@ -48,8 +75,15 @@ export const AnnounceEventCard = ({
     value: string,
     options: EventOption[],
     disabled = false,
+    tooltipTitle?: string,
   ) => (
-    <div>
+    <div
+      data-bs-toggle={tooltipTitle ? 'tooltip' : undefined}
+      data-bs-placement={tooltipTitle ? 'top' : undefined}
+      data-bs-trigger={tooltipTitle ? 'hover' : undefined}
+      data-bs-title={tooltipTitle}
+      title={tooltipTitle}
+    >
       <div
         className={`form-floating ant-select-floating ${
           value ? 'has-value' : ''
@@ -81,7 +115,7 @@ export const AnnounceEventCard = ({
 
   return (
     <>
-      <div className="announce-master-panel">
+      <div className="announce-master-panel" ref={panelRef}>
         <div className="announce-master-helper-text">
           Announcement details: please fill in the announcement details.
         </div>
@@ -162,6 +196,7 @@ export const AnnounceEventCard = ({
                   form.eventCause,
                   eventCauseOptions,
                   isViewMode,
+                  'Select Event Cause',
                 )}
               </div>
             </div>
