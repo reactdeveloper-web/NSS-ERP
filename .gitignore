@@ -66,7 +66,7 @@ config/master.key
 
 # dotenv, dotenv-rails
 # TODO Comment out these rules if environment variables can be committed
-.env
+#.env
 
 
 ## Environment normalization:
@@ -98,7 +98,7 @@ build.zip
 # Ignore precompiled javascript packs
 /public/packs
 /public/packs-test
-/public/assets
+#/public/assets
 
 # Ignore yarn files
 /yarn-error.log
@@ -182,8 +182,8 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
-.env.test
+#.env
+#.env.test
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
