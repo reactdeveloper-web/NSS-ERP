@@ -522,12 +522,7 @@ const extractYojnaOptions = (payload: unknown): EventOption[] => {
 
       return {
         value: yojnaId || amountValue || yojnaName,
-        label:
-          yojnaName && amountValue
-            ? `${yojnaName} (Rs. ${Number(amountValue).toLocaleString(
-                'en-IN',
-              )})`
-            : yojnaName || amountValue || yojnaId,
+        label: yojnaName || amountValue || yojnaId,
         yojnaId,
         qtyValue,
         amountValue,

@@ -9,7 +9,7 @@ const apiBaseUrl =
       'https://deverp.narayanseva.org/erp';
 
 const axiosInstance = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: process.env.REACT_APP_API_BASE_URL,
 });
 
 export default axiosInstance;

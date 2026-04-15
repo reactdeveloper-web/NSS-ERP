@@ -238,10 +238,10 @@ const mapApiCauseRecords = (
       getFirstValue(causeRecord, [
         'cause_id',
         'CauseId',
+        'purpose',
+        'Purpose',
         'purpose_id',
         'PurposeId',
-        'yojna_id',
-        'YojnaId',
       ]) ||
       getFirstValue(record, ['cause_id', 'CauseId', 'purpose', 'Purpose']),
     purpose: getFirstValue(causeRecord, [
@@ -256,6 +256,7 @@ const mapApiCauseRecords = (
       getFirstValue(causeRecord, [
         'yojna_name',
         'YojnaName',
+        'Yojna',
         'purpose_name',
         'PurposeName',
         'cause_name',
@@ -264,6 +265,7 @@ const mapApiCauseRecords = (
     yojnaId: getFirstValue(causeRecord, [
       'yojna_id',
       'YojnaId',
+      'Yojna_ID',
       'cause_id',
       'CauseId',
     ]),
@@ -694,13 +696,30 @@ export const AnnounceMasterContent = () => {
           'donor_name',
           'DonorName',
         ]),
-        announceInOtherName: toBooleanFlag(
-          getFirstValue(record, [
-            'announce_in_other_name',
-            'AnnounceInOtherName',
-          ]),
-        ),
+        announceInOtherName:
+          toBooleanFlag(
+            getFirstValue(record, [
+              'announce_in_other_name',
+              'AnnounceInOtherName',
+              'other_type',
+              'OtherType',
+            ]),
+          ) ||
+          Boolean(
+            getFirstValue(record, [
+              'ashri_oth',
+              'AshriOth',
+              'other_salutation',
+              'OtherSalutation',
+              'oth_name',
+              'OthName',
+              'announced_for_name',
+              'AnnouncedForName',
+            ]).trim(),
+          ),
         announcedForName: getFirstValue(record, [
+          'oth_name',
+          'OthName',
           'announced_for_name',
           'AnnouncedForName',
         ]),
@@ -778,6 +797,8 @@ export const AnnounceMasterContent = () => {
             'CauseHeadDate',
             'bhojan_date',
             'BhojanDate',
+            'third_date',
+            'ThirdDate',
           ]),
         ),
         namePlateName: getFirstValue(record, [
@@ -821,6 +842,8 @@ export const AnnounceMasterContent = () => {
             'DueDate',
             'expected_date',
             'ExpectedDate',
+            'third_date',
+            'ThirdDate',
           ]),
         ),
         expectedTime: normalizeApiTime(
@@ -1631,7 +1654,11 @@ export const AnnounceMasterContent = () => {
   }, []);
 
   useEffect(() => {
-    if (causeHeadOptions.length === 0 || announceDetailsForm.causeHead.trim()) {
+    if (
+      operation !== 'ADD' ||
+      causeHeadOptions.length === 0 ||
+      announceDetailsForm.causeHead.trim()
+    ) {
       return;
     }
 
@@ -1655,7 +1682,7 @@ export const AnnounceMasterContent = () => {
       ...current,
       causeHead: matchedCauseHead.value,
     }));
-  }, [announceDetailsForm.causeHead, causeHeadOptions]);
+  }, [announceDetailsForm.causeHead, causeHeadOptions, operation]);
 
   useEffect(() => {
     if (
@@ -1815,10 +1842,10 @@ export const AnnounceMasterContent = () => {
               option.purposeId?.trim() === cause.causeHead.trim() ||
               option.purposeId?.trim() === cause.causeHeadPurposeId.trim(),
           );
-
-          if (!matchedCauseHead) {
-            return cause;
-          }
+          const purposeIdForLookup =
+            matchedCauseHead?.value ||
+            cause.causeHeadPurposeId.trim() ||
+            cause.causeHead.trim();
 
           let purposeLabel = cause.purposeLabel;
           let purposeValue = cause.purpose;
@@ -1827,7 +1854,7 @@ export const AnnounceMasterContent = () => {
           try {
             const {
               purposeOptions: nextPurposeOptions,
-            } = await loadPurposeOptionsData(matchedCauseHead.value);
+            } = await loadPurposeOptionsData(purposeIdForLookup);
             const matchedPurpose = nextPurposeOptions.find(
               option =>
                 option.value === cause.purpose ||
@@ -1847,10 +1874,19 @@ export const AnnounceMasterContent = () => {
 
           return {
             ...cause,
-            causeHead: matchedCauseHead.value,
-            causeHeadLabel: matchedCauseHead.label,
+            causeHead:
+              matchedCauseHead?.value ||
+              cause.causeHeadPurposeId ||
+              cause.causeHead,
+            causeHeadLabel:
+              matchedCauseHead?.label ||
+              cause.causeHeadLabel ||
+              cause.causeHead,
             causeHeadPurposeId:
-              matchedCauseHead.purposeId?.trim() || matchedCauseHead.value,
+              matchedCauseHead?.purposeId?.trim() ||
+              matchedCauseHead?.value ||
+              cause.causeHeadPurposeId ||
+              cause.causeHead,
             purpose: purposeValue,
             purposeLabel,
             yojnaId,
