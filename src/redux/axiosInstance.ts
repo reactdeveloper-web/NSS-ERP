@@ -1,23 +1,14 @@
+// src/api/axiosInstance.ts
 import axios from 'axios';
 
-const FALLBACK_API_BASE_URL = 'https://deverp.narayanseva.org/erp';
-const isDevelopmentServer = process.env.NODE_ENV === 'development';
-
-const apiBaseUrl = isDevelopmentServer
-  ? '/erp'
-  : process.env.REACT_APP_API_BASE_URL || FALLBACK_API_BASE_URL;
+// In development: REACT_APP_API_BASE_URL is empty → CRA proxy forwards /erp/* to backend
+// In production (S3/CloudFront): REACT_APP_API_BASE_URL = 'https://deverp.narayanseva.org'
+const BASE_URL = process.env.REACT_APP_API_BASE_URL
+  ? `${process.env.REACT_APP_API_BASE_URL}/erp/` // ← Production
+  : '/api/erp/'; // ← Development (proxy)
 
 const axiosInstance = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: BASE_URL,
 });
-
-if (typeof window !== 'undefined') {
-  console.log('Axios config debug', {
-    nodeEnv: process.env.NODE_ENV,
-    origin: window.location.origin,
-    hostname: window.location.hostname,
-    apiBaseUrl,
-  });
-}
 
 export default axiosInstance;
