@@ -8,7 +8,6 @@ import { setAlert } from 'src/components/Alert/Alert.thunks';
 import { AlertTypes } from 'src/constants/alerts';
 import { ContentTypes } from 'src/constants/content';
 import { clearAnnouncementCache } from 'src/components/AnnounceMaster/AnnounceMasterContent.helpers';
-
 import axiosInstance from 'src/redux/axiosInstance';
 
 interface ReqUserActivity {
