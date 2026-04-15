@@ -8,7 +8,6 @@ import { setAlert } from 'src/components/Alert/Alert.thunks';
 import { AlertTypes } from 'src/constants/alerts';
 import { ContentTypes } from 'src/constants/content';
 import axiosInstance from '../../redux/interceptor';
-import qs from 'qs';
 
 interface ReqUserActivity {
   empnum: number;
