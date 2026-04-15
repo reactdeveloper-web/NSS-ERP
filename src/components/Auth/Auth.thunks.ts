@@ -7,8 +7,7 @@ import { v4 as uuid } from 'uuid';
 import { setAlert } from 'src/components/Alert/Alert.thunks';
 import { AlertTypes } from 'src/constants/alerts';
 import { ContentTypes } from 'src/constants/content';
-import { clearAnnouncementCache } from 'src/components/AnnounceMaster/AnnounceMasterContent.helpers';
-import axiosInstance from 'src/redux/axiosInstance';
+import axiosInstance from '../../redux/interceptor';
 
 interface ReqUserActivity {
   empnum: number;
@@ -30,7 +29,7 @@ export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
   try {
     dispatch(actions.userLoaded(user));
     return user;
-  } catch (error) {
+  } catch (error: any) {
     dispatch(actions.authError());
     dispatch(setAlert({ msg: error.message, type: AlertTypes.ERROR }));
     return;
@@ -39,7 +38,12 @@ export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
 
 export const login = (payload: ReqLogin) => async dispatch => {
   try {
-    const res = await axiosInstance.post('/login/UserLogin', payload);
+    const res = await axiosInstance.post(`/login/UserLogin`, payload);
+    // const res = await axios.post('/api/erp/login/UserLogin', payload);
+    // const res = await axios.post(
+    //   'https://deverp.narayanseva.org/erp/login/UserLogin',
+    //   payload,
+    // );
     const allUsers = res.data;
     let user = allUsers.userData;
     //console.log('login',allUsers);
@@ -113,7 +117,7 @@ export const forgot = (payload: ReqForgot) => async dispatch => {
       );
       return dispatch(actions.loginFailed());
     }
-  } catch (error) {
+  } catch (error: any) {
     console.log('FORGOT ERROR', error.response?.data || error);
     dispatch(
       setAlert({
@@ -150,7 +154,6 @@ export const logout = () => async dispatch => {
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('loginTimestamp');
   localStorage.removeItem('user');
-  clearAnnouncementCache();
 
   dispatch(actions.logoutSuccess());
   dispatch(

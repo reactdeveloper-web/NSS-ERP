@@ -1,22 +1,16 @@
-const proxy = require('http-proxy-middleware');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
-const proxyTarget =
-  process.env.REACT_APP_PROXY_TARGET || 'https://deverp.narayanseva.org';
-
-delete process.env.HTTP_PROXY;
-delete process.env.HTTPS_PROXY;
-delete process.env.http_proxy;
-delete process.env.https_proxy;
-
-module.exports = function setupProxy(app) {
+module.exports = function (app) {
   app.use(
-    proxy('/erp', {
-      target: proxyTarget,
+    '/api',
+    createProxyMiddleware({
+      target: 'https://deverp.narayanseva.org',
       changeOrigin: true,
-      secure: false,
-      proxyTimeout: 120000,
-      timeout: 120000,
-      logLevel: 'warn',
-    })
+      secure: true,
+      pathRewrite: { '^/api': '' },
+      onProxyReq: (proxyReq, req) => {
+        //console.log('[PROXY]', req.method, req.url, '→', proxyReq.path);
+      },
+    }),
   );
 };
