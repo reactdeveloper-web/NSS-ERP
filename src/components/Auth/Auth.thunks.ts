@@ -38,12 +38,12 @@ export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
 
 export const login = (payload: ReqLogin) => async dispatch => {
   try {
-    // const res = await axiosInstance.post(`/login/UserLogin`, payload);
+    const res = await axiosInstance.post(`/login/UserLogin`, payload);
     // const res = await axios.post('/api/erp/login/UserLogin', payload);
-    const res = await axios.post(
-      'https://deverp.narayanseva.org/erp/login/UserLogin',
-      payload,
-    );
+    // const res = await axios.post(
+    //   'https://deverp.narayanseva.org/erp/login/UserLogin',
+    //   payload,
+    // );
     const allUsers = res.data;
     let user = allUsers.userData;
     //console.log('login',allUsers);
@@ -117,7 +117,7 @@ export const forgot = (payload: ReqForgot) => async dispatch => {
       );
       return dispatch(actions.loginFailed());
     }
-  } catch (error) {
+  } catch (error: any) {
     console.log('FORGOT ERROR', error.response?.data || error);
     dispatch(
       setAlert({
