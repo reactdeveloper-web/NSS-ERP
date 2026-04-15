@@ -412,7 +412,11 @@ const buildSavePayload = ({
       })),
       announce_id: Number(announceIdParam || 0),
       ashri: personalInfoForm.salutation || '',
-      ashri_oth: personalInfoForm.salutation || null,
+      ashri_oth: personalInfoForm.announceInOtherName
+        ? personalInfoForm.otherSalutation ||
+          personalInfoForm.salutation ||
+          null
+        : null,
       announcer_name: personalInfoForm.announcerName.trim(),
       announce_amount: announceAmount,
       address1: null,
@@ -443,7 +447,9 @@ const buildSavePayload = ({
       channel_code: channelCode,
       pandit_code: panditCode,
       bhag_city_code: bhagCityCode || null,
-      oth_name: null,
+      oth_name: personalInfoForm.announceInOtherName
+        ? toNullableText(personalInfoForm.announcedForName)
+        : null,
       mob_no_second: null,
       mob_no_third: null,
       user_name: currentUser.username || '',
