@@ -20,18 +20,15 @@ const ResetPassword = lazy(
 const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
-const CitPage = lazy(() => import('src/pages/cit/CitPage'));
-
-const ProfileMasterPage = lazy(
-  () => import('src/pages/MyProfilePage/ProfileMasterPage'),
-);
 
 const ReceiveIdCreationPage = lazy(
   () => import('src/pages/MasterPages/ReceiveIdCreationPage'),
 );
 
-const ReceiveIdMasterPage = lazy(
-  () => import('src/pages/MasterPages/ReceiveIdMasterPage'),
+const CitPage = lazy(() => import('src/pages/cit/CitPage'));
+
+const ProfileMasterPage = lazy(
+  () => import('src/pages/MyProfilePage/ProfileMasterPage'),
 );
 
 // ---> Error pages
@@ -74,20 +71,11 @@ export const Routes = () => {
                 path={PATH.ANNOUNCE_MASTER}
                 component={AnnounceMasterPage}
               />
+
               <Route
                 exact
                 path={PATH.RECEIVE_ID_CREATION}
                 component={ReceiveIdCreationPage}
-              />
-              <Route
-                exact
-                path={PATH.RECEIVE_ID_Master}
-                component={ReceiveIdMasterPage}
-              />
-              <Route
-                exact
-                path="/cit"
-                render={() => <Redirect to={PATH.CIT} />}
               />
               <Route exact path={PATH.CIT} component={CitPage} />
 

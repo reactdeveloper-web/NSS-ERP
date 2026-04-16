@@ -1,6 +1,76 @@
-#receiveTable th.sortable::after {
-  content: '↕';
-  font-size: 12px;
-  margin-left: 6px;
-  opacity: 0.6;
-}
+		.menu-state-icon-primary .menu-item .menu-link:hover:not(.disabled):not(.active) .menu-icon i,
+		.menu-state-icon-primary .menu-item.hover>.menu-link:not(.disabled):not(.active) .menu-icon i {
+		    color: #1cb8a1 !important;
+		}
+
+		.menu-state-title-primary .menu-item .menu-link:hover:not(.disabled):not(.active) .menu-title,
+		.menu-state-title-primary .menu-item.hover>.menu-link:not(.disabled):not(.active) .menu-title {
+		    color: #1cb8a1 !important;
+		}
+
+		.menu-state-bullet-primary .menu-item .menu-link:hover:not(.disabled):not(.active) .menu-bullet .bullet,
+		.menu-state-bullet-primary .menu-item.hover>.menu-link:not(.disabled):not(.active) .menu-bullet .bullet {
+		    color: #1cb8a1 !important;
+		}
+
+		.menu-item .menu-link:hover:not(.disabled):not(.active),
+		.menu-state-title-primary .menu-item.hover>.menu-link:not(.disabled):not(.active) {
+		    transition: color .2s ease, background-color .2s ease;
+		    /* color: #009ef7; */
+		    color: #1cb8a1 !important;
+		}
+
+		.btn.btn-primary {
+		    color: #fff;
+		    border-color: #1cb8a1;
+		    background-color: #1cb8a1;
+		}
+
+		.text-hover-primary:hover {
+		    transition: color .2s ease, background-color .2s ease;
+		    color: #1cb8a1 !important;
+		}
+
+		.collpsIcon .toggle-on {
+		    background: #29B79D;
+		    color: #ffffff;
+		}
+
+		.collpsIcon .toggle-off {
+		    background: #28166f;
+		    color: #ffffff;
+		}
+
+		/* MOBILE TABS SCROLL */
+		.tabs-mobile-scroll {
+		    width: 100%;
+		}
+
+		/* Only mobile */
+		@media (max-width:768px) {
+
+		    .tabs-mobile-scroll {
+		        overflow-x: auto;
+		        overflow-y: hidden;
+		        -webkit-overflow-scrolling: touch;
+		    }
+
+		    #detailsTabNav {
+		        flex-wrap: nowrap !important;
+		        white-space: nowrap;
+		        gap: 6px;
+		        padding-bottom: 5px;
+		        min-width: max-content;
+		    }
+
+		    #detailsTabNav .nav-item {
+		        flex: 0 0 auto;
+		    }
+
+		    #detailsTabNav .nav-link {
+		        font-size: 13px;
+		        padding: 10px 14px;
+		        border-radius: 8px;
+		        white-space: nowrap;
+		    }
+		}
