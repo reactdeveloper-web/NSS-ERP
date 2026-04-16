@@ -1,5 +1,4 @@
 /* eslint-disable eqeqeq */
-/* eslint-disable prettier/prettier */
 import axios from 'axios';
 import { URL } from 'src/constants/urls';
 import * as actions from './Auth.actions';
