@@ -41,7 +41,11 @@ export const getTodos = () => async dispatch => {
     const res = await axiosInstance.post(
       `/master/GetDashboard`,
       reqUserActivity,
+      {
+        withCredentials: true
+      },
     );
+
     const todos = res.data.Dashboard;
     dispatch(actions.getTodosSuccess(todos));
   } catch (error) {
