@@ -5,7 +5,7 @@ export const PATH = {
   ANNOUNCE_MASTER: '/announcement',
   RECEIVE_ID_CREATION: '/receive-id-creation',
   RECEIVE_ID_Master: '/receive-id-master',
-  CIT: '/cit',
+  CIT: '/call-information-trait',
   FORGOT: '/forgot',
   PROFILE: '/profile',
   RESET_PASSWORD: '/reset-password',

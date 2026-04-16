@@ -17,4 +17,7 @@ export const masterApiPaths = {
   getAnnounceDetailsById: 'CRM/GetAnnounceDetailsById',
   createAnnounce: 'CRM/CreateAnnounce',
   updateAnnounce: 'CRM/UpdateAnnounce',
+  getCitList: '/CRM/GetCITList',
+  getCitDetailsById: '/CRM/GetCITById',
+  createCit: '/CRM/InsertCIT',
 } as const;

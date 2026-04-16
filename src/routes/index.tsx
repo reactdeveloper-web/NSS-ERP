@@ -84,6 +84,11 @@ export const Routes = () => {
                 path={PATH.RECEIVE_ID_Master}
                 component={ReceiveIdMasterPage}
               />
+              <Route
+                exact
+                path="/cit"
+                render={() => <Redirect to={PATH.CIT} />}
+              />
               <Route exact path={PATH.CIT} component={CitPage} />
 
               {/* Error routes */}

@@ -1,12 +1,10 @@
 import React from 'react';
 import { CountryField } from 'src/components/Common/CountryField';
-import { DistrictField } from 'src/components/Common/DistrictField';
 import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
 import { FloatingInputField } from 'src/components/Common/FloatingInputField';
 import { FloatingSelectField } from 'src/components/Common/FloatingSelectField';
+import { FloatingTextareaField } from 'src/components/Common/FloatingTextareaField';
 import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
-import { PincodeField } from 'src/components/Common/PincodeField';
-import { StateField } from 'src/components/Common/StateField';
 
 export interface CallCenterTicketForm {
   ticketId: string;
@@ -21,14 +19,21 @@ export interface CallCenterTicketForm {
   mobileNo2: string;
   callBackDate: string;
   callBackTime: string;
-  pincode: string;
-  state: string;
-  district: string;
   details: string;
+}
+
+export interface CallCenterTicketValidationErrors {
+  callCategoryName?: string;
+  selectType?: string;
+  requestBy?: string;
+  callBackDate?: string;
+  details?: string;
 }
 
 interface CallCenterTicketTabProps {
   form: CallCenterTicketForm;
+  disabled?: boolean;
+  errors?: CallCenterTicketValidationErrors;
   onChange: <K extends keyof CallCenterTicketForm>(
     field: K,
     value: CallCenterTicketForm[K],
@@ -51,27 +56,10 @@ const selectTypeOptions = [
   { value: 'Update Donor Details', label: 'Update Donor Details' },
 ];
 
-const countryOptions = [
-  { value: 'India', label: 'India' },
-  { value: 'USA', label: 'USA' },
-  { value: 'UK', label: 'UK' },
-  { value: 'UAE', label: 'UAE' },
-];
-
-const stateOptions = [
-  { value: 'Rajasthan', label: 'Rajasthan' },
-  { value: 'Delhi', label: 'Delhi' },
-  { value: 'Gujarat', label: 'Gujarat' },
-];
-
-const districtOptions = [
-  { value: 'Udaipur', label: 'Udaipur' },
-  { value: 'Jaipur', label: 'Jaipur' },
-  { value: 'Ahmedabad', label: 'Ahmedabad' },
-];
-
 export const CallCenterTicketTab = ({
   form,
+  disabled = false,
+  errors = {},
   onChange,
 }: CallCenterTicketTabProps) => {
   return (
@@ -80,10 +68,11 @@ export const CallCenterTicketTab = ({
         <div className="col-md-3">
           <FloatingInputField
             id="ticketId"
-            label="Ticket ID"
+            label="Information Code"
             value={form.ticketId}
             onChange={value => onChange('ticketId', value)}
             readOnly
+            disabled={disabled}
             className="form-control form-control-solid ant-input-floating-control"
           />
         </div>
@@ -94,6 +83,8 @@ export const CallCenterTicketTab = ({
             label="Date"
             value={form.date}
             onChange={value => onChange('date', value)}
+            readOnly
+            disabled={disabled}
           />
         </div>
 
@@ -103,6 +94,7 @@ export const CallCenterTicketTab = ({
             label="NG Code"
             value={form.ngCode}
             onChange={value => onChange('ngCode', value)}
+            disabled={disabled}
           />
         </div>
 
@@ -116,35 +108,50 @@ export const CallCenterTicketTab = ({
             }
             value={form.callCategoryName}
             options={callCategoryOptions}
+            disabled={disabled}
             onChange={value => onChange('callCategoryName', value)}
+            error={errors.callCategoryName}
           />
         </div>
 
         <div className="col-md-3">
           <FloatingSelectField
             id="selectType"
-            label="Select Types"
+            label={
+              <>
+                Select Types <span className="text-danger">*</span>
+              </>
+            }
             value={form.selectType}
             options={selectTypeOptions}
+            disabled={disabled}
             onChange={value => onChange('selectType', value)}
+            error={errors.selectType}
           />
         </div>
 
         <div className="col-md-3">
           <FloatingInputField
             id="requestBy"
-            label="Request By"
+            label={
+              <>
+                Request By <span className="text-danger">*</span>
+              </>
+            }
             value={form.requestBy}
             onChange={value => onChange('requestBy', value)}
+            disabled={disabled}
+            error={errors.requestBy}
           />
         </div>
 
         <div className="col-md-3">
           <CountryField
+            id="country1"
             value={form.country1}
             onChange={value => onChange('country1', value)}
-            options={countryOptions}
-            disabled={false}
+            apiDataFlag="FOREIGN_GANGOTRI"
+            disabled={disabled}
           />
         </div>
 
@@ -155,15 +162,18 @@ export const CallCenterTicketTab = ({
             value={form.mobileNo1}
             onChange={value => onChange('mobileNo1', value)}
             type="tel"
+            disabled={disabled}
           />
         </div>
 
         <div className="col-md-3">
           <CountryField
+            id="country2"
             value={form.country2}
             onChange={value => onChange('country2', value)}
-            options={[{ value: '', label: 'Select' }, ...countryOptions]}
-            disabled={false}
+            apiDataFlag="FOREIGN_GANGOTRI"
+            includeEmptyOption
+            disabled={disabled}
           />
         </div>
 
@@ -174,15 +184,22 @@ export const CallCenterTicketTab = ({
             value={form.mobileNo2}
             onChange={value => onChange('mobileNo2', value)}
             type="tel"
+            disabled={disabled}
           />
         </div>
 
         <div className="col-md-3">
           <FloatingDatePicker
             id="callBackDate"
-            label="Call Back Date"
+            label={
+              <>
+                Call Back Date <span className="text-danger">*</span>
+              </>
+            }
             value={form.callBackDate}
             onChange={value => onChange('callBackDate', value)}
+            disabled={disabled}
+            error={errors.callBackDate}
           />
         </div>
 
@@ -192,44 +209,24 @@ export const CallCenterTicketTab = ({
             label="Call Back Time"
             value={form.callBackTime}
             onChange={value => onChange('callBackTime', value)}
-          />
-        </div>
-
-        <div className="col-md-2">
-          <PincodeField
-            value={form.pincode}
-            onChange={value => onChange('pincode', value)}
-          />
-        </div>
-
-        <div className="col-md-2">
-          <StateField
-            value={form.state}
-            options={stateOptions}
-            onChange={value => onChange('state', value)}
-          />
-        </div>
-
-        <div className="col-md-2">
-          <DistrictField
-            value={form.district}
-            options={districtOptions}
-            onChange={value => onChange('district', value)}
+            disabled={disabled}
           />
         </div>
 
         <div className="col-md-12">
-          <div className="form-floating ant-input-floating">
-            <textarea
-              id="details"
-              className="form-control ant-input-floating-control"
-              placeholder=" "
-              style={{ minHeight: '120px' }}
-              value={form.details}
-              onChange={event => onChange('details', event.target.value)}
-            />
-            <label htmlFor="details">Details</label>
-          </div>
+          <FloatingTextareaField
+            id="details"
+            label={
+              <>
+                Details <span className="text-danger">*</span>
+              </>
+            }
+            value={form.details}
+            disabled={disabled}
+            readOnly={disabled}
+            onChange={value => onChange('details', value)}
+            error={errors.details}
+          />
         </div>
       </div>
     </div>
