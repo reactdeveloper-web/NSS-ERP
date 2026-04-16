@@ -43,17 +43,12 @@
     "@types/redux-thunk": "2.1.32",
     "@types/styled-components": "5.1.7",
     "@types/uuid": "8.3.0",
-    "eslint-config-prettier": "8.1.0",
-    "eslint-plugin-prettier": "3.3.1",
-    "prettier": "2.2.1",
     "uuid": "8.3.2"
   },
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider SASS_SILENCE_DEPRECATIONS=legacy-js-api HTTP_PROXY= HTTPS_PROXY= NO_PROXY=localhost,127.0.0.1,::1,deverp.narayanseva.org react-scripts start",
     "start": "npm run dev",
-    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider SASS_SILENCE_DEPRECATIONS=legacy-js-api react-scripts build",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,scss,css}\" \".eslintrc\" \".prettierrc\" \"package.json\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,scss,css}\" \".eslintrc\" \".prettierrc\" \"package.json\""
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider SASS_SILENCE_DEPRECATIONS=legacy-js-api react-scripts build"
   },
   "browserslist": {
     "production": [

@@ -1,15 +1,13 @@
-import React from 'react';
-import { AuthenticatedPageShell } from '../Layout/AuthenticatedPageShell';
-import ReceiveIdCreationContent from '../ReceiveIdCreation/ReceiveIdCreationContent';
+import React from "react";
+import { AuthenticatedPageShell } from "../Layout/AuthenticatedPageShell";
+import { ReceiveIdCreationContent } from 'src/components/ReceiveIdCreation/ReceiveIdCreationContent';
 
-function ReceiveIdCreation() {
-  return (
+export const ReceiveIdCreation: React.FC = () => {
+    return(
     <>
-      <AuthenticatedPageShell>
-        <ReceiveIdCreationContent />
-      </AuthenticatedPageShell>
+        <AuthenticatedPageShell>
+            <ReceiveIdCreationContent />
+        </AuthenticatedPageShell>
     </>
-  );
+    )
 }
-
-export default ReceiveIdCreation;

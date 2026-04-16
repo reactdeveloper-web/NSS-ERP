@@ -20,7 +20,6 @@ export const AppHeader = () => {
   if (
     normalizedPathname === PATH.ANNOUNCE_MASTER.toLowerCase() ||
     normalizedPathname === PATH.RECEIVE_ID_CREATION.toLowerCase() ||
-    normalizedPathname === PATH.RECEIVE_ID_Master.toLowerCase() ||
     normalizedPathname === PATH.CIT.toLowerCase() ||
     normalizedPathname === PATH.PROFILE.toLowerCase() ||
     normalizedPathname === PATH.DASHBOARD.toLowerCase()
