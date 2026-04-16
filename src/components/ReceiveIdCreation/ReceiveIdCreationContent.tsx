@@ -1,14 +1,71 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory, Link } from 'react-router-dom';
 import { PATH } from 'src/constants/paths';
 import { ReceiveIdCreationNav } from './ReceiveIdCreationNav';
+import axiosInstance from 'src/redux/axiosInstance';
+import { masterApiPaths } from 'src/utils/masterApiPaths';
 import { FloatingInputField } from 'src/components/Common/FloatingInputField';
+import { ContentTypes } from 'src/constants/content';
 import './ReceiveIdCreationContent.scss';
+
+//Type
+type Salutation = {
+  SAL_CODE: number;
+  SAL_NAME: string;
+  DATA_FLAG: string;
+  FY_ID: number;
+};
+
+type Occasion = {
+  OccasionId: number;
+  OccasionName: string;
+}
 
 export const ReceiveIdCreationContent: React.FC = () => {
 
   // Toggle ('LIST') and the 'FORM'
   const [viewMode, setViewMode] = useState<'LIST' | 'FORM'>('LIST');
+
+  const [salutations, setSalutations] = useState<Salutation[]>([]);
+  const [occasions, setOccasions] = useState<Occasion[]>([]);
+
+
+
+  //Fetch Salutations data from API
+  useEffect(() => {
+    const fetchSalutation = async () => {
+      try {
+        const response = await axiosInstance.get(`/${masterApiPaths.getSalutations}`, {
+          params: {
+            Data_Flag: ContentTypes.DataFlag
+          }
+        });
+        const apiData = response.data?.Data || response.data || [];
+        const finalArray = apiData.result || [];
+        // console.log("=== PARSED DATA ARRAY: ===", finalArray);
+        setSalutations(finalArray);
+      } catch (error: any) {
+        console.error('Failed to load salutations:', error);
+      }
+    };
+
+    if (viewMode === 'FORM') {
+      fetchSalutation();
+    }
+  }, [viewMode]);
+  //Fetch Salutations data from API END
+
+  //Fetch Occasion
+  useEffect(() => {
+    const fetchOccasions = async () => {
+      try {
+
+      } catch (error: any) {
+        console.error('Failed to load occasions:', error);
+      }
+    }
+  }, [])
+
 
   return (
     <>
@@ -641,7 +698,8 @@ export const ReceiveIdCreationContent: React.FC = () => {
                             </label>
 
                             <div className={'input-group'}>
-                              <select id="salutation" className={'form-select'} style={{ maxWidth: '110px' }}>
+
+                              {/* <select id="salutation" className={'form-select'} style={{ maxWidth: '110px' }}>
                                 <option>Mr.</option>
                                 <option>Mrs.</option>
                                 <option>Ms.</option>
@@ -649,6 +707,23 @@ export const ReceiveIdCreationContent: React.FC = () => {
                                 <option>Shri</option>
                                 <option>Smt.</option>
                                 <option>Kumari</option>
+                              </select> */}
+
+                              <select
+                                id="salutation"
+                                className={'form-select'}
+                                style={{ maxWidth: '110px' }}
+                                defaultValue=""
+                              >
+                                <option value="" disabled>Select</option>
+                                {salutations.map((salutation: Salutation, index: number) => (
+                                  <option
+                                    key={salutation.SAL_CODE || index}
+                                    value={salutation.SAL_CODE}
+                                  >
+                                    {salutation.SAL_NAME}
+                                  </option>
+                                ))}
                               </select>
 
                               <input type="text" id="firstName" className={'form-control'} placeholder="Enter first name" />

@@ -7,6 +7,7 @@ axiosInstance.interceptors.request.use(
     if (token && config.url !== '/login/UserLogin') {
       config.headers.Authorization = `Bearer ${token}`;
       config.headers['Content-Type'] = 'application/json';
+      // config.withCredentials = true;
     }
     // ✅ Custom header
     // config.headers.APIKey = 'NSSAPI4SANSTHANUAT';
