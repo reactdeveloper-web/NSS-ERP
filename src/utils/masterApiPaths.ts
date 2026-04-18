@@ -7,6 +7,7 @@ export const masterApiPaths = {
   getStatesByCountry: '/master/GetStatesByCountry',
   getDistrictByState: '/master/GetDistrictByState',
   getStateAndDistrictByPinCode: '/master/GetStateAndDistrictByPinCode',
+  getEmployeeAll: '/master/GetEmployeeAll',
   getPurposeByDataFlag: '/master/GetPurposeByDataFlag',
   getCurrencyByCountry: '/master/GetCurrencyByCountry',
   getYojnaByPurposeAndCurrency: '/master/GetYojnaByPurposeAndCurrency',
@@ -20,6 +21,7 @@ export const masterApiPaths = {
   getCitList: '/CIT/GetCITList',
   getCitDetailsById: '/CIT/GetCITById',
   createCit: '/CIT/InsertCIT',
+  updateCit: '/CIT/UpdateCIT',
   getCallCategoryList: '/CIT/GetCallCategoryList',
   getCallSubCategoryList: '/CIT/GetCallSubCategoryList',
 } as const;
