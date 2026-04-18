@@ -77,7 +77,6 @@ export const Routes = () => {
                 path={PATH.RECEIVE_ID_CREATION}
                 component={ReceiveIdCreationPage}
               />
-
               <Route exact path={PATH.CIT} component={CitPage} />
 
               {/* Error routes */}
