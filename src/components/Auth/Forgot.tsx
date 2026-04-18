@@ -1,47 +1,43 @@
 import React, { useState } from 'react';
-import { Form, Input, Button } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { Form, Input } from 'antd';
 import { connect, ConnectedProps } from 'react-redux';
-import { Link, Redirect } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { forgot } from './Auth.thunks';
 import { PATH } from 'src/constants/paths';
-import { NavLink } from 'react-router-dom';
 import { IMAGEPATH } from 'src/constants/img-paths';
 
-const mapStateToProps = (state: AppState) => ({
-  isAuthenticated: state.auth.isAuthenticated,
-  isforgot: state.auth.isforgot,
-});
-const mapDispatchToProps = {
-  forgot,
-};
-const connector = connect(mapStateToProps, mapDispatchToProps);
+const mapDispatchToProps = { forgot };
+const connector = connect(null, mapDispatchToProps);
 interface Props extends ConnectedProps<typeof connector> {}
-const hrefa: React.CSSProperties = {
-  margin: '0 auto',
-};
 
-const _Forgot = (props: Props) => {
-  const [error, setError] = useState('');
-  const { forgot, isforgot } = props;
+const _Forgot = ({ forgot }: Props) => {
+  const history = useHistory();
+  const [loading, setLoading] = useState(false);
 
-  const onFinish = async formData => {
+  // ⭐ submit handler
+  const onFinish = async (formData: any) => {
     try {
-      await forgot(formData);
-    } catch (error: any) {
-      setError(error.payload.message);
+      setLoading(true);
+
+      const success = await forgot(formData);   // thunk return true/false
+
+      // ✅ redirect only when mail sent
+      if (success) {
+        setTimeout(() => {
+          history.replace(PATH.LOGIN); // ⭐ FIX router cache
+        }, 2000);
+      }
+
+    } finally {
+      setLoading(false);
     }
   };
-  if (isforgot) {
-    return <Redirect to={PATH.HOME} />;
-  }
 
   return (
     <div className="login-logo d-flex vh-100">
       <div className="bottom-bg d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
         <div className="d-flex flex-start text-center flex-column flex-column-fluid p-5 px-2 p-md-5">
           <div className="container">
-            {/* Logo */}
             <img alt="Logo" src={IMAGEPATH.LOGO} className="h-60px" />
 
             <div className="w-md-500px h-md-500px w-xxl-600px h-xxl-600px w-100 bg-body custom-rounded mx-auto d-flex flex-center p-4">
@@ -50,7 +46,7 @@ const _Forgot = (props: Props) => {
                 className="form w-md-375px w-xxl-425px w-100"
                 onFinish={onFinish}
               >
-                {/* Heading */}
+                
                 <div className="text-center mb-8">
                   <img src={IMAGEPATH.LOGIN_NSS} alt="" />
                   <h1 className="nssTextColor mb-3 fw-normal">
@@ -61,7 +57,7 @@ const _Forgot = (props: Props) => {
                   </div>
                 </div>
 
-                {/* User ID Field */}
+                {/* User ID */}
                 <div className="fv-row mb-8 d-flex flex-center position-relative">
                   <Form.Item
                     name="userid"
@@ -83,15 +79,20 @@ const _Forgot = (props: Props) => {
                   />
                 </div>
 
-                {/* Buttons */}
+                {/* Submit */}
                 <div className="text-center">
                   <button
                     type="submit"
-                    className="btn btn-lg nssBtnColor text-white w-100 mb-5"
+                    disabled={loading}
+                    className={`btn btn-lg nssBtnColor text-white w-100 mb-5 ${loading ? 'disabled' : ''}`}
                   >
-                    <span className="indicator-label fs-3 fw-normal">
-                      SUBMIT
-                    </span>
+                    {!loading ? (
+                      <span className="indicator-label fs-3 fw-normal">
+                        SUBMIT
+                      </span>
+                    ) : (
+                      <span className="spinner-border spinner-border-sm"></span>
+                    )}
                   </button>
 
                   <div className="login-form-register-link-wrapper">
@@ -111,5 +112,5 @@ const _Forgot = (props: Props) => {
     </div>
   );
 };
-const Forgot = connector(_Forgot);
-export { Forgot };
+
+export const Forgot = connector(_Forgot);

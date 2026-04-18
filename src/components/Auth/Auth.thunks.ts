@@ -62,7 +62,6 @@ export const login = (payload: ReqLogin) => async dispatch => {
           type: AlertTypes.SUCCESS,
         }),
       );
-      //dispatch(loadUser(reqUserActivity));
       return;
     }
     dispatch(
@@ -90,40 +89,59 @@ export const forgot = (payload: ReqForgot) => async dispatch => {
       Data_Flag: ContentTypes.DataFlag,
     };
 
-    console.log('FINAL PAYLOAD', addPayload);
-
     const res = await axiosInstance.post(
       `/login/ForgotPasswordRequest`,
       addPayload,
     );
 
-    console.log('API RESPONSE', res.data);
+    // ⭐ normal success response
+    const apiResult = res?.data?.result?.[0];
 
-    if (res.data?.result === true) {
+    if (apiResult?.status === "success" || apiResult?.code === "1") {
       dispatch(
         setAlert({
-          msg: res.data.message || 'Password reset link sent to email.',
+          msg: apiResult?.msg || "Reset link sent to your email 📩",
           type: AlertTypes.SUCCESS,
         }),
       );
-      return dispatch(actions.forgotSuccess());
-    } else {
-      dispatch(
-        setAlert({
-          msg: res.data.message || 'User not found',
-          type: AlertTypes.ERROR,
-        }),
-      );
-      return dispatch(actions.loginFailed());
+      dispatch(actions.forgotSuccess());
+      return true;
     }
-  } catch (error: any) {
-    console.log('FORGOT ERROR', error.response?.data || error);
+
     dispatch(
       setAlert({
-        msg: 'Server error while sending reset mail',
+        msg: apiResult?.msg || "User ID not found",
         type: AlertTypes.ERROR,
       }),
     );
+    dispatch(actions.forgotFailed());
+    return false;
+
+  } catch (error: any) {
+
+    // ⭐⭐ BACKEND 500 BUT MAIL SENT CASE ⭐⭐
+    const apiResult = error?.response?.data?.result?.[0];
+
+    if (apiResult?.status === "success" || apiResult?.code === "1") {
+      dispatch(
+        setAlert({
+          msg: apiResult?.msg || "Reset link sent to your email 📩",
+          type: AlertTypes.SUCCESS,
+        })
+      );
+      dispatch(actions.forgotSuccess());
+      return true;
+    }
+
+    // ❌ real error
+    dispatch(
+      setAlert({
+        msg: apiResult?.msg || "User ID not found",
+        type: AlertTypes.ERROR,
+      })
+    );
+    dispatch(actions.forgotFailed());
+    return false;
   }
 };
 
@@ -194,18 +212,43 @@ export const setupNewPassword = (payload: ReqSetupPassword) => async (
       payload,
     );
 
-    console.log('SETUP PASSWORD RESPONSE ✅', res.data);
+      console.log("SETUP PASSWORD RESPONSE ✅", res.data);
 
-    if (res?.data?.result === true) {
+      // 🔥 NEW SUCCESS CONDITION (as per real API)
+      if (res?.data?.status?.toLowerCase() === "success") {
+        dispatch(
+          setAlert({
+            msg: res.data.msg || "Password changed successfully ✅",
+            type: AlertTypes.SUCCESS,
+          })
+        );
+
+        dispatch(actions.setupPasswordSuccess());
+        return true;
+      }
+
+      // ❌ If API returns failure status
       dispatch(
         setAlert({
-          msg: res.data.message || 'Password changed successfully ✅',
-          type: AlertTypes.SUCCESS,
-        }),
+          msg: res?.data?.msg || "Unable to reset password ❌",
+          type: AlertTypes.ERROR,
+        })
       );
 
-      dispatch(actions.setupPasswordSuccess());
-      return true;
+      return false;
+    } catch (error: any) {
+      console.log("SETUP PASSWORD ERROR ❌", error?.response?.data || error);
+
+      dispatch(
+        setAlert({
+          msg:
+            error?.response?.data?.msg ||
+            "Server error while resetting password",
+          type: AlertTypes.ERROR,
+        })
+      );
+
+      return false;
     }
 
     dispatch(
