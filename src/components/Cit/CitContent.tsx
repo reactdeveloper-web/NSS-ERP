@@ -16,19 +16,29 @@ export const CitContent = () => {
     completed,
     setCompleted,
     ticketForm,
+    donorSearchValue,
+    setDonorSearchValue,
+    isSearchingDonor,
+    donorSearchError,
+    saveRequestPayload,
+    callCategoryOptions,
+    countryOptions,
+    selectTypeOptions,
+    selectSadhakOptions,
     followUps,
     deletingId,
     statusMessage,
-    listingLoading,
-    listingError,
     validationErrors,
     showSaveResultModal,
     saveResultPayload,
-    listingItems,
+    saveResultSucceeded,
     openCitListing,
     openCitForm,
     handleCloseSaveResultModal,
     handleTicketFormChange,
+    handleCallCategoryChange,
+    handleSelectTypeChange,
+    handleSelectSadhakChange,
     handleAddFollowUp,
     handleFollowUpChange,
     handleRemoveFollowUp,
@@ -54,32 +64,59 @@ export const CitContent = () => {
           {isListingMode ? (
             <CitListing
               deletingId={deletingId}
-              items={listingItems}
-              loading={listingLoading}
-              error={listingError}
               onAdd={() => openCitForm('0', 'ADD')}
               onEdit={informationCode => openCitForm(informationCode, 'EDIT')}
               onView={informationCode => openCitForm(informationCode, 'VIEW')}
               onDelete={handleDelete}
             />
           ) : (
-            <div className="card mb-8">
-              <div className="card-header">
+            <div className="card announce-master-card mb-8">
+              <div className="card-header announce-master-card-header">
                 <div className="card-title">
                   <div className="d-flex align-items-center gap-4 flex-wrap">
-                    <h3 className="fw-bold mb-0">Call Information Trait</h3>
-                    <span className="text-muted fs-6">
-                      {operation === 'ADD'
-                        ? 'Add'
-                        : operation === 'EDIT'
-                        ? 'Edit'
-                        : 'View'}
+                    <h3 className="fw-bold mb-0">
+                      Call Information Trait
+                      <span className="text-muted fs-6 px-2">
+                        <span className="badge badge-light-info fs-6 fw-semibold px-4 py-2">
+                          <i className="fas fa-calendar-alt text-info me-2"></i>
+                          {ticketForm.date
+                            ? ticketForm.date.split('-').reverse().join('/')
+                            : '-'}
+                        </span>
+                      </span>
+                    </h3>
+                  </div>
+                </div>
+                <div className="announce-master-header-tools">
+                  <div className="announce-master-search-wrap">
+                    <input
+                      id="citDonorSearchValue"
+                      type="text"
+                      className="form-control announce-master-search-input"
+                      placeholder="Search by NG Code"
+                      value={donorSearchValue}
+                      disabled={isViewMode}
+                      onChange={event => setDonorSearchValue(event.target.value)}
+                    />
+                    <span className="announce-master-search-icon">
+                      {isSearchingDonor ? (
+                        <span
+                          className="spinner-border spinner-border-sm text-muted"
+                          role="status"
+                          aria-label="Searching donor"
+                        />
+                      ) : (
+                        <i className="fa fa-search" aria-hidden="true" />
+                      )}
                     </span>
                   </div>
                 </div>
               </div>
 
               <div className="card-body">
+                {donorSearchError ? (
+                  <div className="text-danger fs-7 mb-4">{donorSearchError}</div>
+                ) : null}
                 <div className="tabs-mobile-scroll">
                   <ul className="nav nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 fw-semibold mb-6">
                     <li className="nav-item">
@@ -115,9 +152,17 @@ export const CitContent = () => {
                   >
                     <CallCenterTicketTab
                       form={ticketForm}
+                      callCategoryOptions={callCategoryOptions}
+                      countryOptions={countryOptions}
+                      selectTypeOptions={selectTypeOptions}
+                      selectSadhakOptions={selectSadhakOptions}
                       disabled={isViewMode}
+                      requestByReadOnly={operation === 'EDIT' || isViewMode}
                       errors={validationErrors}
                       onChange={handleTicketFormChange}
+                      onCallCategoryChange={handleCallCategoryChange}
+                      onSelectTypeChange={handleSelectTypeChange}
+                      onSelectSadhakChange={handleSelectSadhakChange}
                     />
                   </div>
 
@@ -182,11 +227,13 @@ export const CitContent = () => {
           )}
         </div>
       </div>
-      <CitSaveResultModal
+      {/* <CitSaveResultModal
         open={showSaveResultModal}
+        requestPayload={saveRequestPayload}
         resultPayload={saveResultPayload}
+        isSuccess={saveResultSucceeded}
         onClose={handleCloseSaveResultModal}
-      />
+      /> */}
     </div>
   );
 };

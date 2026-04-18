@@ -755,3 +755,9 @@ iframe {
     width: 100%;
   }
 }
+
+.ant-select-selection-overflow{
+  overflow: auto;
+  flex-wrap: nowrap;
+  top: -2px;
+}

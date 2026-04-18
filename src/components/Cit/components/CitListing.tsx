@@ -1,12 +1,25 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
 import { FloatingInputField } from 'src/components/Common/FloatingInputField';
+import { FloatingSelectField } from 'src/components/Common/FloatingSelectField';
+import { ContentTypes } from 'src/constants/content';
+import axiosInstance from 'src/redux/interceptor';
+import { masterApiHeaders } from 'src/utils/masterApiHeaders';
+import { masterApiPaths } from 'src/utils/masterApiPaths';
+import { readCitCache } from '../cit.helpers';
+import {
+  extractArrayPayload,
+  getFirstValue,
+  normalizeApiDate,
+  parseStoredUser,
+} from 'src/components/AnnounceMaster/AnnounceMasterContent.helpers';
 
 export interface CitListingItem {
   informationCode: string;
   date: string;
   ngCode: string;
   callCategoryName: string;
+  informationTrait: string;
   requestBy: string;
   mobileNo1: string;
   callBackDate: string;
@@ -17,30 +30,83 @@ interface CitListingFilters {
   informationCode: string;
   ngCode: string;
   mobileNo1: string;
+  status: string;
   fromDate: string;
   toDate: string;
 }
 
 interface CitListingProps {
   deletingId: string | null;
-  items: CitListingItem[];
-  loading?: boolean;
-  error?: string;
   onAdd: () => void;
   onEdit: (informationCode: string) => void;
   onView: (informationCode: string) => void;
   onDelete: (informationCode: string) => void;
 }
 
+const CIT_FETCH_PAGE_INDEX = 1;
+const CIT_FETCH_PAGE_SIZE = 500;
+
 const createInitialFilters = (): CitListingFilters => ({
   informationCode: '',
   ngCode: '',
   mobileNo1: '',
+  status: '3',
   fromDate: '',
   toDate: '',
 });
 
-const normalizeDate = (value: string) => value.trim();
+const statusOptions = [
+  { value: '3', label: 'All' },
+  { value: '0', label: 'Pending' },
+  { value: '1', label: 'Complete' },
+];
+
+const normalizeDate = (value: string) => normalizeApiDate(value) || value.trim();
+
+const mapCitListingItem = (record: Record<string, unknown>): CitListingItem => ({
+  informationCode: getFirstValue(record, [
+    'iCall_Information_Traits_ID',
+    'ICall_Information_Traits_ID',
+  ]),
+  date:
+    normalizeApiDate(getFirstValue(record, ['Call_Date_Time', 'call_Date'])) ||
+    getFirstValue(record, ['Call_Date_Time', 'call_Date']),
+  ngCode: getFirstValue(record, ['NgCode', 'ngCode', 'NGCode']),
+  callCategoryName:
+    getFirstValue(record, [
+      'sCategory',
+      'category',
+      'Category',
+      'CATEGORY',
+      'DM_NAME',
+    ]) ||
+    `Category ${getFirstValue(record, ['iCall_Category_ID'])}`,
+  informationTrait: getFirstValue(record, [
+    'sInformation_Trait',
+    'Call_SubCat_Name',
+    'call_SubCat_Name',
+  ]),
+  requestBy: getFirstValue(record, ['NAME', 'name', 'request_by', 'RequestBy']),
+  mobileNo1: getFirstValue(record, ['Mno1', 'mno1']),
+  callBackDate:
+    normalizeApiDate(
+      getFirstValue(record, ['Target_Date', 'Call_Back_Date_Time', 'call_Back_Date']),
+    ) ||
+    getFirstValue(record, ['Target_Date', 'Call_Back_Date_Time', 'call_Back_Date']),
+  completed: getFirstValue(record, ['Complete', 'complete']).trim().toLowerCase() === 'yes',
+});
+
+const mapCachedCitListingItem = (record: ReturnType<typeof readCitCache>[number]): CitListingItem => ({
+  informationCode: record.informationCode,
+  date: record.ticketForm.date,
+  ngCode: record.ticketForm.ngCode,
+  callCategoryName: record.ticketForm.callCategoryName,
+  informationTrait: record.ticketForm.details || record.ticketForm.selectType,
+  requestBy: record.ticketForm.requestBy,
+  mobileNo1: record.ticketForm.mobileNo1,
+  callBackDate: record.ticketForm.callBackDate,
+  completed: record.completed,
+});
 
 const formatDisplayDate = (value: string) => {
   const normalizedValue = normalizeDate(value);
@@ -54,14 +120,14 @@ const formatDisplayDate = (value: string) => {
 
 export const CitListing = ({
   deletingId,
-  items,
-  loading = false,
-  error = '',
   onAdd,
   onEdit,
   onView,
   onDelete,
 }: CitListingProps) => {
+  const [apiItems, setApiItems] = useState<CitListingItem[]>([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiError, setApiError] = useState('');
   const [searchText, setSearchText] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState<CitListingFilters>(
@@ -72,6 +138,61 @@ export const CitListing = ({
   );
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [cachedItems, setCachedItems] = useState<CitListingItem[]>([]);
+
+  useEffect(() => {
+    setCachedItems(readCitCache().map(mapCachedCitListingItem));
+  }, []);
+
+  const fetchCitListing = useCallback(async () => {
+    const currentUser = parseStoredUser() as Partial<IUser> & {
+      DataFlag?: string;
+      dataFlag?: string;
+      Data_Flag?: string;
+    };
+
+    const payload = {
+      iCall_Information_Traits_ID: appliedFilters.informationCode.trim() || '0',
+      iCall_Category_ID: '0',
+      ngCode: appliedFilters.ngCode.trim() || '0',
+      mno1: appliedFilters.mobileNo1.trim(),
+      fromDate: appliedFilters.fromDate || '',
+      toDate: appliedFilters.toDate || '',
+      user_ID: '0',
+      complete: Number(appliedFilters.status || 3),
+      pageIndex: CIT_FETCH_PAGE_INDEX,
+      pageSize: CIT_FETCH_PAGE_SIZE,
+      data_Flag:
+        currentUser.DataFlag ||
+        currentUser.dataFlag ||
+        currentUser.Data_Flag ||
+        ContentTypes.DataFlag,
+    };
+
+    setApiLoading(true);
+    setApiError('');
+
+    try {
+      const response = await axiosInstance.post(masterApiPaths.getCitList, payload, {
+        headers: masterApiHeaders(),
+      });
+      const records = extractArrayPayload(response.data);
+      setApiItems(records.map(mapCitListingItem));
+    } catch (apiFetchError: any) {
+      setApiItems([]);
+      setApiError(
+        apiFetchError?.response?.data?.message ||
+          apiFetchError?.message ||
+          'CIT listing load nahi hui.',
+      );
+    } finally {
+      setApiLoading(false);
+    }
+  }, [appliedFilters]);
+
+  useEffect(() => {
+    void fetchCitListing();
+  }, [fetchCitListing]);
 
   const updateDraftFilter = <K extends keyof CitListingFilters>(
     field: K,
@@ -96,15 +217,42 @@ export const CitListing = ({
     setPageNumber(1);
   };
 
+  const mergedItems = useMemo(() => {
+    const cacheMap = new Map(cachedItems.map(item => [item.informationCode, item]));
+    const mergedApiItems = apiItems.map(item => {
+      const cachedItem = cacheMap.get(item.informationCode);
+
+      if (!cachedItem) {
+        return item;
+      }
+
+      return {
+        ...cachedItem,
+        ...item,
+        callCategoryName: item.callCategoryName || cachedItem.callCategoryName,
+        informationTrait: item.informationTrait || cachedItem.informationTrait,
+        requestBy: item.requestBy || cachedItem.requestBy,
+        mobileNo1: item.mobileNo1 || cachedItem.mobileNo1,
+        callBackDate: item.callBackDate || cachedItem.callBackDate,
+      };
+    });
+
+    const apiIds = new Set(mergedApiItems.map(item => item.informationCode));
+    const cacheOnlyItems = cachedItems.filter(item => !apiIds.has(item.informationCode));
+
+    return [...cacheOnlyItems, ...mergedApiItems];
+  }, [apiItems, cachedItems]);
+
   const filteredItems = useMemo(() => {
     const normalizedSearch = searchText.trim().toLowerCase();
     const normalizedInfoCode = appliedFilters.informationCode.trim();
     const normalizedNgCode = appliedFilters.ngCode.trim().toLowerCase();
     const normalizedMobileNo1 = appliedFilters.mobileNo1.trim().toLowerCase();
+    const normalizedStatus = appliedFilters.status.trim();
     const normalizedFromDate = normalizeDate(appliedFilters.fromDate);
     const normalizedToDate = normalizeDate(appliedFilters.toDate);
 
-    return items.filter(item => {
+    return mergedItems.filter(item => {
       const matchesSearch =
         !normalizedSearch ||
         [
@@ -112,6 +260,7 @@ export const CitListing = ({
           item.date,
           item.ngCode,
           item.callCategoryName,
+          item.informationTrait,
           item.requestBy,
           item.mobileNo1,
           item.callBackDate,
@@ -126,6 +275,10 @@ export const CitListing = ({
       const matchesMobileNo1 =
         !normalizedMobileNo1 ||
         item.mobileNo1.toLowerCase().includes(normalizedMobileNo1);
+      const matchesStatus =
+        normalizedStatus === '3' ||
+        (normalizedStatus === '1' && item.completed) ||
+        (normalizedStatus === '0' && !item.completed);
       const matchesFromDate =
         !normalizedFromDate || (item.date && item.date >= normalizedFromDate);
       const matchesToDate =
@@ -136,11 +289,12 @@ export const CitListing = ({
         matchesInfoCode &&
         matchesNgCode &&
         matchesMobileNo1 &&
+        matchesStatus &&
         matchesFromDate &&
         matchesToDate
       );
     });
-  }, [appliedFilters, items, searchText]);
+  }, [appliedFilters, mergedItems, searchText]);
 
   const totalCount = filteredItems.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -161,6 +315,12 @@ export const CitListing = ({
   const startRecord = totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
   const endRecord =
     totalCount === 0 ? 0 : Math.min(pageNumber * pageSize, totalCount);
+
+  useEffect(() => {
+    if (pageNumber > totalPages) {
+      setPageNumber(totalPages);
+    }
+  }, [pageNumber, totalPages]);
 
   return (
     <div className="card announce-master-card">
@@ -222,7 +382,7 @@ export const CitListing = ({
                 <div className="col-md-3">
                   <FloatingInputField
                     id="filterInformationCode"
-                    label="Information Code"
+                    label="Ticket ID"
                     value={draftFilters.informationCode}
                     onChange={value =>
                       updateDraftFilter('informationCode', value)
@@ -245,6 +405,16 @@ export const CitListing = ({
                     label="Mobile No"
                     value={draftFilters.mobileNo1}
                     onChange={value => updateDraftFilter('mobileNo1', value)}
+                  />
+                </div>
+
+                <div className="col-md-3">
+                  <FloatingSelectField
+                    id="filterStatus"
+                    label="Status"
+                    value={draftFilters.status}
+                    options={statusOptions}
+                    onChange={value => updateDraftFilter('status', value as string)}
                   />
                 </div>
 
@@ -289,9 +459,9 @@ export const CitListing = ({
       </div>
 
       <div className="card-body p-3">
-        {error ? <div className="alert alert-warning m-3">{error}</div> : null}
+        {apiError ? <div className="alert alert-warning m-3">{apiError}</div> : null}
 
-        <div className="table-responsive" style={{ maxHeight: '550px' }}>
+        <div className="table-responsive" style={{ maxHeight: '450px' }}>
           <table
             id="citListingTable"
             className="table table-row-bordered align-middle gs-0 gy-2 mb-0"
@@ -306,13 +476,13 @@ export const CitListing = ({
                   className="text-center"
                   style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
-                  Information Code
+                  Ticket ID
                 </th>
                 <th
                   className="text-center"
                   style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
-                  Date
+                  Call Date
                 </th>
                 <th
                   className="text-center"
@@ -321,10 +491,10 @@ export const CitListing = ({
                   NG Code
                 </th>
                 <th
-                  className="text-center"
+                  className="text-start w-600px"
                   style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
-                  Call Category
+                  Information Trait
                 </th>
                 <th
                   className="text-center"
@@ -342,7 +512,7 @@ export const CitListing = ({
                   className="text-center"
                   style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
-                  Call Back Date
+                  Target Date
                 </th>
                 <th
                   className="text-center"
@@ -353,7 +523,7 @@ export const CitListing = ({
               </tr>
             </thead>
             <tbody>
-              {loading ? (
+              {apiLoading ? (
                 <tr>
                   <td colSpan={9} className="text-center py-10 text-muted">
                     Loading call information traits...
@@ -405,8 +575,8 @@ export const CitListing = ({
                       {formatDisplayDate(item.date)}
                     </td>
                     <td className="text-center">{item.ngCode || '-'}</td>
-                    <td className="text-center">
-                      {item.callCategoryName || '-'}
+                    <td className="text-start">
+                      {item.informationTrait || item.callCategoryName || '-'}
                     </td>
                     <td className="text-center">{item.requestBy || '-'}</td>
                     <td className="text-center">{item.mobileNo1 || '-'}</td>

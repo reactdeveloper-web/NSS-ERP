@@ -1,12 +1,8 @@
 import React from 'react';
-import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
 import { FloatingInputField } from 'src/components/Common/FloatingInputField';
-import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 
 export interface TicketFollowUpItem {
   id: number;
-  date: string;
-  time: string;
   note: string;
 }
 
@@ -15,11 +11,7 @@ interface TicketFollowUpTabProps {
   disabled?: boolean;
   onAdd: () => void;
   onRemove: (id: number) => void;
-  onChange: (
-    id: number,
-    field: 'date' | 'time' | 'note',
-    value: string,
-  ) => void;
+  onChange: (id: number, value: string) => void;
 }
 
 export const TicketFollowUpTab = ({
@@ -64,9 +56,7 @@ export const TicketFollowUpTab = ({
                           label="Note"
                           value={followUp.note}
                           disabled={disabled}
-                          onChange={value =>
-                            onChange(followUp.id, 'note', value)
-                          }
+                          onChange={value => onChange(followUp.id, value)}
                         />
                       </div>
                       <div className="col-md-1">

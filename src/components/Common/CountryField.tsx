@@ -29,7 +29,7 @@ export const CountryField = ({
   value,
   onChange,
   id = 'country',
-  label = 'Country',
+  label = 'Select Country',
   options = defaultCountryOptions,
   apiDataFlag,
   includeEmptyOption = false,
@@ -37,6 +37,7 @@ export const CountryField = ({
   error,
 }: CountryFieldProps) => {
   const [apiOptions, setApiOptions] = useState<FloatingSelectOption[]>([]);
+  const [resolvedValue, setResolvedValue] = useState(value);
 
   useEffect(() => {
     if (!apiDataFlag) {
@@ -62,10 +63,21 @@ export const CountryField = ({
               'name',
               'Name',
             ]);
+            const countryCode = getFirstValue(record, [
+              'country_code',
+              'Country_Code',
+              'CountryCode',
+              'country_id',
+              'Country_Id',
+              'CountryId',
+              'id',
+              'ID',
+            ]);
 
             return {
               value: countryName,
               label: countryName,
+              countryCode,
             };
           })
           .filter(
@@ -102,11 +114,40 @@ export const CountryField = ({
     return [{ value: '', label: 'Select' }, ...baseOptions];
   }, [apiDataFlag, apiOptions, includeEmptyOption, options]);
 
+  useEffect(() => {
+    const normalizedValue = value.trim();
+
+    if (!normalizedValue) {
+      setResolvedValue(value);
+      return;
+    }
+
+    const matchingOption = resolvedOptions.find(option => {
+      const optionValue = option.value.trim().toLowerCase();
+      const optionLabel = option.label.trim().toLowerCase();
+      const optionCountryCode = String(
+        (option as FloatingSelectOption & { countryCode?: string }).countryCode ||
+          '',
+      )
+        .trim()
+        .toLowerCase();
+      const nextValue = normalizedValue.toLowerCase();
+
+      return (
+        optionValue === nextValue ||
+        optionLabel === nextValue ||
+        optionCountryCode === nextValue
+      );
+    });
+
+    setResolvedValue(matchingOption?.value || value);
+  }, [resolvedOptions, value]);
+
   return (
     <FloatingSelectField
       id={id}
       label={label}
-      value={value}
+      value={resolvedValue}
       options={resolvedOptions}
       disabled={disabled}
       onChange={onChange}

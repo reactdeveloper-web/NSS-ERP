@@ -2,7 +2,10 @@ import React from 'react';
 import { CountryField } from 'src/components/Common/CountryField';
 import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
 import { FloatingInputField } from 'src/components/Common/FloatingInputField';
-import { FloatingSelectField } from 'src/components/Common/FloatingSelectField';
+import {
+  FloatingSelectField,
+  FloatingSelectOption,
+} from 'src/components/Common/FloatingSelectField';
 import { FloatingTextareaField } from 'src/components/Common/FloatingTextareaField';
 import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 
@@ -10,8 +13,12 @@ export interface CallCenterTicketForm {
   ticketId: string;
   date: string;
   ngCode: string;
+  callCategoryId: string;
   callCategoryName: string;
+  selectTypeId: string[];
   selectType: string;
+  selectSadhakId: string;
+  selectSadhakName: string;
   requestBy: string;
   country1: string;
   mobileNo1: string;
@@ -25,50 +32,57 @@ export interface CallCenterTicketForm {
 export interface CallCenterTicketValidationErrors {
   callCategoryName?: string;
   selectType?: string;
+  selectSadhakName?: string;
   requestBy?: string;
+  country1?: string;
   callBackDate?: string;
   details?: string;
 }
 
 interface CallCenterTicketTabProps {
   form: CallCenterTicketForm;
+  callCategoryOptions: FloatingSelectOption[];
+  countryOptions: FloatingSelectOption[];
+  selectTypeOptions: FloatingSelectOption[];
+  selectSadhakOptions: FloatingSelectOption[];
   disabled?: boolean;
+  requestByReadOnly?: boolean;
   errors?: CallCenterTicketValidationErrors;
   onChange: <K extends keyof CallCenterTicketForm>(
     field: K,
     value: CallCenterTicketForm[K],
   ) => void;
+  onCallCategoryChange: (value: string) => void;
+  onSelectTypeChange: (value: string[]) => void;
+  onSelectSadhakChange: (value: string) => void;
 }
-
-const callCategoryOptions = [
-  { value: '', label: 'Select' },
-  { value: 'Receipt Related', label: 'Receipt Related' },
-  { value: 'Donation Related', label: 'Donation Related' },
-  { value: 'Announce Related', label: 'Announce Related' },
-  { value: 'Visit Related', label: 'Visit Related' },
-  { value: 'General Query', label: 'General Query' },
-];
-
-const selectTypeOptions = [
-  { value: '', label: 'Select' },
-  { value: 'Send Photos', label: 'Send Photos' },
-  { value: 'Send Receipt', label: 'Send Receipt' },
-  { value: 'Update Donor Details', label: 'Update Donor Details' },
-];
 
 export const CallCenterTicketTab = ({
   form,
+  callCategoryOptions,
+  countryOptions,
+  selectTypeOptions,
+  selectSadhakOptions,
   disabled = false,
+  requestByReadOnly = false,
   errors = {},
   onChange,
+  onCallCategoryChange,
+  onSelectTypeChange,
+  onSelectSadhakChange,
 }: CallCenterTicketTabProps) => {
+  const isSadhakCategory = form.callCategoryId === '27';
+  const hasSelectableTypes = selectTypeOptions.some(
+    option => option.value !== '' && option.label !== 'Select',
+  );
+
   return (
     <div className="announce-master-panel">
       <div className="row g-5">
         <div className="col-md-3">
           <FloatingInputField
             id="ticketId"
-            label="Information Code"
+            label="Ticket ID"
             value={form.ticketId}
             onChange={value => onChange('ticketId', value)}
             readOnly
@@ -77,7 +91,7 @@ export const CallCenterTicketTab = ({
           />
         </div>
 
-        <div className="col-md-3">
+        {/* <div className="col-md-3">
           <FloatingDatePicker
             id="ticketDate"
             label="Date"
@@ -96,7 +110,7 @@ export const CallCenterTicketTab = ({
             onChange={value => onChange('ngCode', value)}
             disabled={disabled}
           />
-        </div>
+        </div> */}
 
         <div className="col-md-3">
           <FloatingSelectField
@@ -106,29 +120,48 @@ export const CallCenterTicketTab = ({
                 Call Category Name <span className="text-danger">*</span>
               </>
             }
-            value={form.callCategoryName}
+            value={form.callCategoryId}
             options={callCategoryOptions}
             disabled={disabled}
-            onChange={value => onChange('callCategoryName', value)}
+            onChange={onCallCategoryChange}
             error={errors.callCategoryName}
           />
         </div>
 
-        <div className="col-md-3">
-          <FloatingSelectField
-            id="selectType"
-            label={
-              <>
-                Select Types <span className="text-danger">*</span>
-              </>
-            }
-            value={form.selectType}
-            options={selectTypeOptions}
-            disabled={disabled}
-            onChange={value => onChange('selectType', value)}
-            error={errors.selectType}
-          />
-        </div>
+        {isSadhakCategory ? (
+          <div className="col-md-3">
+            <FloatingSelectField
+              id="selectSadhak"
+              label={
+                <>
+                  Select Sadhak <span className="text-danger">*</span>
+                </>
+              }
+              value={form.selectSadhakId}
+              options={selectSadhakOptions}
+              disabled={disabled || !form.callCategoryId}
+              onChange={onSelectSadhakChange}
+              error={errors.selectSadhakName}
+            />
+          </div>
+        ) : (
+          <div className="col-md-3">
+            <FloatingSelectField
+              id="selectType"
+              label={
+                <>
+                  Select Types <span className="text-danger">*</span>
+                </>
+              }
+              value={form.selectTypeId}
+              options={selectTypeOptions}
+              mode="multiple"
+              disabled={disabled || !form.callCategoryId || !hasSelectableTypes}
+              onChange={value => onSelectTypeChange(value as string[])}
+              error={errors.selectType}
+            />
+          </div>
+        )}
 
         <div className="col-md-3">
           <FloatingInputField
@@ -140,7 +173,8 @@ export const CallCenterTicketTab = ({
             }
             value={form.requestBy}
             onChange={value => onChange('requestBy', value)}
-            disabled={disabled}
+            disabled={disabled || requestByReadOnly}
+            readOnly={requestByReadOnly}
             error={errors.requestBy}
           />
         </div>
@@ -150,8 +184,9 @@ export const CallCenterTicketTab = ({
             id="country1"
             value={form.country1}
             onChange={value => onChange('country1', value)}
-            apiDataFlag="FOREIGN_GANGOTRI"
+            options={countryOptions}
             disabled={disabled}
+            error={errors.country1}
           />
         </div>
 
@@ -171,7 +206,7 @@ export const CallCenterTicketTab = ({
             id="country2"
             value={form.country2}
             onChange={value => onChange('country2', value)}
-            apiDataFlag="FOREIGN_GANGOTRI"
+            options={countryOptions}
             includeEmptyOption
             disabled={disabled}
           />
