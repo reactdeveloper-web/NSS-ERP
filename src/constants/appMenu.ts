@@ -28,7 +28,7 @@ export const APP_MENU_ITEMS: AppMenuItem[] = [
   },
   {
     key: 'cit',
-    label: 'Call Center Ticket',
+    label: 'Call Information Trait',
     path: PATH.CIT,
     iconClass: 'fas fa-headset fs-4',
   },
