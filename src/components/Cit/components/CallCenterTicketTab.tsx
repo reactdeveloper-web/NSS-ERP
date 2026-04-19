@@ -11,6 +11,7 @@ import { FloatingTimePicker } from 'src/components/Common/FloatingTimePicker';
 
 export interface CallCenterTicketForm {
   ticketId: string;
+  creatorUserId: string;
   date: string;
   ngCode: string;
   callCategoryId: string;

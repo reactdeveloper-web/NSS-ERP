@@ -33,8 +33,15 @@ export interface CitCacheRecord {
 }
 
 type StoredUser = Partial<IUser> & {
+  userId?: number | string;
+  user_ID?: number | string;
+  USER_ID?: number | string;
+  EmpNum?: number | string;
+  emp_num?: number | string;
+  Emp_Num?: number | string;
   deptId?: number | string;
   dept_Id?: number | string;
+  Dept_Id?: number | string;
   fy_id?: number | string;
   fyId?: number | string;
   FY_ID?: number | string;
@@ -71,6 +78,14 @@ const getCurrentLocalTime = () => {
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   return `${hours}:${minutes}`;
+};
+
+const getCurrentLocalTimeWithSeconds = () => {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
 };
 
 const normalizeCitDateValue = (value: unknown): string => {
@@ -111,6 +126,7 @@ const normalizeCitDateValue = (value: unknown): string => {
 
 export const createInitialTicketForm = (): CallCenterTicketForm => ({
   ticketId: 'AUTO/VIEW',
+  creatorUserId: '',
   date: getToday(),
   ngCode: '',
   callCategoryId: '',
@@ -176,12 +192,27 @@ export const readCurrentUser = (): StoredUser => {
   }
 };
 
+const resolveCurrentUserId = (currentUser: StoredUser) =>
+  Number(
+    currentUser.empNum ||
+      currentUser.EmpNum ||
+      currentUser.emp_num ||
+      currentUser.Emp_Num ||
+      currentUser.userId ||
+      currentUser.user_ID ||
+      currentUser.USER_ID ||
+      currentUser.id ||
+      0,
+  ) || 0;
+
 export const getCurrentUserMeta = () => {
   const currentUser = readCurrentUser();
 
   return {
-    empNum: Number(currentUser.empNum || 0) || 0,
-    deptId: Number(currentUser.deptId || currentUser.dept_Id || 228) || 228,
+    empNum: resolveCurrentUserId(currentUser),
+    deptId:
+      Number(currentUser.deptId || currentUser.dept_Id || currentUser.Dept_Id || 228) ||
+      228,
     fyId:
       Number(currentUser.fy_id || currentUser.fyId || currentUser.FY_ID || 0) ||
       0,
@@ -285,6 +316,7 @@ export const mapCitRecordToCache = (record: CitApiRecord): CitCacheRecord => {
     ticketForm: {
       ...createInitialTicketForm(),
       ticketId: getFirstValue(record, CIT_ID_KEYS),
+      creatorUserId: getFirstValue(record, ['USER_ID', 'useR_ID', 'User_Id']),
       date: normalizeCitDateValue(
         getFirstValue(record, [
           'call_Date',
@@ -397,8 +429,13 @@ export const mapCitRecordToCache = (record: CitApiRecord): CitCacheRecord => {
         'InformationTrait',
         'icallReply',
         'ICallReply',
+        'iCallReply',
       ]),
-      completionReply: getFirstValue(record, ['icallReply', 'ICallReply']),
+      completionReply: getFirstValue(record, [
+        'iCallReply',
+        'ICallReply',
+        'icallReply',
+      ]),
     },
     followUps: [],
     createdAt: new Date().toISOString(),
@@ -456,6 +493,20 @@ export const extractCitFollowUps = (
           getFirstValue(item, ['AutoId', 'autoId', 'Id', 'ID']) || 0,
         ) || Date.now() + index,
       note: getFirstValue(item, ['Followup_Remark', 'followup_Remark']).trim(),
+      userId:
+        Number(
+          getFirstValue(item, ['Followup_UserId', 'followup_UserId']) || 0,
+        ) || undefined,
+      citId:
+        Number(getFirstValue(item, ['CIT_Id', 'CIT_ID', 'cit_Id']) || 0) ||
+        undefined,
+      followupDate:
+        getFirstValue(item, ['Followup_Date', 'followup_Date']) || undefined,
+      followupTime:
+        getFirstValue(item, ['Followup_Time', 'followup_Time']) || undefined,
+      dataFlag:
+        getFirstValue(item, ['Data_Flag', 'data_Flag', 'dataFlag']) ||
+        undefined,
     }))
     .filter(item => item.note);
 };
@@ -489,87 +540,82 @@ export const buildCitSavePayload = ({
     toNullableText(form.callCategoryName) || selectedCategoryOption?.label || null;
   const resolvedAssignedEmpId =
     form.callCategoryId === '27' ? toNumberValue(form.selectSadhakId) : 0;
-  const resolvedUserId = empNum;
+  const resolvedCurrentLoginUserId = empNum;
+  const resolvedCreatorUserId = toNumberValue(form.creatorUserId) || empNum;
   const resolvedTargetDate = form.date || currentLocalDate;
-  const endpointSpecificPayload =
-    operation === 'EDIT'
-      ? {
-          NAME: resolvedRequestBy,
-          Request_by: resolvedRequestBy,
-          Country_code1: resolvedCountryCode1,
-          Country_Code2: resolvedCountryCode2,
-          category: resolvedCategoryName,
-          target_Date: resolvedTargetDate,
-          Target_Date: resolvedTargetDate,
-        }
-      : {
-          target_Date: resolvedTargetDate,
-          Target_Date: resolvedTargetDate,
-          NAME: resolvedRequestBy,
-          Request_by: resolvedRequestBy,
-          Country_code1: resolvedCountryCode1,
-          Country_Code2: resolvedCountryCode2,
-          category: resolvedCategoryName,
-        };
+  const resolvedCompletionValue = completed ? '1' : '0';
+  const resolvedCompletionDate = completed ? currentLocalDate : null;
+  const resolvedCompletionUserId = completed
+    ? String(resolvedCurrentLoginUserId)
+    : null;
+  const resolvedCompletionReply = toNullableText(form.completionReply);
+  const resolvedInformationCode =
+    operation === 'ADD' ? 0 : Number(informationCodeParam || 0) || 0;
+  const currentLocalTimeWithSeconds = getCurrentLocalTimeWithSeconds();
 
   return {
     path: operation === 'EDIT' ? masterApiPaths.updateCit : masterApiPaths.createCit,
     payload: {
-      iCall_Information_Traits_ID:
-        operation === 'ADD' ? 0 : Number(informationCodeParam || 0) || 0,
+      iCall_Information_Traits_ID: resolvedInformationCode,
       iCall_Category_ID: toNumberValue(form.callCategoryId),
-      call_Id: 0,
-      call_Date: currentLocalDate,
+      Call_Id: 0,
+      Call_Date: currentLocalDate,
       sInformation_Trait: toNullableText(form.details),
-      dept_Id: deptId,
-      icallReply: toNullableText(form.completionReply),
-      iCallReply: toNullableText(form.completionReply),
-      complete: completed ? 1 : 0,
-      useR_ID: resolvedUserId,
-      USER_ID: resolvedUserId,
-      rec: null,
-      rec_Comp: null,
-      rec_User_ID: null,
-      disp: null,
-      disp_Comp: null,
-      disp_User_ID: null,
-      call: null,
-      call_Comp: null,
-      call_User_Id: resolvedUserId,
-      Call_User_Id: resolvedUserId,
-      mno1: toNullableText(form.mobileNo1),
-      mno2: toNullableText(form.mobileNo2),
-      call_Back_Date: form.callBackDate || null,
-      comp_Date: completed ? currentLocalDate : null,
-      ngCode: resolvedNgCode,
-      comp_User_Id: null,
-      scan_Files: null,
-      file_Name: null,
-      rec_Date: null,
-      disp_Date: null,
-      dispatch_Id: null,
-      data_Flag: dataFlag,
-      fY_ID: fyId,
+      Dept_Id: deptId,
+      iCallReply: resolvedCompletionReply,
+      Complete: resolvedCompletionValue,
+      USER_ID: resolvedCurrentLoginUserId,
+      Rec: null,
+      Rec_Comp: resolvedCompletionValue,
+      Rec_User_ID: null,
+      Disp: null,
+      Disp_Comp: resolvedCompletionValue,
+      Disp_User_ID: null,
+      Call: null,
+      Call_Comp: resolvedCompletionValue,
+      Call_User_Id: String(resolvedCreatorUserId),
+      Mno1: toNullableText(form.mobileNo1),
+      Mno2: toNullableText(form.mobileNo2),
+      Call_Back_Date: form.callBackDate || null,
+      Comp_Date: resolvedCompletionDate,
+      NgCode: resolvedNgCode,
+      Comp_User_Id: resolvedCompletionUserId,
+      Scan_Files: null,
+      File_Name: null,
+      Rec_Date: null,
+      Disp_Date: null,
+      Dispatch_Id: null,
+      Data_Flag: dataFlag,
+      FY_ID: fyId,
       crtObjectId: null,
-      call_Date_Time: toDateTimeValue(currentLocalDate, currentLocalTime),
-      call_Back_Date_Time: toDateTimeValue(form.callBackDate, form.callBackTime),
-      emp_Id: resolvedAssignedEmpId,
+      Call_Date_Time: toDateTimeValue(currentLocalDate, currentLocalTime),
+      Call_Back_Date_Time: toDateTimeValue(form.callBackDate, form.callBackTime),
       Emp_Id: resolvedAssignedEmpId,
-      eMail_Id: null,
-      froM_WEB: 'Y',
-      isd1: null,
-      isd2: null,
-      call_SubCat_ID: form.selectTypeId.length
+      EMail_Id: null,
+      FROM_WEB: 'Y',
+      Isd1: null,
+      Isd2: null,
+      Call_SubCat_ID: form.selectTypeId.length
         ? form.selectTypeId.join(',')
         : null,
-      call_SubCat_Name: toNullableText(form.selectType),
-      rec_Id: 0,
-      rec_Head: null,
+      Call_SubCat_Name: toNullableText(form.selectType),
+      Rec_Id: 0,
+      Rec_Head: null,
       sInformation_TraitId: null,
-      ...endpointSpecificPayload,
+      NAME: resolvedRequestBy,
+      Request_by: resolvedRequestBy,
+      Country_code1: resolvedCountryCode1,
+      Country_Code2: resolvedCountryCode2,
+      Category: resolvedCategoryName,
+      Target_Date: resolvedTargetDate,
       citFollowup: followUps
         .map(item => ({
+          CIT_Id: item.citId || resolvedInformationCode,
+          Followup_UserId: item.userId || resolvedCurrentLoginUserId,
           Followup_Remark: item.note.trim(),
+          Followup_Date: item.followupDate || `${currentLocalDate}T00:00:00`,
+          Followup_Time: item.followupTime || currentLocalTimeWithSeconds,
+          Data_Flag: item.dataFlag || dataFlag,
         }))
         .filter(item => item.Followup_Remark),
     },
