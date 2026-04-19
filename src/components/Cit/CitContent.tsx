@@ -4,6 +4,7 @@ import { CitListing } from './components/CitListing';
 import { TicketFollowUpTab } from './components/TicketFollowUpTab';
 import { CitSaveResultModal } from './components/CitModals';
 import { PageToolbar } from '../Common/PageToolbar';
+import { FloatingTextareaField } from '../Common/FloatingTextareaField';
 import { useCitContentState } from './useCitContentState';
 
 export const CitContent = () => {
@@ -46,6 +47,10 @@ export const CitContent = () => {
     handleSave,
     handleDelete,
   } = useCitContentState();
+  const shouldShowTicketIdBadge =
+    !isListingMode &&
+    ticketForm.ticketId.trim() !== '' &&
+    ticketForm.ticketId !== 'AUTO/VIEW';
 
   return (
     <div
@@ -77,6 +82,12 @@ export const CitContent = () => {
                     <h3 className="fw-bold mb-0">
                       Call Information Trait
                       <span className="text-muted fs-6 px-2">
+                        {shouldShowTicketIdBadge ? (
+                          <span className="badge badge-light-primary fs-6 fw-semibold px-4 py-2 me-3">
+                            <i className="fas fa-receipt text-primary me-2"></i>
+                            Ticket ID: {ticketForm.ticketId}
+                          </span>
+                        ) : null}
                         <span className="badge badge-light-info fs-6 fw-semibold px-4 py-2">
                           <i className="fas fa-calendar-alt text-info me-2"></i>
                           {ticketForm.date
@@ -184,18 +195,42 @@ export const CitContent = () => {
                 <div className="separator separator-dashed my-6"></div>
 
                 <div className="d-flex justify-content-between pt-1 px-0 flex-wrap gap-4">
-                  <label className="form-check form-check-custom form-check-solid">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={completed}
-                      disabled={isViewMode}
-                      onChange={event => setCompleted(event.target.checked)}
-                    />
-                    <span className="form-check-label fw-semibold">
-                      Completed
-                    </span>
-                  </label>
+                  <div className="d-flex gap-3" style={{ minWidth: '50%' }}>
+                    <label className="form-check form-check-custom form-check-solid mb-3">
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        checked={completed}
+                        disabled={isViewMode}
+                        onChange={event =>
+                          setCompleted(event.target.checked)
+                        }
+                      />
+                      <span className="form-check-label fw-semibold">
+                        Completed
+                      </span>
+                    </label>
+
+                    {completed ? (
+                      <div className="w-500px">
+                        <FloatingTextareaField
+                          id="completionReply"
+                          label={
+                            <>
+                              Reply <span className="text-danger">*</span>
+                            </>
+                          }
+                          value={ticketForm.completionReply}
+                          disabled={isViewMode}
+                          readOnly={isViewMode}
+                          onChange={value =>
+                            handleTicketFormChange('completionReply', value)
+                          }
+                          error={validationErrors.completionReply}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
 
                   <div className="d-flex gap-3">
                     <button

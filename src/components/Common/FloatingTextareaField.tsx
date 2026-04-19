@@ -22,7 +22,7 @@ export const FloatingTextareaField = ({
   disabled = false,
   readOnly = false,
   className = 'form-control ant-input-floating-control',
-  minHeight = '120px',
+  minHeight = '',
   error,
 }: FloatingTextareaFieldProps) => (
   <div>

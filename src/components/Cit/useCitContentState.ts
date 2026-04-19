@@ -87,16 +87,22 @@ const mergeSavedRecordWithApiRecord = ({
       ? apiRecord.ticketForm.selectTypeId
       : savedRecord.ticketForm.selectTypeId,
     selectType: apiRecord.ticketForm.selectType || savedRecord.ticketForm.selectType,
+    selectSadhakId:
+      savedRecord.ticketForm.selectSadhakId || apiRecord.ticketForm.selectSadhakId,
+    selectSadhakName:
+      savedRecord.ticketForm.selectSadhakName || apiRecord.ticketForm.selectSadhakName,
     requestBy: apiRecord.ticketForm.requestBy || savedRecord.ticketForm.requestBy,
     country1: apiRecord.ticketForm.country1 || savedRecord.ticketForm.country1,
     mobileNo1: apiRecord.ticketForm.mobileNo1 || savedRecord.ticketForm.mobileNo1,
     country2: apiRecord.ticketForm.country2 || savedRecord.ticketForm.country2,
     mobileNo2: apiRecord.ticketForm.mobileNo2 || savedRecord.ticketForm.mobileNo2,
     callBackDate:
-      apiRecord.ticketForm.callBackDate || savedRecord.ticketForm.callBackDate,
+      savedRecord.ticketForm.callBackDate || apiRecord.ticketForm.callBackDate,
     callBackTime:
-      apiRecord.ticketForm.callBackTime || savedRecord.ticketForm.callBackTime,
+      savedRecord.ticketForm.callBackTime || apiRecord.ticketForm.callBackTime,
     details: apiRecord.ticketForm.details || savedRecord.ticketForm.details,
+    completionReply:
+      savedRecord.ticketForm.completionReply || apiRecord.ticketForm.completionReply,
   },
   followUps: apiRecord.followUps.length ? apiRecord.followUps : savedRecord.followUps,
 });
@@ -211,6 +217,7 @@ export const useCitContentState = () => {
 
     for (const requestBody of requestBodies) {
       try {
+        console.log('CIT GetCITById request payload:', requestBody);
         const response = await axiosInstance.post(
           masterApiPaths.getCitDetailsById,
           requestBody,
@@ -218,6 +225,7 @@ export const useCitContentState = () => {
             headers: masterApiHeaders(),
           },
         );
+        console.log('CIT GetCITById response:', response.data);
         const apiRecord = extractCitDetailRecord(response.data);
 
         if (apiRecord) {
@@ -621,12 +629,15 @@ export const useCitContentState = () => {
       if (ticketForm.details.trim()) {
         delete nextErrors.details;
       }
+      if (!completed || ticketForm.completionReply.trim()) {
+        delete nextErrors.completionReply;
+      }
 
       return Object.keys(nextErrors).length === Object.keys(current).length
         ? current
         : nextErrors;
     });
-  }, [ticketForm]);
+  }, [completed, ticketForm]);
 
   useEffect(() => {
     const searchValue = donorSearchValue.trim();
@@ -777,8 +788,15 @@ export const useCitContentState = () => {
         const fetchedRecord = await fetchCitRecordById(informationCodeParam);
 
         if (fetchedRecord) {
+          const resolvedRecord = cacheRecord
+            ? mergeSavedRecordWithApiRecord({
+                savedRecord: cacheRecord,
+                apiRecord: fetchedRecord.record,
+              })
+            : fetchedRecord.record;
+
           applyRecordToForm(
-            fetchedRecord.record,
+            resolvedRecord,
             informationCodeParam,
             setTicketForm,
             setDonorSearchValue,
@@ -957,6 +975,7 @@ export const useCitContentState = () => {
       hasSelectableTypes: selectTypeOptions.some(
         option => option.value !== '' && option.label !== 'Select',
       ),
+      completed,
     });
 
     if (Object.keys(nextErrors).length > 0) {
@@ -979,6 +998,8 @@ export const useCitContentState = () => {
           ) || null,
       });
       setSaveRequestPayload(payload);
+      // Debug payload to verify the exact request body sent to CIT save APIs.
+      console.log(`CIT ${operation} payload:`, payload);
       const response = await axiosInstance.post(path, payload, {
         headers: masterApiHeaders(),
       });
