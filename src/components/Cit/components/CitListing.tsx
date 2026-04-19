@@ -72,7 +72,7 @@ const createInitialFilters = (): CitListingFilters => ({
 });
 
 const statusOptions = [
-  { value: '3', label: 'All' },
+  { value: '2', label: 'All' },
   { value: '0', label: 'Pending' },
   { value: '1', label: 'Complete' },
 ];

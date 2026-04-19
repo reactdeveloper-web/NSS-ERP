@@ -4,6 +4,11 @@ import { FloatingInputField } from 'src/components/Common/FloatingInputField';
 export interface TicketFollowUpItem {
   id: number;
   note: string;
+  userId?: number;
+  citId?: number;
+  followupDate?: string;
+  followupTime?: string;
+  dataFlag?: string;
 }
 
 interface TicketFollowUpTabProps {

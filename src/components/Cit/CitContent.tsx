@@ -15,6 +15,7 @@ export const CitContent = () => {
     activeTab,
     setActiveTab,
     completed,
+    completionLocked,
     setCompleted,
     ticketForm,
     donorSearchValue,
@@ -51,6 +52,7 @@ export const CitContent = () => {
     !isListingMode &&
     ticketForm.ticketId.trim() !== '' &&
     ticketForm.ticketId !== 'AUTO/VIEW';
+  const isCompletionEditable = operation === 'EDIT' && !completionLocked;
 
   return (
     <div
@@ -201,7 +203,7 @@ export const CitContent = () => {
                         className="form-check-input"
                         type="checkbox"
                         checked={completed}
-                        disabled={isViewMode}
+                        disabled={!isCompletionEditable}
                         onChange={event =>
                           setCompleted(event.target.checked)
                         }
@@ -221,8 +223,8 @@ export const CitContent = () => {
                             </>
                           }
                           value={ticketForm.completionReply}
-                          disabled={isViewMode}
-                          readOnly={isViewMode}
+                          disabled={!isCompletionEditable}
+                          readOnly={!isCompletionEditable}
                           onChange={value =>
                             handleTicketFormChange('completionReply', value)
                           }

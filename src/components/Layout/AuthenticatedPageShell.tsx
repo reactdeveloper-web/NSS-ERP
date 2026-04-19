@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import { Redirect, useLocation } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import { AuthFooter } from 'src/components/Footer/AuthFooter';
 import { HeaderMenu } from 'src/components/Header/HeaderMenu';
 import { PATH } from 'src/constants/paths';
@@ -17,16 +17,9 @@ interface Props extends ConnectedProps<typeof connector> {
 
 const _AuthenticatedPageShell = (props: Props) => {
   const { children, isAuthenticated } = props;
-  const location = useLocation();
 
   if (!isAuthenticated) {
-    return (
-      <Redirect
-        to={`${PATH.LOGIN}?redirect=${encodeURIComponent(
-          `${location.pathname}${location.search}${location.hash}`,
-        )}`}
-      />
-    );
+    return <Redirect to={PATH.LOGIN} />;
   }
 
   return (
