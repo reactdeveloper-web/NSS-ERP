@@ -6,7 +6,12 @@ import { ContentTypes } from 'src/constants/content';
 import axiosInstance from 'src/redux/interceptor';
 import { masterApiHeaders } from 'src/utils/masterApiHeaders';
 import { masterApiPaths } from 'src/utils/masterApiPaths';
-import { readCitCache } from '../cit.helpers';
+import {
+  extractCitCallCategoryOptions,
+  extractCitEmployeeOptions,
+  extractCitCallSubCategoryOptions,
+  readCitCache,
+} from '../cit.helpers';
 import {
   extractArrayPayload,
   getFirstValue,
@@ -16,13 +21,19 @@ import {
 
 export interface CitListingItem {
   informationCode: string;
-  date: string;
+  entryDate: string;
+  callBackDate: string;
+  targetDate: string;
   ngCode: string;
+  categoryId: string;
+  empId: string;
   callCategoryName: string;
+  callSubCategoryIds: string;
+  callSubCategoryName: string;
   informationTrait: string;
   requestBy: string;
+  employeeName: string;
   mobileNo1: string;
-  callBackDate: string;
   completed: boolean;
 }
 
@@ -42,6 +53,11 @@ interface CitListingProps {
   onView: (informationCode: string) => void;
   onDelete: (informationCode: string) => void;
 }
+
+type MasterOption = {
+  value: string;
+  label: string;
+};
 
 const CIT_FETCH_PAGE_INDEX = 1;
 const CIT_FETCH_PAGE_SIZE = 500;
@@ -68,10 +84,24 @@ const mapCitListingItem = (record: Record<string, unknown>): CitListingItem => (
     'iCall_Information_Traits_ID',
     'ICall_Information_Traits_ID',
   ]),
-  date:
-    normalizeApiDate(getFirstValue(record, ['Call_Date_Time', 'call_Date'])) ||
-    getFirstValue(record, ['Call_Date_Time', 'call_Date']),
+  entryDate: getFirstValue(record, [
+    'call_Date_Time',
+    'Call_Date_Time',
+    'call_Date',
+    'Call_Date',
+  ]),
+  callBackDate: getFirstValue(record, [
+    'Call_Back_Date_Time',
+    'call_Back_Date_Time',
+    'Call_Back_Date',
+    'call_Back_Date',
+  ]),
+  targetDate:
+    normalizeApiDate(getFirstValue(record, ['Target_Date'])) ||
+    getFirstValue(record, ['Target_Date']),
   ngCode: getFirstValue(record, ['NgCode', 'ngCode', 'NGCode']),
+  categoryId: getFirstValue(record, ['iCall_Category_ID']),
+  empId: getFirstValue(record, ['Emp_Id', 'emp_Id', 'call_User_Id', 'Call_User_Id']),
   callCategoryName:
     getFirstValue(record, [
       'sCategory',
@@ -81,30 +111,40 @@ const mapCitListingItem = (record: Record<string, unknown>): CitListingItem => (
       'DM_NAME',
     ]) ||
     `Category ${getFirstValue(record, ['iCall_Category_ID'])}`,
+  callSubCategoryName: getFirstValue(record, [
+    'Call_SubCat_Name',
+    'call_SubCat_Name',
+  ]),
+  callSubCategoryIds: getFirstValue(record, [
+    'Call_SubCat_ID',
+    'call_SubCat_ID',
+  ]),
   informationTrait: getFirstValue(record, [
     'sInformation_Trait',
     'Call_SubCat_Name',
     'call_SubCat_Name',
   ]),
   requestBy: getFirstValue(record, ['NAME', 'name', 'request_by', 'RequestBy']),
+  employeeName: getFirstValue(record, ['ENAME', 'EMP_NAME', 'emp_name']),
   mobileNo1: getFirstValue(record, ['Mno1', 'mno1']),
-  callBackDate:
-    normalizeApiDate(
-      getFirstValue(record, ['Target_Date', 'Call_Back_Date_Time', 'call_Back_Date']),
-    ) ||
-    getFirstValue(record, ['Target_Date', 'Call_Back_Date_Time', 'call_Back_Date']),
   completed: getFirstValue(record, ['Complete', 'complete']).trim().toLowerCase() === 'yes',
 });
 
 const mapCachedCitListingItem = (record: ReturnType<typeof readCitCache>[number]): CitListingItem => ({
   informationCode: record.informationCode,
-  date: record.ticketForm.date,
+  entryDate: record.ticketForm.date,
+  callBackDate: record.ticketForm.callBackDate,
+  targetDate: record.ticketForm.callBackDate,
   ngCode: record.ticketForm.ngCode,
+  categoryId: record.ticketForm.callCategoryId,
+  empId: record.ticketForm.selectSadhakId,
   callCategoryName: record.ticketForm.callCategoryName,
+  callSubCategoryIds: record.ticketForm.selectTypeId.join(','),
+  callSubCategoryName: record.ticketForm.selectType,
   informationTrait: record.ticketForm.details || record.ticketForm.selectType,
   requestBy: record.ticketForm.requestBy,
+  employeeName: record.ticketForm.selectSadhakName,
   mobileNo1: record.ticketForm.mobileNo1,
-  callBackDate: record.ticketForm.callBackDate,
   completed: record.completed,
 });
 
@@ -118,6 +158,106 @@ const formatDisplayDate = (value: string) => {
   return normalizedValue.split('-').reverse().join('/');
 };
 
+const normalizeListingDate = (value: string) => normalizeApiDate(value) || normalizeDate(value);
+
+const formatDateTimeCell = (value: string) => {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return <span>-</span>;
+  }
+
+  const [datePart, timePart] = trimmedValue.split(/\s(.+)/);
+
+  if (!timePart) {
+    return <span>{trimmedValue}</span>;
+  }
+
+  return (
+    <>
+      <div>{datePart}</div>
+      <div>{timePart}</div>
+    </>
+  );
+};
+
+const formatDateOnlyCell = (value: string) => {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return '-';
+  }
+
+  const dateToken = trimmedValue.split(/\s+/)[0];
+  const normalizedToken = dateToken.replace(/\./g, '/').replace(/-/g, '/');
+  const yyyyMmDdMatch = normalizedToken.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+
+  if (yyyyMmDdMatch) {
+    const [, year, month, day] = yyyyMmDdMatch;
+    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+  }
+
+  const slashDateMatch = normalizedToken.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+
+  if (slashDateMatch) {
+    const [, firstPart, secondPart, year] = slashDateMatch;
+    const firstNumber = Number(firstPart);
+    const secondNumber = Number(secondPart);
+
+    if (firstNumber > 12 && secondNumber <= 12) {
+      return `${firstPart.padStart(2, '0')}/${secondPart.padStart(2, '0')}/${year}`;
+    }
+
+    if (secondNumber > 12 && firstNumber <= 12) {
+      return `${secondPart.padStart(2, '0')}/${firstPart.padStart(2, '0')}/${year}`;
+    }
+
+    return `${firstPart.padStart(2, '0')}/${secondPart.padStart(2, '0')}/${year}`;
+  }
+
+  const normalizedValue = normalizeApiDate(trimmedValue);
+
+  if (normalizedValue && normalizedValue.includes('-')) {
+    return normalizedValue.split('-').reverse().join('/');
+  }
+
+  return dateToken;
+};
+
+const formatTypeCell = (
+  item: CitListingItem,
+  resolvedCategoryName: string,
+  resolvedSubCategoryNames: string,
+  resolvedSadhakName: string,
+) => (
+  <>
+    <div className="mt-1">
+      <span className="fw-bold"> {resolvedCategoryName || `Category ${item.categoryId || '-'}`}</span>
+    </div>
+    <div>
+      {item.categoryId === '27'
+        ? resolvedSadhakName || '-'
+        : resolvedSubCategoryNames || '-'}
+    </div>
+  </>
+);
+
+const getListingSortValue = (item: CitListingItem) => {
+  const numericInformationCode = Number(item.informationCode);
+
+  if (Number.isFinite(numericInformationCode) && numericInformationCode > 0) {
+    return numericInformationCode;
+  }
+
+  const normalizedEntryDate = normalizeApiDate(item.entryDate);
+
+  if (normalizedEntryDate) {
+    return new Date(`${normalizedEntryDate}T00:00:00`).getTime();
+  }
+
+  return 0;
+};
+
 export const CitListing = ({
   deletingId,
   onAdd,
@@ -128,6 +268,11 @@ export const CitListing = ({
   const [apiItems, setApiItems] = useState<CitListingItem[]>([]);
   const [apiLoading, setApiLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [categoryOptions, setCategoryOptions] = useState<MasterOption[]>([]);
+  const [employeeOptions, setEmployeeOptions] = useState<MasterOption[]>([]);
+  const [subCategoryOptionsByCategory, setSubCategoryOptionsByCategory] = useState<
+    Record<string, MasterOption[]>
+  >({});
   const [searchText, setSearchText] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState<CitListingFilters>(
@@ -142,6 +287,101 @@ export const CitListing = ({
 
   useEffect(() => {
     setCachedItems(readCitCache().map(mapCachedCitListingItem));
+  }, []);
+
+  useEffect(() => {
+    const loadCallCategories = async () => {
+      const currentUser = parseStoredUser() as Partial<IUser> & {
+        DataFlag?: string;
+        dataFlag?: string;
+        Data_Flag?: string;
+      };
+      const dataFlag =
+        currentUser.DataFlag ||
+        currentUser.dataFlag ||
+        currentUser.Data_Flag ||
+        ContentTypes.DataFlag;
+      const requestConfigs = [
+        () =>
+          axiosInstance.post(masterApiPaths.getCallCategoryList, null, {
+            headers: masterApiHeaders(),
+          }),
+        () =>
+          axiosInstance.post(
+            masterApiPaths.getCallCategoryList,
+            { Data_Flag: dataFlag },
+            { headers: masterApiHeaders() },
+          ),
+        () =>
+          axiosInstance.post(
+            masterApiPaths.getCallCategoryList,
+            { data_Flag: dataFlag },
+            { headers: masterApiHeaders() },
+          ),
+        () =>
+          axiosInstance.post(
+            masterApiPaths.getCallCategoryList,
+            { DataFlag: dataFlag },
+            { headers: masterApiHeaders() },
+          ),
+        () =>
+          axiosInstance.post(
+            masterApiPaths.getCallCategoryList,
+            {},
+            { headers: masterApiHeaders() },
+          ),
+      ];
+
+      for (const makeRequest of requestConfigs) {
+        try {
+          const response = await makeRequest();
+          const nextOptions = extractCitCallCategoryOptions(response.data)
+            .filter(option => option.value && option.label !== 'Select')
+            .map(option => ({
+              value: option.value,
+              label: option.label,
+            }));
+
+          if (nextOptions.length) {
+            setCategoryOptions(nextOptions);
+            return;
+          }
+        } catch {
+          // Try next request shape.
+        }
+      }
+
+      setCategoryOptions([]);
+    };
+
+    void loadCallCategories();
+  }, []);
+
+  useEffect(() => {
+    const loadEmployees = async () => {
+      try {
+        const response = await axiosInstance.get(masterApiPaths.getEmployeeAll, {
+          params: {
+            emp_num: 0,
+            dm_id: 0,
+            emp_code: 0,
+          },
+          headers: masterApiHeaders(),
+        });
+        const nextOptions = extractCitEmployeeOptions(response.data)
+          .filter(option => option.value && option.label !== 'Select')
+          .map(option => ({
+            value: option.value,
+            label: option.label,
+          }));
+
+        setEmployeeOptions(nextOptions);
+      } catch {
+        setEmployeeOptions([]);
+      }
+    };
+
+    void loadEmployees();
   }, []);
 
   const fetchCitListing = useCallback(async () => {
@@ -230,18 +470,154 @@ export const CitListing = ({
         ...cachedItem,
         ...item,
         callCategoryName: item.callCategoryName || cachedItem.callCategoryName,
+        empId: item.empId || cachedItem.empId,
+        callSubCategoryIds:
+          item.callSubCategoryIds || cachedItem.callSubCategoryIds,
+        callSubCategoryName:
+          item.callSubCategoryName || cachedItem.callSubCategoryName,
         informationTrait: item.informationTrait || cachedItem.informationTrait,
         requestBy: item.requestBy || cachedItem.requestBy,
+        employeeName: item.employeeName || cachedItem.employeeName,
         mobileNo1: item.mobileNo1 || cachedItem.mobileNo1,
-        callBackDate: item.callBackDate || cachedItem.callBackDate,
+        callBackDate: cachedItem.callBackDate || item.callBackDate,
+        targetDate: cachedItem.targetDate || item.targetDate,
       };
     });
 
     const apiIds = new Set(mergedApiItems.map(item => item.informationCode));
     const cacheOnlyItems = cachedItems.filter(item => !apiIds.has(item.informationCode));
 
-    return [...cacheOnlyItems, ...mergedApiItems];
+    return [...cacheOnlyItems, ...mergedApiItems].sort(
+      (leftItem, rightItem) =>
+        getListingSortValue(rightItem) - getListingSortValue(leftItem),
+    );
   }, [apiItems, cachedItems]);
+
+  useEffect(() => {
+    const categoryIds = Array.from(
+      new Set(
+        mergedItems
+          .map(item => item.categoryId.trim())
+          .filter(Boolean)
+          .filter(categoryId => !subCategoryOptionsByCategory[categoryId]),
+      ),
+    );
+
+    if (!categoryIds.length) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadSubCategories = async () => {
+      const currentUser = parseStoredUser() as Partial<IUser> & {
+        DataFlag?: string;
+        dataFlag?: string;
+        Data_Flag?: string;
+      };
+      const dataFlag =
+        currentUser.DataFlag ||
+        currentUser.dataFlag ||
+        currentUser.Data_Flag ||
+        ContentTypes.DataFlag;
+
+      const results = await Promise.all(
+        categoryIds.map(async categoryId => {
+          try {
+            const response = await axiosInstance.post(
+              masterApiPaths.getCallSubCategoryList,
+              {
+                CatId: Number(categoryId),
+                DataFlag: dataFlag,
+              },
+              {
+                headers: masterApiHeaders(),
+              },
+            );
+
+            return {
+              categoryId,
+              options: extractCitCallSubCategoryOptions(response.data)
+                .filter(option => option.value && option.label !== 'Select')
+                .map(option => ({
+                  value: option.value,
+                  label: option.label,
+                })),
+            };
+          } catch {
+            return {
+              categoryId,
+              options: [] as MasterOption[],
+            };
+          }
+        }),
+      );
+
+      if (!isMounted) {
+        return;
+      }
+
+      setSubCategoryOptionsByCategory(current => {
+        const nextState = { ...current };
+
+        results.forEach(result => {
+          nextState[result.categoryId] = result.options;
+        });
+
+        return nextState;
+      });
+    };
+
+    void loadSubCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [mergedItems, subCategoryOptionsByCategory]);
+
+  const categoryLabelMap = useMemo(
+    () =>
+      categoryOptions.reduce<Record<string, string>>((accumulator, option) => {
+        accumulator[option.value] = option.label;
+        return accumulator;
+      }, {}),
+    [categoryOptions],
+  );
+
+  const employeeLabelMap = useMemo(
+    () =>
+      employeeOptions.reduce<Record<string, string>>((accumulator, option) => {
+        accumulator[option.value] = option.label;
+        return accumulator;
+      }, {}),
+    [employeeOptions],
+  );
+
+  const resolveSubCategoryNames = useCallback(
+    (item: CitListingItem) => {
+      const categoryOptionsForRow = subCategoryOptionsByCategory[item.categoryId] || [];
+      const subCategoryIds = item.callSubCategoryIds
+        .split(',')
+        .map(value => value.trim())
+        .filter(Boolean)
+        .filter(value => /^\d+$/.test(value));
+
+      if (!subCategoryIds.length) {
+        return item.callSubCategoryName || '';
+      }
+
+      const subCategoryLabels = subCategoryIds
+        .map(subCategoryId =>
+          categoryOptionsForRow.find(option => option.value === subCategoryId)?.label || '',
+        )
+        .filter(Boolean);
+
+      return subCategoryLabels.length
+        ? subCategoryLabels.join(', ')
+        : item.callSubCategoryName || '';
+    },
+    [subCategoryOptionsByCategory],
+  );
 
   const filteredItems = useMemo(() => {
     const normalizedSearch = searchText.trim().toLowerCase();
@@ -253,15 +629,29 @@ export const CitListing = ({
     const normalizedToDate = normalizeDate(appliedFilters.toDate);
 
     return mergedItems.filter(item => {
+      const resolvedCategoryName =
+        categoryLabelMap[item.categoryId] || item.callCategoryName;
+      const resolvedSubCategoryNames = resolveSubCategoryNames(item);
+      const resolvedSadhakName =
+        employeeLabelMap[item.empId] || item.employeeName;
       const matchesSearch =
         !normalizedSearch ||
         [
           item.informationCode,
-          item.date,
+          item.entryDate,
+          item.targetDate,
           item.ngCode,
+          item.categoryId,
+          resolvedCategoryName,
           item.callCategoryName,
+          item.callSubCategoryIds,
+          resolvedSubCategoryNames,
+          item.callSubCategoryName,
+          item.empId,
+          resolvedSadhakName,
           item.informationTrait,
           item.requestBy,
+          item.employeeName,
           item.mobileNo1,
           item.callBackDate,
           item.completed ? 'completed' : 'pending',
@@ -280,9 +670,13 @@ export const CitListing = ({
         (normalizedStatus === '1' && item.completed) ||
         (normalizedStatus === '0' && !item.completed);
       const matchesFromDate =
-        !normalizedFromDate || (item.date && item.date >= normalizedFromDate);
+        !normalizedFromDate ||
+        (!!normalizeListingDate(item.entryDate) &&
+          normalizeListingDate(item.entryDate) >= normalizedFromDate);
       const matchesToDate =
-        !normalizedToDate || (item.date && item.date <= normalizedToDate);
+        !normalizedToDate ||
+        (!!normalizeListingDate(item.entryDate) &&
+          normalizeListingDate(item.entryDate) <= normalizedToDate);
 
       return (
         matchesSearch &&
@@ -294,7 +688,14 @@ export const CitListing = ({
         matchesToDate
       );
     });
-  }, [appliedFilters, mergedItems, searchText]);
+  }, [
+    appliedFilters,
+    categoryLabelMap,
+    employeeLabelMap,
+    mergedItems,
+    resolveSubCategoryNames,
+    searchText,
+  ]);
 
   const totalCount = filteredItems.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -461,7 +862,7 @@ export const CitListing = ({
       <div className="card-body p-3">
         {apiError ? <div className="alert alert-warning m-3">{apiError}</div> : null}
 
-        <div className="table-responsive" style={{ maxHeight: '450px' }}>
+        <div className="table-responsive" style={{ maxHeight: '600px' }}>
           <table
             id="citListingTable"
             className="table table-row-bordered align-middle gs-0 gy-2 mb-0"
@@ -470,53 +871,53 @@ export const CitListing = ({
               <tr className="fw-bolder text-uppercase text-nowrap">
                 <th
                   className="min-w-100px text-center"
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 ></th>
                 <th
                   className="text-center"
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
                   Ticket ID
                 </th>
                 <th
                   className="text-center"
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
-                  Call Date
+                  Entry Date
                 </th>
                 <th
                   className="text-center"
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
-                  NG Code
-                </th>
-                <th
-                  className="text-start w-600px"
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
-                >
-                  Information Trait
+                  Call Back Date
                 </th>
                 <th
                   className="text-center"
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
-                >
-                  Request By
-                </th>
-                <th
-                  className="text-center"
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
-                >
-                  Mobile No
-                </th>
-                <th
-                  className="text-center"
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
                   Target Date
                 </th>
                 <th
+                  className="text-start"
+                  style={{ background: '#27b3a7', color: '#ffffff' }}
+                >
+                  Category Name / Types
+                </th>
+                <th
+                  className="text-start"
+                  style={{ background: '#27b3a7', color: '#ffffff' }}
+                >
+                  Request By
+                </th>
+                <th
+                  className="text-start"
+                  style={{ background: '#27b3a7', color: '#ffffff' }}
+                >
+                  Details
+                </th>
+                <th
                   className="text-center"
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
                   Status
                 </th>
@@ -530,72 +931,91 @@ export const CitListing = ({
                   </td>
                 </tr>
               ) : paginatedItems.length ? (
-                paginatedItems.map(item => (
-                  <tr key={item.informationCode} valign="top">
-                    <td className="d-flex gap-6">
-                      <button
-                        type="button"
-                        className="btn btn-icon btn-sm btn-light"
-                        onClick={() => onEdit(item.informationCode)}
-                        title="Edit"
-                      >
-                        <i
-                          className="fa fa-edit text-info"
-                          aria-hidden="true"
-                        ></i>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-icon btn-sm btn-light"
-                        onClick={() => onView(item.informationCode)}
-                        title="View"
-                      >
-                        <i
-                          className="fa fa-eye text-success"
-                          aria-hidden="true"
-                        ></i>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-icon btn-sm btn-light"
-                        onClick={() => onDelete(item.informationCode)}
-                        disabled={deletingId === item.informationCode}
-                        title="Delete"
-                      >
-                        <i
-                          className="fa fa-trash text-danger"
-                          aria-hidden="true"
-                        ></i>
-                      </button>
-                    </td>
-                    <td className="text-center">
+                paginatedItems.map(item => {
+                  const resolvedCategoryName =
+                    categoryLabelMap[item.categoryId] || item.callCategoryName;
+                  const resolvedSubCategoryNames = resolveSubCategoryNames(item);
+                  const resolvedSadhakName =
+                    employeeLabelMap[item.empId] || item.employeeName;
+
+                  return (
+                    <tr key={item.informationCode}>
+                      <td>
+                        <div className="d-flex gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-sm btn-light"
+                          onClick={() => onEdit(item.informationCode)}
+                          title="Edit"
+                        >
+                          <i
+                            className="fa fa-edit text-info"
+                            aria-hidden="true"
+                          ></i>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-sm btn-light"
+                          onClick={() => onView(item.informationCode)}
+                          title="View"
+                        >
+                          <i
+                            className="fa fa-eye text-success"
+                            aria-hidden="true"
+                          ></i>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-icon btn-sm btn-light"
+                          onClick={() => onDelete(item.informationCode)}
+                          disabled={deletingId === item.informationCode}
+                          title="Delete"
+                        >
+                          <i
+                            className="fa fa-trash text-danger"
+                            aria-hidden="true"
+                          ></i>
+                        </button>
+                        </div>
+                      </td>
+                      <td className="text-center">
                       {item.informationCode || '-'}
                     </td>
                     <td className="text-center">
-                      {formatDisplayDate(item.date)}
-                    </td>
-                    <td className="text-center">{item.ngCode || '-'}</td>
-                    <td className="text-start">
-                      {item.informationTrait || item.callCategoryName || '-'}
-                    </td>
-                    <td className="text-center">{item.requestBy || '-'}</td>
-                    <td className="text-center">{item.mobileNo1 || '-'}</td>
-                    <td className="text-center">
-                      {formatDisplayDate(item.callBackDate)}
+                      {formatDateOnlyCell(item.entryDate)}
                     </td>
                     <td className="text-center">
-                      <span
-                        className={`badge ${
-                          item.completed
-                            ? 'badge-light-success'
-                            : 'badge-light-warning'
-                        }`}
-                      >
-                        {item.completed ? 'Completed' : 'Pending'}
-                      </span>
+                      {formatDateOnlyCell(item.callBackDate)}
                     </td>
-                  </tr>
-                ))
+                      <td className="text-center">
+                        {formatDisplayDate(item.targetDate)}
+                      </td>
+                      <td className="text-start">
+                        {formatTypeCell(
+                          item,
+                          resolvedCategoryName,
+                          resolvedSubCategoryNames,
+                          resolvedSadhakName,
+                        )}
+                      </td>
+                      <td className="text-start">{item.requestBy || '-'}</td>
+                      <td className="text-start">
+                        {item.informationTrait || '-'}
+                      </td>
+                      <td className="text-center">
+                        <span
+                          className={`badge ${
+                            item.completed
+                              ? 'badge-light-success'
+                              : 'badge-light-warning'
+                          }`}
+                        >
+                          {item.completed ? 'Complete' : 'Pending'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={9} className="text-center py-10 text-muted">

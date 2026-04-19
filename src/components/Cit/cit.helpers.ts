@@ -73,6 +73,42 @@ const getCurrentLocalTime = () => {
   return `${hours}:${minutes}`;
 };
 
+const normalizeCitDateValue = (value: unknown): string => {
+  if (value === undefined || value === null) {
+    return '';
+  }
+
+  const rawValue = String(value).trim();
+
+  if (!rawValue) {
+    return '';
+  }
+
+  const dateToken = rawValue.split(/\s+/)[0].replace(/\./g, '/');
+  const yyyyMmDdMatch = dateToken.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+
+  if (yyyyMmDdMatch) {
+    const [, year, month, day] = yyyyMmDdMatch;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+
+  const slashDateMatch = dateToken.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+
+  if (slashDateMatch) {
+    const [, firstPart, secondPart, year] = slashDateMatch;
+    const firstNumber = Number(firstPart);
+    const secondNumber = Number(secondPart);
+
+    if (firstNumber > 12 && secondNumber <= 12) {
+      return `${year}-${secondPart.padStart(2, '0')}-${firstPart.padStart(2, '0')}`;
+    }
+
+    return `${year}-${firstPart.padStart(2, '0')}-${secondPart.padStart(2, '0')}`;
+  }
+
+  return normalizeApiDate(rawValue);
+};
+
 export const createInitialTicketForm = (): CallCenterTicketForm => ({
   ticketId: 'AUTO/VIEW',
   date: getToday(),
@@ -91,6 +127,7 @@ export const createInitialTicketForm = (): CallCenterTicketForm => ({
   callBackDate: '',
   callBackTime: '',
   details: '',
+  completionReply: '',
 });
 
 export const readCitCache = (): CitCacheRecord[] => {
@@ -175,10 +212,12 @@ export const validateCitForm = (
   form: CallCenterTicketForm,
   options?: {
     hasSelectableTypes?: boolean;
+    completed?: boolean;
   },
 ): CallCenterTicketValidationErrors => {
   const nextErrors: CallCenterTicketValidationErrors = {};
   const hasSelectableTypes = options?.hasSelectableTypes ?? false;
+  const completed = options?.completed ?? false;
 
   if (!form.callCategoryId.trim()) {
     nextErrors.callCategoryName = 'Call Category Name is required.';
@@ -205,6 +244,9 @@ export const validateCitForm = (
   }
   if (!form.details.trim()) {
     nextErrors.details = 'Details is required.';
+  }
+  if (completed && !form.completionReply.trim()) {
+    nextErrors.completionReply = 'Reply is required when completed is checked.';
   }
 
   return nextErrors;
@@ -243,7 +285,7 @@ export const mapCitRecordToCache = (record: CitApiRecord): CitCacheRecord => {
     ticketForm: {
       ...createInitialTicketForm(),
       ticketId: getFirstValue(record, CIT_ID_KEYS),
-      date: normalizeApiDate(
+      date: normalizeCitDateValue(
         getFirstValue(record, [
           'call_Date',
           'CallDate',
@@ -277,18 +319,22 @@ export const mapCitRecordToCache = (record: CitApiRecord): CitCacheRecord => {
         'call_SubCat_Name',
       ]),
       selectSadhakId: getFirstValue(record, [
-        'call_User_Id',
-        'Call_User_Id',
+        'Emp_Id',
         'emp_Id',
         'Emp_id',
+        'call_User_Id',
+        'Call_User_Id',
       ]),
       selectSadhakName: getFirstValue(record, [
+        'Emp_Name',
+        'EMP_NAME',
+        'emp_name',
+        'EmpName',
         'calling_sadhak_name',
         'CallingSadhakName',
         'call_User_Name',
         'Call_User_Name',
-        'EmpName',
-        'emp_name',
+        'ENAME',
       ]),
       requestBy: getFirstValue(record, [
         'request_by',
@@ -329,7 +375,7 @@ export const mapCitRecordToCache = (record: CitApiRecord): CitCacheRecord => {
           ])
         : '',
       mobileNo2: resolvedMobileNo2,
-      callBackDate: normalizeApiDate(
+      callBackDate: normalizeCitDateValue(
         getFirstValue(record, [
           'call_Back_Date',
           'CallBackDate',
@@ -352,6 +398,7 @@ export const mapCitRecordToCache = (record: CitApiRecord): CitCacheRecord => {
         'icallReply',
         'ICallReply',
       ]),
+      completionReply: getFirstValue(record, ['icallReply', 'ICallReply']),
     },
     followUps: [],
     createdAt: new Date().toISOString(),
@@ -441,19 +488,23 @@ export const buildCitSavePayload = ({
   const resolvedCategoryName =
     toNullableText(form.callCategoryName) || selectedCategoryOption?.label || null;
   const resolvedAssignedEmpId =
-    form.callCategoryId === '27'
-      ? toNumberValue(form.selectSadhakId) || empNum
-      : empNum;
+    form.callCategoryId === '27' ? toNumberValue(form.selectSadhakId) : 0;
+  const resolvedUserId = empNum;
+  const resolvedTargetDate = form.date || currentLocalDate;
   const endpointSpecificPayload =
     operation === 'EDIT'
       ? {
+          NAME: resolvedRequestBy,
           Request_by: resolvedRequestBy,
           Country_code1: resolvedCountryCode1,
           Country_Code2: resolvedCountryCode2,
           category: resolvedCategoryName,
+          target_Date: resolvedTargetDate,
+          Target_Date: resolvedTargetDate,
         }
       : {
-          target_Date: currentLocalDate,
+          target_Date: resolvedTargetDate,
+          Target_Date: resolvedTargetDate,
           NAME: resolvedRequestBy,
           Request_by: resolvedRequestBy,
           Country_code1: resolvedCountryCode1,
@@ -471,9 +522,11 @@ export const buildCitSavePayload = ({
       call_Date: currentLocalDate,
       sInformation_Trait: toNullableText(form.details),
       dept_Id: deptId,
-      icallReply: null,
+      icallReply: toNullableText(form.completionReply),
+      iCallReply: toNullableText(form.completionReply),
       complete: completed ? 1 : 0,
-      useR_ID: empNum,
+      useR_ID: resolvedUserId,
+      USER_ID: resolvedUserId,
       rec: null,
       rec_Comp: null,
       rec_User_ID: null,
@@ -482,11 +535,12 @@ export const buildCitSavePayload = ({
       disp_User_ID: null,
       call: null,
       call_Comp: null,
-      call_User_Id: empNum,
+      call_User_Id: resolvedUserId,
+      Call_User_Id: resolvedUserId,
       mno1: toNullableText(form.mobileNo1),
       mno2: toNullableText(form.mobileNo2),
       call_Back_Date: form.callBackDate || null,
-      comp_Date: null,
+      comp_Date: completed ? currentLocalDate : null,
       ngCode: resolvedNgCode,
       comp_User_Id: null,
       scan_Files: null,
@@ -500,6 +554,7 @@ export const buildCitSavePayload = ({
       call_Date_Time: toDateTimeValue(currentLocalDate, currentLocalTime),
       call_Back_Date_Time: toDateTimeValue(form.callBackDate, form.callBackTime),
       emp_Id: resolvedAssignedEmpId,
+      Emp_Id: resolvedAssignedEmpId,
       eMail_Id: null,
       froM_WEB: 'Y',
       isd1: null,
@@ -587,23 +642,27 @@ export const extractCitEmployeeOptions = (
   const records = extractArrayPayload(payload) as CitEmployeeRecord[];
 
   const options = records
-    .map(record => ({
-      value: getFirstValue(record, [
+    .map(record => {
+      const employeeNumber = getFirstValue(record, [
         'emp_num',
         'Emp_Num',
-        'emp_id',
-        'Emp_Id',
-        'id',
-        'ID',
-      ]),
-      label: getFirstValue(record, [
-        'emp_name',
-        'Emp_Name',
-        'employee_name',
-        'EmployeeName',
-        'Name',
-      ]).trim(),
-    }))
+        'EMP_NUM',
+        'empNum',
+        'EmpNum',
+      ]);
+
+      return {
+        value: employeeNumber,
+        label: getFirstValue(record, [
+          'emp_name',
+          'Emp_Name',
+          'EMP_NAME',
+          'employee_name',
+          'EmployeeName',
+          'Name',
+        ]).trim(),
+      };
+    })
     .filter(
       (option, index, currentOptions) =>
         option.value !== '' &&

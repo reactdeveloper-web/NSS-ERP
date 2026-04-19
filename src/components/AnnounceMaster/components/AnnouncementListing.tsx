@@ -508,7 +508,7 @@ export const AnnouncementListing = ({
       <div className="card-body p-3">
         {error ? <div className="alert alert-warning m-3">{error}</div> : null}
 
-        <div className="table-responsive" style={{ maxHeight: '550px' }}>
+        <div className="table-responsive" style={{ maxHeight: '600px' }}>
           <table
             id="receiveTable"
             className="table table-row-bordered align-middle gs-0 gy-2 mb-0"

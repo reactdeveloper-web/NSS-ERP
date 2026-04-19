@@ -2586,7 +2586,7 @@ export const AnnounceMasterContent = () => {
         <AnnounceMasterNav />
 
         <div className="post d-flex flex-column-fluid" id="kt_post">
-          <div id="kt_content_container" className="container-fluid py-6">
+          <div id="kt_content_container" className="container-fluid py-0">
             <AnnouncementListing
               deletingId={deletingAnnouncementId}
               onAdd={() => openAnnouncementForm('0', 'ADD')}
@@ -2611,7 +2611,7 @@ export const AnnounceMasterContent = () => {
       <AnnounceMasterNav />
 
       <div className="post d-flex flex-column-fluid" id="kt_post">
-        <div id="kt_content_container" className="container-fluid py-6">
+        <div id="kt_content_container" className="container-fluid py-0">
           <div className="row g-6 justify-content-center">
             <div className="col-12">
               <AnnouncerPersonalDetailsCard
