@@ -484,10 +484,9 @@ export const CitListing = ({
       };
     });
 
-    const apiIds = new Set(mergedApiItems.map(item => item.informationCode));
-    const cacheOnlyItems = cachedItems.filter(item => !apiIds.has(item.informationCode));
+    const sourceItems = mergedApiItems.length ? mergedApiItems : cachedItems;
 
-    return [...cacheOnlyItems, ...mergedApiItems].sort(
+    return [...sourceItems].sort(
       (leftItem, rightItem) =>
         getListingSortValue(rightItem) - getListingSortValue(leftItem),
     );
