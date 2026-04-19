@@ -103,6 +103,8 @@ const mergeSavedRecordWithApiRecord = ({
     details: apiRecord.ticketForm.details || savedRecord.ticketForm.details,
     completionReply:
       savedRecord.ticketForm.completionReply || apiRecord.ticketForm.completionReply,
+    creatorUserId:
+      apiRecord.ticketForm.creatorUserId || savedRecord.ticketForm.creatorUserId,
   },
   followUps: apiRecord.followUps.length ? apiRecord.followUps : savedRecord.followUps,
 });
@@ -114,6 +116,7 @@ const applyRecordToForm = (
   setDonorSearchValue: (value: string) => void,
   setFollowUps: (value: TicketFollowUpItem[]) => void,
   setCompleted: (value: boolean) => void,
+  setCompletionLocked: (value: boolean) => void,
   setActiveTab: (value: CitTabKey) => void,
 ) => {
   if (!record) {
@@ -125,6 +128,7 @@ const applyRecordToForm = (
     setDonorSearchValue('');
     setFollowUps([]);
     setCompleted(false);
+    setCompletionLocked(false);
     setActiveTab('cit');
     return;
   }
@@ -133,6 +137,7 @@ const applyRecordToForm = (
   setDonorSearchValue(record.ticketForm.ngCode || '');
   setFollowUps(record.followUps);
   setCompleted(record.completed);
+  setCompletionLocked(record.completed);
   setActiveTab('cit');
 };
 
@@ -149,6 +154,7 @@ export const useCitContentState = () => {
 
   const [activeTab, setActiveTab] = useState<CitTabKey>('cit');
   const [completed, setCompleted] = useState(false);
+  const [completionLocked, setCompletionLocked] = useState(false);
   const [ticketForm, setTicketForm] = useState<CallCenterTicketForm>(
     createInitialTicketForm,
   );
@@ -226,6 +232,20 @@ export const useCitContentState = () => {
           },
         );
         console.log('CIT GetCITById response:', response.data);
+        console.log('CIT GetCITById response reply field:', {
+          iCallReply:
+            response.data &&
+            typeof response.data === 'object' &&
+            'iCallReply' in response.data
+              ? response.data.iCallReply
+              : undefined,
+          icallReply:
+            response.data &&
+            typeof response.data === 'object' &&
+            'icallReply' in response.data
+              ? response.data.icallReply
+              : undefined,
+        });
         const apiRecord = extractCitDetailRecord(response.data);
 
         if (apiRecord) {
@@ -774,6 +794,7 @@ export const useCitContentState = () => {
         setDonorSearchValue,
         setFollowUps,
         setCompleted,
+        setCompletionLocked,
         setActiveTab,
       );
       return;
@@ -802,6 +823,7 @@ export const useCitContentState = () => {
             setDonorSearchValue,
             setFollowUps,
             setCompleted,
+            setCompletionLocked,
             setActiveTab,
           );
           return;
@@ -817,6 +839,7 @@ export const useCitContentState = () => {
         setDonorSearchValue,
         setFollowUps,
         setCompleted,
+        setCompletionLocked,
         setActiveTab,
       );
     };
@@ -917,7 +940,27 @@ export const useCitContentState = () => {
       return;
     }
 
-    setFollowUps(current => [...current, { id: Date.now(), note: '' }]);
+    const now = new Date();
+    const { empNum, dataFlag } = getCurrentUserMeta();
+    const followupDate = `${now.getFullYear()}-${String(
+      now.getMonth() + 1,
+    ).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T00:00:00`;
+    const followupTime = `${String(now.getHours()).padStart(2, '0')}:${String(
+      now.getMinutes(),
+    ).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
+    setFollowUps(current => [
+      ...current,
+      {
+        id: Date.now(),
+        note: '',
+        userId: empNum || undefined,
+        citId: Number(informationCodeParam || 0) || undefined,
+        followupDate,
+        followupTime,
+        dataFlag,
+      },
+    ]);
   };
 
   const handleFollowUpChange = (id: number, value: string) => {
@@ -930,6 +973,35 @@ export const useCitContentState = () => {
     setFollowUps(current => current.filter(item => item.id !== id));
   };
 
+  const handleCompletedChange = (value: boolean) => {
+    if (completionLocked) {
+      return;
+    }
+
+    setCompleted(value);
+
+    if (!value) {
+      setTicketForm(current =>
+        current.completionReply
+          ? {
+              ...current,
+              completionReply: '',
+            }
+          : current,
+      );
+    }
+
+    setValidationErrors(current => {
+      if (!current.completionReply) {
+        return current;
+      }
+
+      const nextErrors = { ...current };
+      delete nextErrors.completionReply;
+      return nextErrors;
+    });
+  };
+
   const handleReset = () => {
     if (isListingMode || operation === 'ADD') {
       applyRecordToForm(
@@ -939,6 +1011,7 @@ export const useCitContentState = () => {
         setDonorSearchValue,
         setFollowUps,
         setCompleted,
+        setCompletionLocked,
         setActiveTab,
       );
       setValidationErrors({});
@@ -960,6 +1033,7 @@ export const useCitContentState = () => {
       setDonorSearchValue,
       setFollowUps,
       setCompleted,
+      setCompletionLocked,
       setActiveTab,
     );
     setValidationErrors({});
@@ -1000,8 +1074,55 @@ export const useCitContentState = () => {
       setSaveRequestPayload(payload);
       // Debug payload to verify the exact request body sent to CIT save APIs.
       console.log(`CIT ${operation} payload:`, payload);
+      console.log(`${path} request payload:`, payload);
+      console.log(`${path} user id summary:`, {
+        creatorUserId:
+          payload && typeof payload === 'object' && 'USER_ID' in payload
+            ? payload.USER_ID
+            : undefined,
+        callUserId:
+          payload && typeof payload === 'object' && 'Call_User_Id' in payload
+            ? payload.Call_User_Id
+            : undefined,
+        compUserId:
+          payload && typeof payload === 'object' && 'Comp_User_Id' in payload
+            ? payload.Comp_User_Id
+            : undefined,
+        followupUserIds:
+          payload &&
+          typeof payload === 'object' &&
+          'citFollowup' in payload &&
+          Array.isArray(payload.citFollowup)
+            ? payload.citFollowup.map(item =>
+                item && typeof item === 'object' && 'Followup_UserId' in item
+                  ? item.Followup_UserId
+                  : undefined,
+              )
+            : [],
+      });
+      console.log(`${path} request reply field:`, {
+        iCallReply:
+          payload && typeof payload === 'object' && 'iCallReply' in payload
+            ? payload.iCallReply
+            : undefined,
+      });
       const response = await axiosInstance.post(path, payload, {
         headers: masterApiHeaders(),
+      });
+      console.log(`${path} response:`, response.data);
+      console.log(`${path} response reply field:`, {
+        iCallReply:
+          response.data &&
+          typeof response.data === 'object' &&
+          'iCallReply' in response.data
+            ? response.data.iCallReply
+            : undefined,
+        icallReply:
+          response.data &&
+          typeof response.data === 'object' &&
+          'icallReply' in response.data
+            ? response.data.icallReply
+            : undefined,
       });
       const existingRecords = readCitCache();
       const nextInformationCode = extractCitId(
@@ -1041,6 +1162,7 @@ export const useCitContentState = () => {
           setDonorSearchValue,
           setFollowUps,
           setCompleted,
+          setCompletionLocked,
           setActiveTab,
         );
       }
@@ -1087,7 +1209,8 @@ export const useCitContentState = () => {
     activeTab,
     setActiveTab,
     completed,
-    setCompleted,
+    completionLocked,
+    setCompleted: handleCompletedChange,
     ticketForm,
     donorSearchValue,
     setDonorSearchValue: (value: string) => {
