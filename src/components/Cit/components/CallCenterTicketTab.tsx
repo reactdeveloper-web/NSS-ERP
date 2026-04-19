@@ -27,6 +27,7 @@ export interface CallCenterTicketForm {
   callBackDate: string;
   callBackTime: string;
   details: string;
+  completionReply: string;
 }
 
 export interface CallCenterTicketValidationErrors {
@@ -37,6 +38,7 @@ export interface CallCenterTicketValidationErrors {
   country1?: string;
   callBackDate?: string;
   details?: string;
+  completionReply?: string;
 }
 
 interface CallCenterTicketTabProps {
@@ -79,18 +81,6 @@ export const CallCenterTicketTab = ({
   return (
     <div className="announce-master-panel">
       <div className="row g-5">
-        <div className="col-md-3">
-          <FloatingInputField
-            id="ticketId"
-            label="Ticket ID"
-            value={form.ticketId}
-            onChange={value => onChange('ticketId', value)}
-            readOnly
-            disabled={disabled}
-            className="form-control form-control-solid ant-input-floating-control"
-          />
-        </div>
-
         {/* <div className="col-md-3">
           <FloatingDatePicker
             id="ticketDate"
