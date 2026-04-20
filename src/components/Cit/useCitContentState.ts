@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
+import { getEmployeeAll, searchDonorData } from 'src/api/masterApi';
 import { PATH } from 'src/constants/paths';
 import { ContentTypes } from 'src/constants/content';
 import { FloatingSelectOption } from 'src/components/Common/FloatingSelectField';
@@ -7,7 +8,6 @@ import axiosInstance from 'src/redux/interceptor';
 import { masterApiHeaders } from 'src/utils/masterApiHeaders';
 import { masterApiPaths } from 'src/utils/masterApiPaths';
 import {
-  extractArrayPayload,
   extractDonorRecords,
   getFirstValue,
 } from '../AnnounceMaster/AnnounceMasterContent.helpers';
@@ -169,9 +169,6 @@ export const useCitContentState = () => {
       completionEmployeeIds: [],
     },
   ]);
-  const [countryOptions, setCountryOptions] = useState<FloatingSelectOption[]>(
-    [],
-  );
   const [selectTypeOptions, setSelectTypeOptions] = useState<
     FloatingSelectOption[]
   >([{ value: '', label: 'Select' }]);
@@ -195,6 +192,7 @@ export const useCitContentState = () => {
     useState(false);
   const donorSearchRequestIdRef = useRef(0);
   const donorSearchTouchedRef = useRef(false);
+  const countryApiDataFlag = getCurrentUserMeta().dataFlag || ContentTypes.DataFlag;
   const updateRecords = useCallback((nextRecords: CitCacheRecord[]) => {
     writeCitCache(nextRecords);
     setRecords(nextRecords);
@@ -314,155 +312,24 @@ export const useCitContentState = () => {
   }, [openCitListing, shouldNavigateOnModalClose, statusMessage]);
 
   useEffect(() => {
-    const loadCountries = async () => {
-      try {
-        const response = await axiosInstance.get('/master/GetCountryAll', {
-          params: { dataFlag: 'FOREIGN_GANGOTRI' },
-          headers: masterApiHeaders(),
-        });
-        const nextOptions = extractArrayPayload(response.data)
-          .map(record => {
-            const label = getFirstValue(record, [
-              'country_name',
-              'Country_Name',
-              'CountryName',
-              'countryName',
-              'country',
-              'Country',
-              'name',
-              'Name',
-            ]).trim();
-            const value = getFirstValue(record, [
-              'country_code',
-              'Country_Code',
-              'CountryCode',
-              'country_id',
-              'Country_Id',
-              'CountryId',
-              'id',
-              'ID',
-            ]).trim();
-
-            return {
-              value,
-              label,
-            };
-          })
-          .filter(
-            (option, index, currentOptions) =>
-              option.value &&
-              option.label &&
-              currentOptions.findIndex(item => item.value === option.value) ===
-                index,
-          );
-
-        setCountryOptions(nextOptions);
-      } catch {
-        setCountryOptions([]);
-      }
-    };
-
-    void loadCountries();
-  }, []);
-
-  useEffect(() => {
-    if (!countryOptions.length) {
-      return;
-    }
-
-    setTicketForm(current => {
-      const resolveCountryCode = (value: string) => {
-        const normalizedValue = value.trim().toLowerCase();
-
-        if (!normalizedValue) {
-          return '';
-        }
-
-        const matchingOption = countryOptions.find(
-          option =>
-            option.value.trim().toLowerCase() === normalizedValue ||
-            option.label.trim().toLowerCase() === normalizedValue,
-        );
-
-        return matchingOption?.value || value;
-      };
-
-      const nextCountry1 = resolveCountryCode(current.country1);
-      const nextCountry2 = resolveCountryCode(current.country2);
-
-      if (
-        nextCountry1 === current.country1 &&
-        nextCountry2 === current.country2
-      ) {
-        return current;
-      }
-
-      return {
-        ...current,
-        country1: nextCountry1,
-        country2: nextCountry2,
-      };
-    });
-  }, [countryOptions]);
-
-  useEffect(() => {
     const loadCallCategories = async () => {
       const { dataFlag } = getCurrentUserMeta();
-      const requestConfigs = [
-        () =>
-          axiosInstance.post(masterApiPaths.getCallCategoryList, null, {
+      try {
+        const response = await axiosInstance.post(
+          masterApiPaths.getCallCategoryList,
+          { DataFlag: dataFlag || ContentTypes.DataFlag },
+          {
             headers: masterApiHeaders(),
-          }),
-        () =>
-          axiosInstance.post(
-            masterApiPaths.getCallCategoryList,
-            { Data_Flag: dataFlag || ContentTypes.DataFlag },
-            {
-              headers: masterApiHeaders(),
-            },
-          ),
-        () =>
-          axiosInstance.post(
-            masterApiPaths.getCallCategoryList,
-            { data_Flag: dataFlag || ContentTypes.DataFlag },
-            {
-              headers: masterApiHeaders(),
-            },
-          ),
-        () =>
-          axiosInstance.post(
-            masterApiPaths.getCallCategoryList,
-            { dataFlag: dataFlag || ContentTypes.DataFlag },
-            {
-              headers: masterApiHeaders(),
-            },
-          ),
-        () =>
-          axiosInstance.post(
-            masterApiPaths.getCallCategoryList,
-            { DataFlag: dataFlag || ContentTypes.DataFlag },
-            {
-              headers: masterApiHeaders(),
-            },
-          ),
-        () =>
-          axiosInstance.post(masterApiPaths.getCallCategoryList, {}, {
-            headers: masterApiHeaders(),
-          }),
-      ];
+          },
+        );
+        const nextOptions = extractCitCallCategoryOptions(response.data);
 
-      for (const makeRequest of requestConfigs) {
-        try {
-          const response = await makeRequest();
-          const nextOptions = extractCitCallCategoryOptions(response.data);
-
-          if (nextOptions.length > 1) {
-            setCallCategoryOptions(nextOptions);
-            return;
-          }
-        } catch {
-          // Try next request shape.
+        if (nextOptions.length > 1) {
+          setCallCategoryOptions(nextOptions);
+          return;
         }
+      } catch {
+        // Fall through to default options.
       }
 
       setCallCategoryOptions([
@@ -574,14 +441,16 @@ export const useCitContentState = () => {
       }
 
       try {
-        const response = await axiosInstance.get(masterApiPaths.getEmployeeAll, {
-          params: {
+        const response = await getEmployeeAll(
+          {
             emp_num: 0,
             dm_id: 0,
             emp_code: 0,
           },
-          headers: masterApiHeaders(),
-        });
+          {
+            headers: masterApiHeaders(),
+          },
+        );
         const nextOptions = extractCitEmployeeOptions(response.data);
         setSelectSadhakOptions(
           nextOptions.length ? nextOptions : [{ value: '', label: 'Select' }],
@@ -697,14 +566,13 @@ export const useCitContentState = () => {
 
         for (const searchType of searchTypes) {
           try {
-            const response = await axiosInstance.get(
-              masterApiPaths.searchDonorData,
+            const response = await searchDonorData(
               {
-                params: {
-                  searchType,
-                  searchData: searchValue,
-                  dataFlag: ContentTypes.DataFlag,
-                },
+                searchType,
+                searchData: searchValue,
+                dataFlag: ContentTypes.DataFlag,
+              },
+              {
                 headers: masterApiHeaders(),
               },
             );
@@ -1221,7 +1089,7 @@ export const useCitContentState = () => {
     donorSearchError,
     saveRequestPayload,
     callCategoryOptions,
-    countryOptions,
+    countryApiDataFlag,
     selectTypeOptions,
     selectSadhakOptions,
     followUps,

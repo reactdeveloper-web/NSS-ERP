@@ -24,7 +24,7 @@ export const CitContent = () => {
     donorSearchError,
     saveRequestPayload,
     callCategoryOptions,
-    countryOptions,
+    countryApiDataFlag,
     selectTypeOptions,
     selectSadhakOptions,
     followUps,
@@ -63,8 +63,8 @@ export const CitContent = () => {
         title="National Gangotri"
         description="Call Information Trait"
       />
-      <div className="post d-flex flex-column-fluid" id="kt_post">
-        <div id="kt_content_container" className="container-fluid py-6">
+     <div className="post d-flex flex-column-fluid" id="kt_post">
+        <div id="kt_content_container" className="container-fluid py-0">
           {statusMessage ? (
             <div className="alert alert-success">{statusMessage}</div>
           ) : null}
@@ -166,7 +166,7 @@ export const CitContent = () => {
                     <CallCenterTicketTab
                       form={ticketForm}
                       callCategoryOptions={callCategoryOptions}
-                      countryOptions={countryOptions}
+                      countryApiDataFlag={countryApiDataFlag}
                       selectTypeOptions={selectTypeOptions}
                       selectSadhakOptions={selectSadhakOptions}
                       disabled={isViewMode}

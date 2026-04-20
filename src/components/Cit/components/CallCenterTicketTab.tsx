@@ -45,7 +45,7 @@ export interface CallCenterTicketValidationErrors {
 interface CallCenterTicketTabProps {
   form: CallCenterTicketForm;
   callCategoryOptions: FloatingSelectOption[];
-  countryOptions: FloatingSelectOption[];
+  countryApiDataFlag?: string;
   selectTypeOptions: FloatingSelectOption[];
   selectSadhakOptions: FloatingSelectOption[];
   disabled?: boolean;
@@ -63,7 +63,7 @@ interface CallCenterTicketTabProps {
 export const CallCenterTicketTab = ({
   form,
   callCategoryOptions,
-  countryOptions,
+  countryApiDataFlag,
   selectTypeOptions,
   selectSadhakOptions,
   disabled = false,
@@ -171,17 +171,18 @@ export const CallCenterTicketTab = ({
         </div>
 
         <div className="col-md-3">
+          <div className='row'>
+            <div className="col-md-5">
           <CountryField
             id="country1"
             value={form.country1}
             onChange={value => onChange('country1', value)}
-            options={countryOptions}
+            apiDataFlag={countryApiDataFlag}
             disabled={disabled}
             error={errors.country1}
           />
-        </div>
-
-        <div className="col-md-3">
+          </div>
+          <div className="col-md-7">
           <FloatingInputField
             id="mobileNo1"
             label="Mobile No 1"
@@ -191,19 +192,26 @@ export const CallCenterTicketTab = ({
             disabled={disabled}
           />
         </div>
+          </div>
+        </div>
+
+        
+
 
         <div className="col-md-3">
+          <div className='row'>
+            <div className="col-md-5">
           <CountryField
             id="country2"
             value={form.country2}
             onChange={value => onChange('country2', value)}
-            options={countryOptions}
+            apiDataFlag={countryApiDataFlag}
             includeEmptyOption
             disabled={disabled}
           />
         </div>
 
-        <div className="col-md-3">
+        <div className="col-md-7">
           <FloatingInputField
             id="mobileNo2"
             label="Mobile No 2"
@@ -212,6 +220,8 @@ export const CallCenterTicketTab = ({
             type="tel"
             disabled={disabled}
           />
+        </div>
+        </div>
         </div>
 
         <div className="col-md-3">
