@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FloatingInputField } from 'src/components/Common/FloatingInputField';
 
 export interface TicketFollowUpItem {
@@ -26,15 +26,24 @@ export const TicketFollowUpTab = ({
   onRemove,
   onChange,
 }: TicketFollowUpTabProps) => {
+  useEffect(() => {
+    if (disabled || items.length > 0) {
+      return;
+    }
+
+    onAdd();
+  }, [disabled, items.length, onAdd]);
+
   return (
     <>
-      <div id="followHint" className="text-muted">
-        Follow-up fields will appear after clicking <b>Add Follow-up</b>
+      <div className="card">
+        <div className="card-header p-0 mb-4" style={{ alignItems: 'center' }}>
+          <h3 className="card-title flex-column m-0 p-0">Follow-up
+            <div id="followHint" className="text-muted fs-7 mt-2 fw-normal">
+        One follow-up field stays open by default. Click <b>Add Follow-up</b> to add more.
       </div>
-
-      <div className="card mb-8 mt-5">
-        <div className="card-header" style={{ alignItems: 'center' }}>
-          <h3 className="card-title">Follow-up</h3>
+          </h3>
+           
           <button
             type="button"
             className="btn btn-sm btn-light-primary"
@@ -44,7 +53,7 @@ export const TicketFollowUpTab = ({
             + Add Follow-up
           </button>
         </div>
-
+ 
         <div className="card-body p-0">
           <div id="followContainer" className="p-0">
             {items.length ? (
@@ -69,7 +78,7 @@ export const TicketFollowUpTab = ({
                           type="button"
                           className="btn btn-sm btn-light-danger"
                           onClick={() => onRemove(followUp.id)}
-                          disabled={disabled}
+                          disabled={disabled || items.length === 1}
                         >
                           Remove
                         </button>
