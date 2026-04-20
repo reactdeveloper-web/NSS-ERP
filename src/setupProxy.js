@@ -1,16 +1,16 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function (app) {
+  const target =
+    process.env.REACT_APP_PROXY_TARGET || 'https://deverp.narayanseva.org';
+
   app.use(
-    '/api',
+    ['/api', '/erp'],
     createProxyMiddleware({
-      target: 'https://deverp.narayanseva.org',
+      target,
       changeOrigin: true,
       secure: true,
-      pathRewrite: { '^/api': '' },
-      onProxyReq: (proxyReq, req) => {
-        // console.log('[PROXY]', req.method, req.url, '→', proxyReq.path);
-      },
+      pathRewrite: path => path.replace(/^\/api/, ''),
     }),
   );
 };

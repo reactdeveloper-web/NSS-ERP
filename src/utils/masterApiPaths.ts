@@ -9,6 +9,7 @@ export const masterApiPaths = {
   getCitList: '/CIT/GetCITList',
   getCitDetailsById: '/CIT/GetCITById',
   createCit: '/CIT/InsertCIT',
+  updateCit: '/CIT/UpdateCIT',
   getCallCategoryList: '/CIT/GetCallCategoryList',
   getCallSubCategoryList: '/CIT/GetCallSubCategoryList',
 } as const;
