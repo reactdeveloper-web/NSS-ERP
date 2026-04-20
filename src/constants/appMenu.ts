@@ -38,4 +38,11 @@ export const APP_MENU_ITEMS: AppMenuItem[] = [
     path: PATH.PROFILE,
     iconClass: 'fas fa-user fs-4',
   },
+  {
+    key: 'call-detail',
+    label: 'Call Detail',
+    path: PATH.CALL_DETAIL,
+    iconClass: 'fas fa-phone fs-4',
+  },
+
 ];

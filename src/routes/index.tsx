@@ -21,14 +21,19 @@ const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
 
+
 const ReceiveIdCreationPage = lazy(
   () => import('src/pages/MasterPages/ReceiveIdCreationPage'),
 );
 
 const CitPage = lazy(() => import('src/pages/cit/CitPage'));
 
+
 const ProfileMasterPage = lazy(
   () => import('src/pages/MyProfilePage/ProfileMasterPage'),
+);
+const CallDetailPage = lazy(
+  () => import('src/pages/CallDetail/CallDetailPage'),
 );
 
 // ---> Error pages
@@ -58,6 +63,7 @@ export const Routes = () => {
               {/* Auth routes */}
               <Route exact path={PATH.LOGIN} component={LoginPage} />
               <Route exact path={PATH.PROFILE} component={ProfileMasterPage} />
+              <Route exact path={PATH.CALL_DETAIL} component={CallDetailPage} />
               <Route exact path={PATH.FORGOT} component={ForgotPage} />
               <Route path={PATH.RESET_PASSWORD} component={ResetPassword} />
               {/* <Route
@@ -72,7 +78,7 @@ export const Routes = () => {
                 component={AnnounceMasterPage}
               />
 
-              <Route
+             <Route
                 exact
                 path={PATH.RECEIVE_ID_CREATION}
                 component={ReceiveIdCreationPage}
