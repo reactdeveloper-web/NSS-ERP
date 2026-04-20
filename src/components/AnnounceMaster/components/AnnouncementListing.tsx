@@ -42,6 +42,20 @@ interface AnnouncementListingProps {
   onDelete: (announceId: string) => void;
 }
 
+type SortField =
+  | 'announceId'
+  | 'announcerName'
+  | 'mobileNo'
+  | 'announceAmount'
+  | 'announceDate';
+
+type SortDirection = 'asc' | 'desc' | null;
+
+interface TableColumnFilters {
+  announcerName: string;
+  mobileNo: string;
+}
+
 const createInitialFilters = (): AnnouncementListFilters => ({
   announceId: '',
   announcerName: '',
@@ -49,6 +63,11 @@ const createInitialFilters = (): AnnouncementListFilters => ({
   amount: '',
   fromDate: '',
   toDate: '',
+});
+
+const createInitialTableColumnFilters = (): TableColumnFilters => ({
+  announcerName: '',
+  mobileNo: '',
 });
 
 const formatDisplayDate = (value: string) => {
@@ -71,6 +90,29 @@ const formatAmount = (value: string) => {
   }
 
   return numericValue.toFixed(2);
+};
+
+const getSortValue = (
+  item: AnnouncementListingItem,
+  field: SortField,
+): number | string => {
+  if (field === 'announceId') {
+    const numericId = Number(item.announceId);
+    return Number.isFinite(numericId) ? numericId : item.announceId.toLowerCase();
+  }
+
+  if (field === 'announceAmount') {
+    const numericAmount = Number(item.announceAmount);
+    return Number.isFinite(numericAmount)
+      ? numericAmount
+      : item.announceAmount.toLowerCase();
+  }
+
+  if (field === 'announceDate') {
+    return normalizeApiDate(item.announceDate) || '';
+  }
+
+  return item[field].toLowerCase();
 };
 
 const mapAnnouncementListItem = (
@@ -142,6 +184,10 @@ export const AnnouncementListing = ({
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [tableColumnFilters, setTableColumnFilters] =
+    useState<TableColumnFilters>(createInitialTableColumnFilters());
 
   const updateDraftFilter = <K extends keyof AnnouncementListFilters>(
     field: K,
@@ -164,7 +210,43 @@ export const AnnouncementListing = ({
     setAppliedFilters(initialFilters);
     setPageNumber(1);
     setSearchText('');
+    setTableColumnFilters(createInitialTableColumnFilters());
   }, []);
+
+  const handleSort = useCallback(
+    (field: SortField) => {
+      if (sortField !== field) {
+        setSortField(field);
+        setSortDirection('asc');
+        return;
+      }
+
+      if (sortDirection === null) {
+        setSortDirection('asc');
+        return;
+      }
+
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+        return;
+      }
+
+      setSortField(null);
+      setSortDirection(null);
+    },
+    [sortDirection, sortField],
+  );
+
+  const updateTableColumnFilter = useCallback(
+    (field: keyof TableColumnFilters, value: string) => {
+      setTableColumnFilters(current => ({
+        ...current,
+        [field]: value,
+      }));
+      setPageNumber(1);
+    },
+    [],
+  );
 
   const fetchAnnouncements = useCallback(async () => {
     const currentUser = parseStoredUser() as Partial<IUser> & {
@@ -266,6 +348,12 @@ export const AnnouncementListing = ({
     const normalizedAnnouncerName = appliedFilters.announcerName
       .trim()
       .toLowerCase();
+    const normalizedColumnAnnouncerName = tableColumnFilters.announcerName
+      .trim()
+      .toLowerCase();
+    const normalizedColumnMobileNo = tableColumnFilters.mobileNo
+      .trim()
+      .toLowerCase();
     const normalizedAmount = appliedFilters.amount.trim().toLowerCase();
     const normalizedFromDate = normalizeApiDate(appliedFilters.fromDate);
     const normalizedToDate = normalizeApiDate(appliedFilters.toDate);
@@ -284,6 +372,12 @@ export const AnnouncementListing = ({
       const matchesAnnouncerName =
         !normalizedAnnouncerName ||
         item.announcerName.toLowerCase().includes(normalizedAnnouncerName);
+      const matchesColumnAnnouncerName =
+        !normalizedColumnAnnouncerName ||
+        item.announcerName.toLowerCase().includes(normalizedColumnAnnouncerName);
+      const matchesColumnMobileNo =
+        !normalizedColumnMobileNo ||
+        item.mobileNo.toLowerCase().includes(normalizedColumnMobileNo);
       const matchesAmount =
         !normalizedAmount ||
         item.announceAmount.toLowerCase().includes(normalizedAmount);
@@ -297,6 +391,8 @@ export const AnnouncementListing = ({
       return (
         matchesSearch &&
         matchesAnnouncerName &&
+        matchesColumnAnnouncerName &&
+        matchesColumnMobileNo &&
         matchesAmount &&
         matchesFromDate &&
         matchesToDate
@@ -309,11 +405,46 @@ export const AnnouncementListing = ({
     appliedFilters.toDate,
     items,
     searchText,
+    tableColumnFilters.announcerName,
+    tableColumnFilters.mobileNo,
   ]);
+
+  const sortedItems = useMemo(() => {
+    if (!sortField || !sortDirection) {
+      return filteredItems;
+    }
+
+    return [...filteredItems].sort((leftItem, rightItem) => {
+      const leftValue = getSortValue(leftItem, sortField);
+      const rightValue = getSortValue(rightItem, sortField);
+
+      if (leftValue === rightValue) {
+        return 0;
+      }
+
+      if (typeof leftValue === 'number' && typeof rightValue === 'number') {
+        return sortDirection === 'asc'
+          ? leftValue - rightValue
+          : rightValue - leftValue;
+      }
+
+      return sortDirection === 'asc'
+        ? String(leftValue).localeCompare(String(rightValue), undefined, {
+            numeric: true,
+            sensitivity: 'base',
+          })
+        : String(rightValue).localeCompare(String(leftValue), undefined, {
+            numeric: true,
+            sensitivity: 'base',
+          });
+    });
+  }, [filteredItems, sortDirection, sortField]);
 
   const hasClientSideFilters = Boolean(
     searchText.trim() ||
       appliedFilters.announcerName.trim() ||
+      tableColumnFilters.announcerName.trim() ||
+      tableColumnFilters.mobileNo.trim() ||
       appliedFilters.amount.trim() ||
       appliedFilters.fromDate.trim() ||
       appliedFilters.toDate.trim(),
@@ -321,15 +452,15 @@ export const AnnouncementListing = ({
 
   const paginatedItems = useMemo(() => {
     if (!hasClientSideFilters) {
-      return filteredItems;
+      return sortedItems;
     }
 
     const startIndex = Math.max(0, (pageNumber - 1) * pageSize);
-    return filteredItems.slice(startIndex, startIndex + pageSize);
-  }, [filteredItems, hasClientSideFilters, pageNumber, pageSize]);
+    return sortedItems.slice(startIndex, startIndex + pageSize);
+  }, [hasClientSideFilters, pageNumber, pageSize, sortedItems]);
 
   const effectiveTotalCount = hasClientSideFilters
-    ? filteredItems.length
+    ? sortedItems.length
     : Math.max(totalCount, items.length);
   const totalPages = Math.max(1, Math.ceil(effectiveTotalCount / pageSize));
   const startRecord = effectiveTotalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
@@ -354,6 +485,43 @@ export const AnnouncementListing = ({
       setPageNumber(totalPages);
     }
   }, [pageNumber, totalPages]);
+
+  const getSortStateClass = (field: SortField) => {
+    if (sortField !== field || !sortDirection) {
+      return 'sorting';
+    }
+
+    return sortDirection === 'asc' ? 'sorting_asc' : 'sorting_desc';
+  };
+
+  const getSortIconClass = (field: SortField) => {
+    if (sortField !== field || !sortDirection) {
+      return 'fa-sort text-white-50';
+    }
+
+    return sortDirection === 'asc'
+      ? 'fa-sort-up text-white'
+      : 'fa-sort-down text-white';
+  };
+
+  const renderSortableHeader = (
+    label: string,
+    field: SortField,
+    input?: React.ReactNode,
+  ) => (
+    <div className="d-flex gap-2 justify-content-center align-items-center">
+      {input}
+      <button
+        type="button"
+        className="btn btn-link btn-color-white btn-active-color-white p-0 text-decoration-none d-inline-flex align-items-center justify-content-center gap-2"
+        onClick={() => handleSort(field)}
+      >
+        <span>{label}</span>
+        <i className={`fas ${getSortIconClass(field)}`} aria-hidden="true"></i>
+      </button>
+      
+    </div>
+  );
 
   return (
     <div className="card announce-master-card" ref={listingRef}>
@@ -520,34 +688,63 @@ export const AnnouncementListing = ({
                   style={{ background: '#2A2B6B', color: '#ffffff' }}
                 ></th>
                 <th
-                  className="text-center"
+                  className={`text-center ${getSortStateClass('announceId')}`}
                   style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
-                  Announce ID
+                  {renderSortableHeader('Announce ID', 'announceId')}
                 </th>
                 <th
-                  className="text-center"
+                  className={`text-center ${getSortStateClass('announcerName')}`}
                   style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
-                  Announcer Name
+                  {renderSortableHeader(
+                    '',
+                    'announcerName',
+                    <input
+                      type="text"
+                      className="border-0 bg-transparent text-white text-end p-0 fs-6 placeholder-white w-125px"
+                      placeholder="Announce Name"
+                      value={tableColumnFilters.announcerName}
+                      onChange={event =>
+                        updateTableColumnFilter(
+                          'announcerName',
+                          event.target.value,
+                        )
+                      }
+                      onClick={event => event.stopPropagation()}
+                    />,
+                  )}
                 </th>
                 <th
-                  className="text-center"
+                  className={`text-center ${getSortStateClass('mobileNo')}`}
                   style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
-                  Mobile No
+                  {renderSortableHeader(
+                    '',
+                    'mobileNo',
+                    <input
+                      type="text"
+                       className="border-0 bg-transparent text-white text-end p-0 fs-6 placeholder-white w-125px"
+                      placeholder="Search mobile"
+                      value={tableColumnFilters.mobileNo}
+                      onChange={event =>
+                        updateTableColumnFilter('mobileNo', event.target.value)
+                      }
+                      onClick={event => event.stopPropagation()}
+                    />,
+                  )}
                 </th>
                 <th
-                  className="text-center"
+                  className={`text-center ${getSortStateClass('announceAmount')}`}
                   style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
-                  Amount
+                  {renderSortableHeader('Amount', 'announceAmount')}
                 </th>
                 <th
-                  className="text-center"
+                  className={`text-center ${getSortStateClass('announceDate')}`}
                   style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
-                  Announce Date
+                  {renderSortableHeader('Announce Date', 'announceDate')}
                 </th>
               </tr>
             </thead>

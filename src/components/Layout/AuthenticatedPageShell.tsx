@@ -1,7 +1,9 @@
 import React, { ReactNode } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
+import { Redirect } from 'react-router-dom';
 import { AuthFooter } from 'src/components/Footer/AuthFooter';
 import { HeaderMenu } from 'src/components/Header/HeaderMenu';
+import { PATH } from 'src/constants/paths';
 
 const mapStateToProps = (state: AppState) => ({
   isAuthenticated: state.auth.isAuthenticated,
@@ -17,7 +19,7 @@ const _AuthenticatedPageShell = (props: Props) => {
   const { children, isAuthenticated } = props;
 
   if (!isAuthenticated) {
-    return null;
+    return <Redirect to={PATH.LOGIN} />;
   }
 
   return (

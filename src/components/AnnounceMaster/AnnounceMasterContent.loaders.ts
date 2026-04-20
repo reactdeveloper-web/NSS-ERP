@@ -1,4 +1,16 @@
 import { ContentTypes } from 'src/constants/content';
+import {
+  getCurrencyByCountry,
+  getDepositBanks,
+  getDistrictByState,
+  getEventDetails,
+  getOperationAmountByQty,
+  getPurposeByDataFlag,
+  getSalutations,
+  getStateAndDistrictByPinCode,
+  getStatesByCountry,
+  getYojnaByPurposeAndCurrency,
+} from 'src/api/masterApi';
 import { masterApiHeaders } from 'src/utils/masterApiHeaders';
 import { masterApiPaths } from 'src/utils/masterApiPaths';
 import axiosInstance from 'src/redux/interceptor';
@@ -74,12 +86,10 @@ const loadEventDetailsData = async ({
   eventOperation: string;
   isLive: boolean;
 }) => {
-  const response = await axiosInstance.get(masterApiPaths.getEventDetails, {
-    params: {
-      dataflag: ContentTypes.DataFlag,
-      IsLive: isLive ? 'Y' : 'N',
-      Operation: eventOperation,
-    },
+  const response = await getEventDetails({
+    dataflag: ContentTypes.DataFlag,
+    IsLive: isLive ? 'Y' : 'N',
+    Operation: eventOperation,
   });
 
   const records = extractArrayPayload(response.data).map(mapEventDetailRecord);
@@ -116,13 +126,15 @@ const loadHowToDonateMasterOptions = async (): Promise<EventOption[]> => {
 };
 
 const loadStateMasterOptions = async (): Promise<EventOption[]> => {
-  const response = await axiosInstance.get(masterApiPaths.getStatesByCountry, {
-    params: {
+  const response = await getStatesByCountry(
+    {
       countryCode: 22,
       DataFlag: ContentTypes.DataFlag,
     },
-    headers: masterApiHeaders(),
-  });
+    {
+      headers: masterApiHeaders(),
+    },
+  );
 
   return extractStateOptions(response.data);
 };
@@ -130,13 +142,15 @@ const loadStateMasterOptions = async (): Promise<EventOption[]> => {
 const loadDistrictMasterOptions = async (
   stateCode: string,
 ): Promise<EventOption[]> => {
-  const response = await axiosInstance.get(masterApiPaths.getDistrictByState, {
-    params: {
+  const response = await getDistrictByState(
+    {
       stateCode,
       DataFlag: ContentTypes.DataFlag,
     },
-    headers: masterApiHeaders(),
-  });
+    {
+      headers: masterApiHeaders(),
+    },
+  );
 
   return extractDistrictOptions(response.data);
 };
@@ -148,15 +162,13 @@ const loadPincodeLocationData = async ({
   normalizedPincode: string;
   stateOptions: EventOption[];
 }) => {
-  const response = await axiosInstance.post(
-    masterApiPaths.getStateAndDistrictByPinCode,
-    null,
+  const response = await getStateAndDistrictByPinCode(
     {
-      params: {
-        countryCode: 22,
-        dataFlag: ContentTypes.DataFlag,
-        pincode: normalizedPincode,
-      },
+      countryCode: 22,
+      dataFlag: ContentTypes.DataFlag,
+      pincode: normalizedPincode,
+    },
+    {
       headers: masterApiHeaders(),
     },
   );
@@ -177,12 +189,11 @@ const loadCauseHeadMasterOptions = async (): Promise<EventOption[]> => {
     return cachedOptions;
   }
 
-  const response = await axiosInstance.get(
-    masterApiPaths.getPurposeByDataFlag,
+  const response = await getPurposeByDataFlag(
     {
-      params: {
-        DataFlag: ContentTypes.DataFlag,
-      },
+      DataFlag: ContentTypes.DataFlag,
+    },
+    {
       headers: masterApiHeaders(),
     },
   );
@@ -200,13 +211,12 @@ const loadPurposeOptionsData = async (purposeId: string) => {
   let currencyId = cachedCurrencyId || '';
 
   if (!currencyId) {
-    const currencyResponse = await axiosInstance.get(
-      masterApiPaths.getCurrencyByCountry,
+    const currencyResponse = await getCurrencyByCountry(
       {
-        params: {
-          countryCode: 22,
-          DataFlag: ContentTypes.DataFlag,
-        },
+        countryCode: 22,
+        DataFlag: ContentTypes.DataFlag,
+      },
+      {
         headers: masterApiHeaders(),
       },
     );
@@ -235,14 +245,13 @@ const loadPurposeOptionsData = async (purposeId: string) => {
     };
   }
 
-  const response = await axiosInstance.get(
-    masterApiPaths.getYojnaByPurposeAndCurrency,
+  const response = await getYojnaByPurposeAndCurrency(
     {
-      params: {
-        DataFlag: ContentTypes.DataFlag,
-        CurrencyId: currencyId,
-        PurposeId: normalizedPurposeId,
-      },
+      DataFlag: ContentTypes.DataFlag,
+      CurrencyId: currencyId,
+      PurposeId: normalizedPurposeId,
+    },
+    {
       headers: masterApiHeaders(),
     },
   );
@@ -263,14 +272,13 @@ const loadOperationAmountValue = async ({
   currencyId: string;
   quantity: number;
 }) => {
-  const response = await axiosInstance.get(
-    masterApiPaths.getOperationAmountByQty,
+  const response = await getOperationAmountByQty(
     {
-      params: {
-        DataFlag: ContentTypes.DataFlag,
-        CurrencyId: currencyId,
-        qty: quantity,
-      },
+      DataFlag: ContentTypes.DataFlag,
+      CurrencyId: currencyId,
+      qty: quantity,
+    },
+    {
       headers: masterApiHeaders(),
     },
   );
@@ -297,9 +305,7 @@ const loadSalutationMasterOptions = async () => {
 
   for (const config of requestConfigs) {
     try {
-      response = await axiosInstance.get(masterApiPaths.getSalutations, {
-        params: config.params,
-      });
+      response = await getSalutations(config.params);
       break;
     } catch (error) {
       lastError = error;
@@ -318,10 +324,8 @@ const loadBanksData = async (): Promise<{
   errorMessage: string;
 }> => {
   try {
-    const response = await axiosInstance.get(masterApiPaths.getDepositBanks, {
-      params: {
-        dataflag: ContentTypes.DataFlag,
-      },
+    const response = await getDepositBanks({
+      dataflag: ContentTypes.DataFlag,
     });
 
     const banks = extractArrayPayload(response.data)
