@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
 import { FloatingInputField } from 'src/components/Common/FloatingInputField';
 import { FloatingSelectField } from 'src/components/Common/FloatingSelectField';
+import { getEmployeeAll } from 'src/api/masterApi';
 import { ContentTypes } from 'src/constants/content';
 import axiosInstance from 'src/redux/interceptor';
 import { masterApiHeaders } from 'src/utils/masterApiHeaders';
@@ -72,7 +73,7 @@ const createInitialFilters = (): CitListingFilters => ({
 });
 
 const statusOptions = [
-  { value: '2', label: 'All' },
+  { value: '3', label: 'All' },
   { value: '0', label: 'Pending' },
   { value: '1', label: 'Complete' },
 ];
@@ -301,54 +302,25 @@ export const CitListing = ({
         currentUser.dataFlag ||
         currentUser.Data_Flag ||
         ContentTypes.DataFlag;
-      const requestConfigs = [
-        () =>
-          axiosInstance.post(masterApiPaths.getCallCategoryList, null, {
-            headers: masterApiHeaders(),
-          }),
-        () =>
-          axiosInstance.post(
-            masterApiPaths.getCallCategoryList,
-            { Data_Flag: dataFlag },
-            { headers: masterApiHeaders() },
-          ),
-        () =>
-          axiosInstance.post(
-            masterApiPaths.getCallCategoryList,
-            { data_Flag: dataFlag },
-            { headers: masterApiHeaders() },
-          ),
-        () =>
-          axiosInstance.post(
-            masterApiPaths.getCallCategoryList,
-            { DataFlag: dataFlag },
-            { headers: masterApiHeaders() },
-          ),
-        () =>
-          axiosInstance.post(
-            masterApiPaths.getCallCategoryList,
-            {},
-            { headers: masterApiHeaders() },
-          ),
-      ];
+      try {
+        const response = await axiosInstance.post(
+          masterApiPaths.getCallCategoryList,
+          { DataFlag: dataFlag },
+          { headers: masterApiHeaders() },
+        );
+        const nextOptions = extractCitCallCategoryOptions(response.data)
+          .filter(option => option.value && option.label !== 'Select')
+          .map(option => ({
+            value: option.value,
+            label: option.label,
+          }));
 
-      for (const makeRequest of requestConfigs) {
-        try {
-          const response = await makeRequest();
-          const nextOptions = extractCitCallCategoryOptions(response.data)
-            .filter(option => option.value && option.label !== 'Select')
-            .map(option => ({
-              value: option.value,
-              label: option.label,
-            }));
-
-          if (nextOptions.length) {
-            setCategoryOptions(nextOptions);
-            return;
-          }
-        } catch {
-          // Try next request shape.
+        if (nextOptions.length) {
+          setCategoryOptions(nextOptions);
+          return;
         }
+      } catch {
+        // Fall through to the default empty options state.
       }
 
       setCategoryOptions([]);
@@ -360,14 +332,16 @@ export const CitListing = ({
   useEffect(() => {
     const loadEmployees = async () => {
       try {
-        const response = await axiosInstance.get(masterApiPaths.getEmployeeAll, {
-          params: {
+        const response = await getEmployeeAll(
+          {
             emp_num: 0,
             dm_id: 0,
             emp_code: 0,
           },
-          headers: masterApiHeaders(),
-        });
+          {
+            headers: masterApiHeaders(),
+          },
+        );
         const nextOptions = extractCitEmployeeOptions(response.data)
           .filter(option => option.value && option.label !== 'Select')
           .map(option => ({
@@ -763,8 +737,7 @@ export const CitListing = ({
             >
               <span className="svg-icon svg-icon-3 me-0">
                 <i className="fa fa-plus fs-7" aria-hidden="true"></i>
-              </span>
-              Add
+              </span> Add
             </button>
           </div>
         </div>
@@ -861,7 +834,7 @@ export const CitListing = ({
       <div className="card-body p-3">
         {apiError ? <div className="alert alert-warning m-3">{apiError}</div> : null}
 
-        <div className="table-responsive" style={{ maxHeight: '600px' }}>
+        <div className="table-responsive" style={{ maxHeight: '550px' }}>
           <table
             id="citListingTable"
             className="table table-row-bordered align-middle gs-0 gy-2 mb-0"

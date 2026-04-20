@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import axiosInstance from 'src/redux/interceptor';
+import { getCountryAll } from 'src/api/masterApi';
 import {
   FloatingSelectField,
   FloatingSelectOption,
@@ -48,9 +48,7 @@ export const CountryField = ({
 
     const loadCountries = async () => {
       try {
-        const response = await axiosInstance.get('/master/GetCountryAll', {
-          params: { dataFlag: apiDataFlag },
-        });
+        const response = await getCountryAll({ dataFlag: apiDataFlag });
         const nextOptions = extractArrayPayload(response.data)
           .map(record => {
             const countryName = getFirstValue(record, [
@@ -73,10 +71,17 @@ export const CountryField = ({
               'id',
               'ID',
             ]);
+            const countryCallCode = getFirstValue(record, [
+              'Country_CallCode',
+              'country_callcode',
+              'countryCallCode',
+              'CallCode',
+              'callCode',
+            ]);
 
             return {
-              value: countryName,
-              label: countryName,
+              value: countryCode || countryName,
+              label: countryCallCode || countryName,
               countryCode,
             };
           })
@@ -114,6 +119,26 @@ export const CountryField = ({
     return [{ value: '', label: 'Select' }, ...baseOptions];
   }, [apiDataFlag, apiOptions, includeEmptyOption, options]);
 
+  const selectableOptions = useMemo(
+    () => resolvedOptions.filter(option => option.value.trim()),
+    [resolvedOptions],
+  );
+  const hasSingleSelectableOption = selectableOptions.length === 1;
+
+  useEffect(() => {
+    if (!hasSingleSelectableOption) {
+      return;
+    }
+
+    const [singleOption] = selectableOptions;
+
+    if (value.trim() === singleOption.value.trim()) {
+      return;
+    }
+
+    onChange(singleOption.value);
+  }, [hasSingleSelectableOption, onChange, selectableOptions, value]);
+
   useEffect(() => {
     const normalizedValue = value.trim();
 
@@ -149,7 +174,7 @@ export const CountryField = ({
       label={label}
       value={resolvedValue}
       options={resolvedOptions}
-      disabled={disabled}
+      disabled={disabled || hasSingleSelectableOption}
       onChange={onChange}
       error={error}
     />
