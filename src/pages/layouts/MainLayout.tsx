@@ -11,31 +11,43 @@ export const MainLayout = (props: Props) => {
   const { children } = props;
   const { pathname } = useLocation();
 
-  useEffect(() => {
-    const body = document.body;
-    const appLayoutClasses = [
-      'header-fixed',
-      'header-tablet-and-mobile-fixed',
-      'toolbar-enabled',
-      'toolbar-fixed',
-      'aside-enabled',
-      'aside-fixed',
-    ];
-    const authPaths = [PATH.HOME, PATH.LOGIN, PATH.REGISTER];
-    const isAuthPage = authPaths.includes(pathname);
+useEffect(() => {
+  const body = document.body;
 
+  const appLayoutClasses = [
+    'header-fixed',
+    'header-tablet-and-mobile-fixed',
+    'toolbar-enabled',
+    'toolbar-fixed',
+    'aside-enabled',
+    'aside-fixed',
+  ];
+
+  const authPaths = [PATH.HOME, PATH.LOGIN, PATH.REGISTER];
+  const isAuthPage = authPaths.includes(pathname);
+
+  appLayoutClasses.forEach(className => {
+    body.classList.toggle(className, !isAuthPage);
+  });
+
+  // ✅ ADD THIS (default collapsed aside)
+  if (!isAuthPage) {
+    body.setAttribute("data-kt-aside-minimize", "on");
+  } else {
+    body.removeAttribute("data-kt-aside-minimize");
+  }
+
+  body.classList.remove('page-loading');
+
+  return () => {
     appLayoutClasses.forEach(className => {
-      body.classList.toggle(className, !isAuthPage);
+      body.classList.remove(className);
     });
 
-    body.classList.remove('page-loading');
-
-    return () => {
-      appLayoutClasses.forEach(className => {
-        body.classList.remove(className);
-      });
-    };
-  }, [pathname]);
+    // cleanup
+    body.removeAttribute("data-kt-aside-minimize");
+  };
+}, [pathname]);
 
   useEffect(() => {
     const metronic = window as Window & {

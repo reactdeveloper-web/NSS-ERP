@@ -755,3 +755,94 @@ iframe {
     width: 100%;
   }
 }
+.info-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  padding:4px 0;
+}
+.info-row span{ color:#7e8299; }
+.info-row b{ font-weight:600; }
+
+/* MINI ACCOUNT CARDS */
+.account-mini{
+  border:1px solid #e4e6ef;
+  border-radius:10px;
+  padding:10px 12px;
+  margin-bottom:8px;
+  cursor:pointer;
+  transition:.2s;
+  background:#fafafa;
+}
+
+.account-mini:hover{
+  border-color:#1cb8a1;
+  background:#f1faff;
+}
+
+/* ACTIVE */
+.account-mini.active{
+  border:2px solid #1cb8a1;
+  background:#eef6ff;
+  box-shadow:0 0 0 3px rgba(0,158,247,.15);
+}
+	.smart-date,
+		.smart-time {
+			padding-right: 40px;
+		}
+
+		#callTable th.sortable {
+			cursor: pointer;
+			position: relative;
+			user-select: none;
+		}
+
+		#callTable th.sortable:hover {
+			color: var(--bs-primary);
+		}
+
+		#callTable th.sortable::after {
+			content: "↕";
+			font-size: 12px;
+			margin-left: 6px;
+			opacity: 0.6;
+		}
+
+		.symbol .symbol-label {
+			background-color: #1cb8a1;
+		}
+
+		.btn:not(.btn-outline):not(.btn-dashed):not(.border-hover):not(.border-active):not(.btn-flush):not(.btn-icon) {
+			border: 0;
+			padding: calc(.75rem + 1px) calc(1rem + 1px);
+		}
+
+		.timeline-icon {
+			border-radius: 50%;
+			margin-left: -15px;
+			padding: 6px 9px;
+			width: 30px;
+			height: 30px;
+		}
+
+		.smart-date,
+		.smart-time {
+			padding-right: 40px;
+		}
+
+		.input-icon {
+			position: absolute;
+			right: 15px;
+			top: 38px;
+			font-size: 18px;
+			color: #6c757d;
+			cursor: pointer;
+		}
+
+    #kt_aside_toggle {
+    margin-left: 8px;
+    border: 1px solid #eee;
+    padding: 3px !important;
+    width: 60px !important;
+    height: 30px;
+}

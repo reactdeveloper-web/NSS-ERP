@@ -5,6 +5,7 @@ import { RightMenu } from './RightMenu';
 import { Dashboard } from './Dashboard';
 import { PATH } from 'src/constants/paths';
 import { Drawer, Button } from 'antd';
+import "flatpickr/dist/flatpickr.min.css";
 
 export const AppHeader = () => {
   const { pathname } = useLocation();
@@ -22,7 +23,9 @@ export const AppHeader = () => {
     normalizedPathname === PATH.RECEIVE_ID_CREATION.toLowerCase() ||
     normalizedPathname === PATH.CIT.toLowerCase() ||
     normalizedPathname === PATH.PROFILE.toLowerCase() ||
-    normalizedPathname === PATH.DASHBOARD.toLowerCase()
+    normalizedPathname === PATH.DASHBOARD.toLowerCase() ||
+    normalizedPathname === PATH.CALL_DETAIL.toLowerCase()
+
   ) {
     return null;
   }

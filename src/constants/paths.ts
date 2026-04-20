@@ -7,5 +7,6 @@ export const PATH = {
   CIT: '/cit',
   FORGOT: '/forgot',
   PROFILE: '/profile',
+  CALL_DETAIL: '/call-detail',
   RESET_PASSWORD: '/reset-password',
 };
