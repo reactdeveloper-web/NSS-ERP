@@ -8,7 +8,6 @@ import { AnnounceMasterNav } from './AnnounceMasterNav';
 import { AnnouncementListing } from './components/AnnouncementListing';
 import {
   DeleteCauseModal,
-  SaveResultModal,
 } from './components/AnnounceMasterModals';
 import {
   createInitialAnnounceDetailsForm,
@@ -69,7 +68,6 @@ import {
   buildCurrentCauseForPayload,
   buildSavePayload,
   getPreferredValidationTab,
-  getSaveErrorPayload,
   persistSavedAnnouncement,
   submitSaveRequest,
   validateBeforeSave,
@@ -403,16 +401,10 @@ export const AnnounceMasterContent = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isEditDataLoading, setIsEditDataLoading] = useState(false);
   const [isCauseDataHydrating, setIsCauseDataHydrating] = useState(false);
-  const [showSaveResultModal, setShowSaveResultModal] = useState(false);
-  const [saveRequestPayload, setSaveRequestPayload] = useState<unknown>(null);
-  const [saveResultPayload, setSaveResultPayload] = useState<unknown>(null);
+  const [statusMessage, setStatusMessage] = useState('');
   const [deletingAnnouncementId, setDeletingAnnouncementId] = useState<
     string | null
   >(null);
-  const [
-    shouldNavigateToListingOnModalClose,
-    setShouldNavigateToListingOnModalClose,
-  ] = useState(false);
   const [causeIdPendingDelete, setCauseIdPendingDelete] = useState<
     number | null
   >(null);
@@ -2218,9 +2210,6 @@ export const AnnounceMasterContent = () => {
     setDonorOptions([]);
     setShowDonorModal(false);
     setValidationErrors({});
-    setShowSaveResultModal(false);
-    setSaveRequestPayload(null);
-    setSaveResultPayload(null);
     setIsSaving(false);
     setCauseIdPendingDelete(null);
     setAddedCauses([]);
@@ -2432,14 +2421,19 @@ export const AnnounceMasterContent = () => {
       ? buildQuantityOptions(selectedPurposeQty)
       : [];
 
-  const handleCloseSaveResultModal = () => {
-    setShowSaveResultModal(false);
-
-    if (shouldNavigateToListingOnModalClose) {
-      setShouldNavigateToListingOnModalClose(false);
-      openAnnouncementListing();
+  useEffect(() => {
+    if (!statusMessage) {
+      return;
     }
-  };
+
+    const timeoutId = window.setTimeout(() => {
+      setStatusMessage('');
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [statusMessage]);
 
   const handleSave = async () => {
     if (isViewMode) {
@@ -2542,7 +2536,6 @@ export const AnnounceMasterContent = () => {
     });
 
     setIsSaving(true);
-    setSaveRequestPayload(payload);
 
     try {
       const response = await submitSaveRequest({
@@ -2565,13 +2558,15 @@ export const AnnounceMasterContent = () => {
         selectedBankIds,
       });
 
-      setSaveResultPayload(response.data);
-      setShouldNavigateToListingOnModalClose(true);
-      setShowSaveResultModal(true);
+      setStatusMessage(
+        operation === 'ADD'
+          ? 'Announcement saved successfully.'
+          : 'Announcement updated successfully.',
+      );
     } catch (error) {
-      setSaveResultPayload(getSaveErrorPayload(error));
-      setShouldNavigateToListingOnModalClose(false);
-      setShowSaveResultModal(true);
+      setStatusMessage(
+        getErrorMessage(error, 'Failed to save announcement.'),
+      );
     } finally {
       setIsSaving(false);
     }
@@ -2586,7 +2581,7 @@ export const AnnounceMasterContent = () => {
         <AnnounceMasterNav />
 
         <div className="post d-flex flex-column-fluid" id="kt_post">
-          <div id="kt_content_container" className="container-fluid py-6">
+          <div id="kt_content_container" className="container-fluid py-0">
             <AnnouncementListing
               deletingId={deletingAnnouncementId}
               onAdd={() => openAnnouncementForm('0', 'ADD')}
@@ -2611,7 +2606,10 @@ export const AnnounceMasterContent = () => {
       <AnnounceMasterNav />
 
       <div className="post d-flex flex-column-fluid" id="kt_post">
-        <div id="kt_content_container" className="container-fluid py-6">
+        <div id="kt_content_container" className="container-fluid py-0">
+          {statusMessage ? (
+            <div className="alert alert-success">{statusMessage}</div>
+          ) : null}
           <div className="row g-6 justify-content-center">
             <div className="col-12">
               <AnnouncerPersonalDetailsCard
@@ -2682,14 +2680,6 @@ export const AnnounceMasterContent = () => {
           </div>
         </div>
       </div>
-
-      <SaveResultModal
-        open={showSaveResultModal}
-        requestPayload={saveRequestPayload}
-        resultPayload={saveResultPayload}
-        onClose={handleCloseSaveResultModal}
-      />
-
       <DeleteCauseModal
         open={causeIdPendingDelete !== null}
         onClose={handleCloseDeleteCauseModal}

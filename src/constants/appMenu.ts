@@ -1,10 +1,12 @@
 import { PATH } from './paths';
+import { RECEIVE_ID_HEADS } from './receiveIdHeads';
 
 export interface AppMenuItem {
   key: string;
   label: string;
-  path: string;
+  path?: string;
   iconClass: string;
+  children?: AppMenuItem[];
 }
 
 export const APP_MENU_ITEMS: AppMenuItem[] = [
@@ -21,14 +23,19 @@ export const APP_MENU_ITEMS: AppMenuItem[] = [
     iconClass: 'fas fa-bullhorn fs-4',
   },
   {
-    key: 'receive-id-creation',
+    key: 'receive-id',
     label: 'Receive ID',
-    path: PATH.RECEIVE_ID_CREATION,
     iconClass: 'fas fa-clipboard-check fs-4',
+    children: RECEIVE_ID_HEADS.map(head => ({
+      key: `receive-id-${head.key}`,
+      label: head.menuLabel,
+      path: `${PATH.RECEIVE_ID_CREATION}?HEAD=${head.value}`,
+      iconClass: 'fas fa-circle fs-8',
+    })),
   },
   {
     key: 'cit',
-    label: 'Call Center Ticket',
+    label: 'Call Information Trait',
     path: PATH.CIT,
     iconClass: 'fas fa-headset fs-4',
   },

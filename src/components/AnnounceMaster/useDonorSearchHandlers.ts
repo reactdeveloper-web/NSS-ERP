@@ -5,10 +5,9 @@ import {
   useCallback,
   useEffect,
 } from 'react';
+import { searchDonorData } from 'src/api/masterApi';
 import { ContentTypes } from 'src/constants/content';
 import { masterApiHeaders } from 'src/utils/masterApiHeaders';
-import { masterApiPaths } from 'src/utils/masterApiPaths';
-import axiosInstance from 'src/redux/interceptor';
 import { createInitialPersonalInfoForm } from './data';
 import {
   donorSearchTypeCandidates,
@@ -131,14 +130,16 @@ export const useDonorSearchHandlers = ({
 
       for (const searchType of searchTypeOptions) {
         try {
-          response = await axiosInstance.get(masterApiPaths.searchDonorData, {
-            params: {
+          response = await searchDonorData(
+            {
               searchType,
               searchData,
               dataFlag: ContentTypes.DataFlag,
             },
-            headers: masterApiHeaders(),
-          });
+            {
+              headers: masterApiHeaders(),
+            },
+          );
           break;
         } catch (error) {
           lastError = error;
@@ -199,7 +200,8 @@ export const useDonorSearchHandlers = ({
     }
   }, [
     applyDonorRecord,
-    donorIdentificationForm,
+    donorIdentificationForm.donorId,
+    donorIdentificationForm.donorSearchType,
     donorSearchRequestIdRef,
     resetPersonalInfo,
     setDonorOptions,

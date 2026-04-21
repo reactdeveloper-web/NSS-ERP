@@ -355,8 +355,8 @@ iframe {
 .form-floating.ant-input-floating > .form-control.ant-input-floating-control,
 .form-floating.ant-input-floating
   > .form-control-plaintext.ant-input-floating-control {
-  min-height: 3.5rem;
-  height: 3.5rem;
+  min-height: 3.1rem;
+  height: 3.1rem;
   padding: 0.75rem 1rem;
   border: 1px solid #e1e3ea;
   border-radius: 0.475rem;
@@ -424,8 +424,8 @@ iframe {
 }
 
 .input-group > .form-control.ant-input-floating-control {
-  min-height: 3.5rem;
-  height: 3.5rem;
+  min-height: 3.1rem;
+  height: 3.1rem;
   border-color: #e1e3ea;
   box-shadow: none;
   font-size: 1.065rem;
@@ -434,8 +434,8 @@ iframe {
 }
 
 .quantity-floating .quantity-input-group.ant-input-floating-control {
-  min-height: 3.5rem;
-  height: 3.5rem;
+  min-height: 3.1rem;
+  height: 3.1rem;
   padding: 0;
   border: 1px solid #e1e3ea;
   border-radius: 0.475rem;
@@ -464,8 +464,8 @@ iframe {
 
 .quantity-floating .quantity-input-field {
   border: 0;
-  min-height: 3.5rem;
-  height: 3.5rem;
+  min-height: 3.1rem;
+  height: 3.1rem;
   padding: 0.75rem 1rem;
   box-shadow: none !important;
   background-color: transparent;
@@ -860,4 +860,10 @@ iframe {
   line-height:1;
   min-width:18px;
   text-align:center;
+}
+
+.ant-select-selection-overflow{
+  overflow: auto;
+  flex-wrap: nowrap;
+  top: -2px;
 }
