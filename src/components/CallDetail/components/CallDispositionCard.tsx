@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import flatpickr from "flatpickr";
 
 const CallDispositionCard = () => {
@@ -6,6 +6,14 @@ const CallDispositionCard = () => {
   const dateRef = useRef<HTMLInputElement>(null);
   const timeRef = useRef<HTMLInputElement>(null);
 
+  // 🔥 API DATA STATE
+  const [callTypes, setCallTypes] = useState<any[]>([]);
+  const [callSubTypes, setCallSubTypes] = useState<any[]>([]);
+
+  const [selectedCallType, setSelectedCallType] = useState("");
+  const [selectedCallSubType, setSelectedCallSubType] = useState("");
+
+  // ---------------- DATE TIME PICKER ----------------
   useEffect(() => {
     if (dateRef.current) {
       flatpickr(dateRef.current, {
@@ -22,6 +30,38 @@ const CallDispositionCard = () => {
       });
     }
   }, []);
+
+  // ---------------- CALL TYPES API ----------------
+  useEffect(() => {
+    fetchCallTypes();
+  }, []);
+
+  const fetchCallTypes = async () => {
+    try {
+      const res = await fetch(
+        "https://deverp.narayanseva.org/erp/CRM/getCallTypes?calltypeid=0&dataflag=GANGOTRI&pageindex=1&pagesize=16"
+      );
+      const data = await res.json();
+
+      setCallTypes(data?.Data || []);
+    } catch (err) {
+      console.error("Call Types Error", err);
+    }
+  };
+
+  // ---------------- CALL SUB TYPES API ----------------
+  const fetchCallSubTypes = async (callTypeId: string) => {
+    try {
+      const res = await fetch(
+        `https://deverp.narayanseva.org/erp/CRM/getCallSubType?calltypedid=${callTypeId}&status=I&pageindex=1&pagesize=10`
+      );
+      const data = await res.json();
+
+      setCallSubTypes(data?.Data || []);
+    } catch (err) {
+      console.error("Call SubTypes Error", err);
+    }
+  };
 
   return (
     <div className="card shadow-sm mb-5 h-100">
@@ -54,24 +94,45 @@ const CallDispositionCard = () => {
             />
           </div>
 
-          {/* Call Type */}
+          {/* ---------------- CALL TYPE (API) ---------------- */}
           <div className="col-md-6">
             <label className="form-label fw-semibold">Call Type</label>
-            <select className="form-select form-select-solid">
-              <option>Inbound</option>
-              <option>Outbound</option>
-              <option>Missed</option>
+            <select
+              className="form-select form-select-solid"
+              value={selectedCallType}
+              onChange={(e) => {
+                const id = e.target.value;
+                setSelectedCallType(id);
+                setSelectedCallSubType("");
+                fetchCallSubTypes(id);
+              }}
+            >
+              <option value="">Select Call Type</option>
+
+              {callTypes.map((item: any) => (
+                <option key={item.call_type_id} value={item.call_type_id}>
+                  {item.call_type}
+                </option>
+              ))}
             </select>
           </div>
 
-          {/* Call Sub Type */}
+          {/* ---------------- CALL SUB TYPE (API) ---------------- */}
           <div className="col-md-6">
             <label className="form-label fw-semibold">Call Sub Type</label>
-            <select className="form-select form-select-solid">
-              <option>Donation</option>
-              <option>Receipt</option>
-              <option>Enquiry</option>
-              <option>Complaint</option>
+            <select
+              className="form-select form-select-solid"
+              value={selectedCallSubType}
+              onChange={(e) => setSelectedCallSubType(e.target.value)}
+              disabled={!selectedCallType}
+            >
+              <option value="">Select Call Sub Type</option>
+
+              {callSubTypes.map((item: any) => (
+                <option key={item.call_sub_type_id} value={item.call_sub_type_id}>
+                  {item.call_sub_type}
+                </option>
+              ))}
             </select>
           </div>
 

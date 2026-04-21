@@ -846,3 +846,18 @@ iframe {
     width: 60px !important;
     height: 30px;
 }
+
+.bell-count{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  background:#f1416c;
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  padding:3px 6px;
+  border-radius:50px;
+  line-height:1;
+  min-width:18px;
+  text-align:center;
+}
