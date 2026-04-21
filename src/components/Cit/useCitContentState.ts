@@ -184,10 +184,6 @@ export const useCitContentState = () => {
   const [donorSearchValue, setDonorSearchValue] = useState('');
   const [isSearchingDonor, setIsSearchingDonor] = useState(false);
   const [donorSearchError, setDonorSearchError] = useState('');
-  const [saveRequestPayload, setSaveRequestPayload] = useState<unknown>(null);
-  const [showSaveResultModal, setShowSaveResultModal] = useState(false);
-  const [saveResultPayload, setSaveResultPayload] = useState<unknown>(null);
-  const [saveResultSucceeded, setSaveResultSucceeded] = useState(false);
   const [shouldNavigateOnModalClose, setShouldNavigateOnModalClose] =
     useState(false);
   const donorSearchRequestIdRef = useRef(0);
@@ -221,7 +217,6 @@ export const useCitContentState = () => {
 
     for (const requestBody of requestBodies) {
       try {
-        console.log('CIT GetCITById request payload:', requestBody);
         const response = await axiosInstance.post(
           masterApiPaths.getCitDetailsById,
           requestBody,
@@ -229,21 +224,6 @@ export const useCitContentState = () => {
             headers: masterApiHeaders(),
           },
         );
-        console.log('CIT GetCITById response:', response.data);
-        console.log('CIT GetCITById response reply field:', {
-          iCallReply:
-            response.data &&
-            typeof response.data === 'object' &&
-            'iCallReply' in response.data
-              ? response.data.iCallReply
-              : undefined,
-          icallReply:
-            response.data &&
-            typeof response.data === 'object' &&
-            'icallReply' in response.data
-              ? response.data.icallReply
-              : undefined,
-        });
         const apiRecord = extractCitDetailRecord(response.data);
 
         if (apiRecord) {
@@ -275,18 +255,6 @@ export const useCitContentState = () => {
     },
     [history],
   );
-
-  const handleCloseSaveResultModal = useCallback(() => {
-    setShowSaveResultModal(false);
-    setSaveRequestPayload(null);
-    setSaveResultPayload(null);
-    setSaveResultSucceeded(false);
-
-    if (shouldNavigateOnModalClose) {
-      setShouldNavigateOnModalClose(false);
-      openCitListing();
-    }
-  }, [openCitListing, shouldNavigateOnModalClose]);
 
   useEffect(() => {
     setRecords(readCitCache());
@@ -497,6 +465,9 @@ export const useCitContentState = () => {
       if (ticketForm.requestBy.trim()) {
         delete nextErrors.requestBy;
       }
+      if (ticketForm.mobileNo1.replace(/[^\d]/g, '').length === 10) {
+        delete nextErrors.mobileNo1;
+      }
       if (ticketForm.callCategoryId.trim()) {
         delete nextErrors.callCategoryName;
       }
@@ -509,7 +480,11 @@ export const useCitContentState = () => {
       ) {
         delete nextErrors.selectType;
       }
-      if (ticketForm.mobileNo1.trim() ? ticketForm.country1.trim() : true) {
+      if (
+        ticketForm.mobileNo1.replace(/[^\d]/g, '').trim()
+          ? ticketForm.country1.trim()
+          : true
+      ) {
         delete nextErrors.country1;
       }
       if (ticketForm.callBackDate.trim()) {
@@ -939,58 +914,8 @@ export const useCitContentState = () => {
             option => option.value === ticketForm.callCategoryId,
           ) || null,
       });
-      setSaveRequestPayload(payload);
-      // Debug payload to verify the exact request body sent to CIT save APIs.
-      console.log(`CIT ${operation} payload:`, payload);
-      console.log(`${path} request payload:`, payload);
-      console.log(`${path} user id summary:`, {
-        creatorUserId:
-          payload && typeof payload === 'object' && 'USER_ID' in payload
-            ? payload.USER_ID
-            : undefined,
-        callUserId:
-          payload && typeof payload === 'object' && 'Call_User_Id' in payload
-            ? payload.Call_User_Id
-            : undefined,
-        compUserId:
-          payload && typeof payload === 'object' && 'Comp_User_Id' in payload
-            ? payload.Comp_User_Id
-            : undefined,
-        followupUserIds:
-          payload &&
-          typeof payload === 'object' &&
-          'citFollowup' in payload &&
-          Array.isArray(payload.citFollowup)
-            ? payload.citFollowup.map(item =>
-                item && typeof item === 'object' && 'Followup_UserId' in item
-                  ? item.Followup_UserId
-                  : undefined,
-              )
-            : [],
-      });
-      console.log(`${path} request reply field:`, {
-        iCallReply:
-          payload && typeof payload === 'object' && 'iCallReply' in payload
-            ? payload.iCallReply
-            : undefined,
-      });
       const response = await axiosInstance.post(path, payload, {
         headers: masterApiHeaders(),
-      });
-      console.log(`${path} response:`, response.data);
-      console.log(`${path} response reply field:`, {
-        iCallReply:
-          response.data &&
-          typeof response.data === 'object' &&
-          'iCallReply' in response.data
-            ? response.data.iCallReply
-            : undefined,
-        icallReply:
-          response.data &&
-          typeof response.data === 'object' &&
-          'icallReply' in response.data
-            ? response.data.icallReply
-            : undefined,
       });
       const existingRecords = readCitCache();
       const nextInformationCode = extractCitId(
@@ -1034,24 +959,14 @@ export const useCitContentState = () => {
           setActiveTab,
         );
       }
-      setSaveResultPayload(refreshedRecord?.rawResponse || response.data);
-      setSaveResultSucceeded(true);
       setStatusMessage(
         operation === 'ADD'
           ? 'Call information trait saved successfully.'
           : 'Call information trait updated successfully.',
       );
       setShouldNavigateOnModalClose(true);
-      setShowSaveResultModal(false);
     } catch (error: any) {
-      setSaveResultPayload(
-        error?.response?.data || {
-          message: error?.message || 'CIT save failed.',
-        },
-      );
-      setSaveResultSucceeded(false);
       setShouldNavigateOnModalClose(false);
-      setShowSaveResultModal(false);
       setStatusMessage(
         error?.response?.data?.message || error?.message || 'CIT save failed.',
       );
@@ -1087,7 +1002,6 @@ export const useCitContentState = () => {
     },
     isSearchingDonor,
     donorSearchError,
-    saveRequestPayload,
     callCategoryOptions,
     countryApiDataFlag,
     selectTypeOptions,
@@ -1096,12 +1010,8 @@ export const useCitContentState = () => {
     deletingId,
     statusMessage,
     validationErrors,
-    showSaveResultModal,
-    saveResultPayload,
-    saveResultSucceeded,
     openCitListing,
     openCitForm,
-    handleCloseSaveResultModal,
     handleTicketFormChange,
     handleCallCategoryChange,
     handleSelectTypeChange,

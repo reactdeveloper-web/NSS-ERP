@@ -2,7 +2,6 @@ import React from 'react';
 import { CallCenterTicketTab } from './components/CallCenterTicketTab';
 import { CitListing } from './components/CitListing';
 import { TicketFollowUpTab } from './components/TicketFollowUpTab';
-import { CitSaveResultModal } from './components/CitModals';
 import { PageToolbar } from '../Common/PageToolbar';
 import { FloatingTextareaField } from '../Common/FloatingTextareaField';
 import { useCitContentState } from './useCitContentState';
@@ -22,7 +21,6 @@ export const CitContent = () => {
     setDonorSearchValue,
     isSearchingDonor,
     donorSearchError,
-    saveRequestPayload,
     callCategoryOptions,
     countryApiDataFlag,
     selectTypeOptions,
@@ -31,12 +29,8 @@ export const CitContent = () => {
     deletingId,
     statusMessage,
     validationErrors,
-    showSaveResultModal,
-    saveResultPayload,
-    saveResultSucceeded,
     openCitListing,
     openCitForm,
-    handleCloseSaveResultModal,
     handleTicketFormChange,
     handleCallCategoryChange,
     handleSelectTypeChange,
@@ -264,13 +258,6 @@ export const CitContent = () => {
           )}
         </div>
       </div>
-      {/* <CitSaveResultModal
-        open={showSaveResultModal}
-        requestPayload={saveRequestPayload}
-        resultPayload={saveResultPayload}
-        isSuccess={saveResultSucceeded}
-        onClose={handleCloseSaveResultModal}
-      /> */}
     </div>
   );
 };

@@ -1,38 +1,4 @@
-import React, { useEffect, useRef } from 'react';
-
-type FlatpickrInstance = {
-  open?: () => void;
-  destroy?: () => void;
-  setDate?: (
-    date: string | Date | Array<string | Date>,
-    triggerChange?: boolean,
-    format?: string,
-  ) => void;
-  clear?: (triggerChange?: boolean) => void;
-};
-
-declare global {
-  interface Window {
-    flatpickr?: (
-      element: HTMLElement,
-      config?: {
-        allowInput?: boolean;
-        clickOpens?: boolean;
-        dateFormat?: string;
-        defaultDate?: string;
-        enableTime?: boolean;
-        noCalendar?: boolean;
-        position?: string;
-        time_24hr?: boolean;
-        onChange?: (
-          selectedDates: Date[],
-          dateStr: string,
-          instance: { input: HTMLInputElement },
-        ) => void;
-      },
-    ) => FlatpickrInstance;
-  }
-}
+import React, { useEffect, useMemo, useState } from 'react';
 
 interface FloatingTimePickerProps {
   id: string;
@@ -46,6 +12,65 @@ interface FloatingTimePickerProps {
   wrapperClassName?: string;
 }
 
+interface TimeParts {
+  hour12: string;
+  minute: string;
+  meridiem: 'AM' | 'PM';
+}
+
+const hourOptions = Array.from({ length: 12 }, (_, index) => {
+  const hour = String(index + 1).padStart(2, '0');
+
+  return { value: hour, label: hour };
+});
+
+const minuteOptions = Array.from({ length: 60 }, (_, index) => {
+  const minute = String(index).padStart(2, '0');
+
+  return { value: minute, label: minute };
+});
+
+const meridiemOptions: Array<TimeParts['meridiem']> = ['AM', 'PM'];
+
+const parseTimeValue = (value: string): TimeParts => {
+  const normalizedValue = value.trim();
+  const timeMatch = normalizedValue.match(/^(\d{1,2}):(\d{2})$/);
+
+  if (!timeMatch) {
+    return {
+      hour12: '12',
+      minute: '00',
+      meridiem: 'AM',
+    };
+  }
+
+  const parsedHour = Number(timeMatch[1]);
+  const parsedMinute = timeMatch[2];
+  const isPm = parsedHour >= 12;
+  const normalizedHour = parsedHour % 12 || 12;
+
+  return {
+    hour12: String(normalizedHour).padStart(2, '0'),
+    minute: parsedMinute,
+    meridiem: isPm ? 'PM' : 'AM',
+  };
+};
+
+const formatTimeValue = ({ hour12, minute, meridiem }: TimeParts) => {
+  const parsedHour = Number(hour12 || '12');
+  const normalized12Hour = parsedHour === 12 ? 12 : parsedHour % 12;
+  const hour24 =
+    meridiem === 'PM'
+      ? normalized12Hour === 12
+        ? 12
+        : normalized12Hour + 12
+      : normalized12Hour === 12
+      ? 0
+      : normalized12Hour;
+
+  return `${String(hour24).padStart(2, '0')}:${minute || '00'}`;
+};
+
 export const FloatingTimePicker = ({
   id,
   label,
@@ -53,98 +78,89 @@ export const FloatingTimePicker = ({
   onChange,
   disabled = false,
   readOnly = false,
-  placeholder = ' ',
-  className = 'form-control ant-input-floating-control',
+  className = 'form-select form-select-solid ant-input-floating-control',
   wrapperClassName = 'form-floating ant-input-floating',
 }: FloatingTimePickerProps) => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const pickerRef = useRef<FlatpickrInstance | null>(null);
-  const hasFlatpickr =
-    typeof window !== 'undefined' && typeof window.flatpickr === 'function';
-
-  const handleOpenPicker = () => {
-    if (disabled || readOnly) {
-      return;
-    }
-
-    pickerRef.current?.open?.();
-
-    if (pickerRef.current?.open) {
-      return;
-    }
-
-    inputRef.current?.focus();
-    inputRef.current?.showPicker?.();
-  };
+  const [timeParts, setTimeParts] = useState<TimeParts>(() => parseTimeValue(value));
 
   useEffect(() => {
-    const input = inputRef.current;
-    const canInitPicker = !disabled && !readOnly && hasFlatpickr;
-
-    if (!input || !canInitPicker) {
-      return;
-    }
-
-    pickerRef.current =
-      window.flatpickr?.(input, {
-        allowInput: true,
-        clickOpens: true,
-        dateFormat: 'H:i',
-        defaultDate: value || undefined,
-        enableTime: true,
-        noCalendar: true,
-        position: 'auto left',
-        time_24hr: true,
-        onChange: (_selectedDates, dateStr) => {
-          onChange?.(dateStr);
-        },
-      }) ?? null;
-
-    return () => {
-      pickerRef.current?.destroy?.();
-      pickerRef.current = null;
-    };
-  }, [disabled, hasFlatpickr, onChange, readOnly, value]);
-
-  useEffect(() => {
-    const picker = pickerRef.current;
-
-    if (!picker) {
-      return;
-    }
-
-    if (value) {
-      picker.setDate?.(value, false, 'H:i');
-      return;
-    }
-
-    picker.clear?.(false);
+    setTimeParts(parseTimeValue(value));
   }, [value]);
 
+  const isLocked = disabled || readOnly;
+  const hasValue = useMemo(() => Boolean(value.trim()), [value]);
+
+  const handlePartChange = <K extends keyof TimeParts>(
+    key: K,
+    nextValue: TimeParts[K],
+  ) => {
+    const nextParts = {
+      ...timeParts,
+      [key]: nextValue,
+    };
+
+    setTimeParts(nextParts);
+    onChange?.(formatTimeValue(nextParts));
+  };
+
   return (
-    <div className={`${wrapperClassName} floating-date-picker`}>
-      <input
-        ref={inputRef}
+    <div className={`${wrapperClassName} floating-time-picker`}>
+      <div
         id={id}
-        type={hasFlatpickr ? 'text' : 'time'}
-        className={className}
-        placeholder={placeholder}
-        value={value}
-        disabled={disabled}
-        readOnly={readOnly}
-        onClick={!hasFlatpickr ? handleOpenPicker : undefined}
-        onFocus={!hasFlatpickr ? handleOpenPicker : undefined}
-        onChange={event => onChange?.(event.target.value)}
-      />
-      <button
-        type="button"
-        className="floating-date-picker-icon"
-        onClick={handleOpenPicker}
-        aria-label={`Open ${typeof label === 'string' ? label : 'time'} picker`}
-        tabIndex={-1}
+        className={`d-flex gap-2 align-items-center ${
+          hasValue ? 'is-filled' : ''
+        }`}
       >
-        <i className="fa fa-clock" aria-hidden="true" />
-      </button>
+        <select
+          className={className}
+          value={timeParts.hour12}
+          disabled={isLocked}
+          onChange={event =>
+            handlePartChange('hour12', event.target.value as TimeParts['hour12'])
+          }
+        >
+          {hourOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
+        <span className="fw-semibold text-muted">:</span>
+
+        <select
+          className={className}
+          value={timeParts.minute}
+          disabled={isLocked}
+          onChange={event =>
+            handlePartChange('minute', event.target.value as TimeParts['minute'])
+          }
+        >
+          {minuteOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className={className}
+          value={timeParts.meridiem}
+          disabled={isLocked}
+          onChange={event =>
+            handlePartChange(
+              'meridiem',
+              event.target.value as TimeParts['meridiem'],
+            )
+          }
+        >
+          {meridiemOptions.map(option => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
       <label htmlFor={id}>{label}</label>
     </div>
   );

@@ -291,11 +291,6 @@ export const AnnouncementListing = ({
         masterApiPaths.getAnnounceList,
         payload,
       );
-      // console.log('CRM/GetAnnounceList response:', response.data);
-      // console.log(
-      //   'CRM/GetAnnounceList first 100 result rows:',
-      //   extractArrayPayload(response.data).slice(0, 100),
-      // );
       const records = extractArrayPayload(response.data);
       const mappedItems = records.map(mapAnnouncementListItem);
 
