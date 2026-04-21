@@ -11,4 +11,5 @@ export const masterApiPaths = {
   createCit: '/CIT/InsertCIT',
   getCallCategoryList: '/CIT/GetCallCategoryList',
   getCallSubCategoryList: '/CIT/GetCallSubCategoryList',
+  getReceiveIdDetailsByFilter:'/DMS/GetReceiveIdDetailsbyFilter',
 } as const;

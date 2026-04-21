@@ -8,6 +8,7 @@ import '../src/assets/scss/custom.scss';
 import { App } from './App/App';
 import { Provider } from 'react-redux';
 import { store } from './redux';
+import "flatpickr/dist/flatpickr.min.css";
 
 ReactDOM.render(
   <React.StrictMode>

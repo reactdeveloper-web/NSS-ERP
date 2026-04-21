@@ -64,23 +64,10 @@ const _AppAside = (props: Props) => {
         >
           {/* <!--begin::Svg Icon | path: icons/duotune/arrows/arr079.svg--> */}
           <span className="svg-icon svg-icon-1 rotate-180">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <path
-                opacity="0.5"
-                d="M14.2657 11.4343L18.45 7.25C18.8642 6.83579 18.8642 6.16421 18.45 5.75C18.0358 5.33579 17.3642 5.33579 16.95 5.75L11.4071 11.2929C11.0166 11.6834 11.0166 12.3166 11.4071 12.7071L16.95 18.25C17.3642 18.6642 18.0358 18.6642 18.45 18.25C18.8642 17.8358 18.8642 17.1642 18.45 16.75L14.2657 12.5657C13.9533 12.2533 13.9533 11.7467 14.2657 11.4343Z"
-                fill="black"
-              />
-              <path
-                d="M8.2657 11.4343L12.45 7.25C12.8642 6.83579 12.8642 6.16421 12.45 5.75C12.0358 5.33579 11.3642 5.33579 10.95 5.75L5.40712 11.2929C5.01659 11.6834 5.01659 12.3166 5.40712 12.7071L10.95 18.25C11.3642 18.6642 12.0358 18.6642 12.45 18.25C12.8642 17.8358 12.8642 17.1642 12.45 16.75L8.2657 12.5657C7.95328 12.2533 7.95328 11.7467 8.2657 11.4343Z"
-                fill="black"
-              />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+								<path d="M14.4 11H3C2.4 11 2 11.4 2 12C2 12.6 2.4 13 3 13H14.4V11Z" fill="black"></path>
+								<path opacity="0.3" d="M14.4 20V4L21.7 11.3C22.1 11.7 22.1 12.3 21.7 12.7L14.4 20Z" fill="black"></path>
+							</svg>
           </span>
           {/* <!--end::Svg Icon--> */}
         </div>
@@ -115,20 +102,57 @@ const _AppAside = (props: Props) => {
                 {APP_MENU_ITEMS.map(item => (
                   <li
                     key={item.key}
-                    className="menu-item"
+                    className={`menu-item ${
+                      item.children?.length ? 'menu-accordion' : ''
+                    }`}
                     data-submenu={item.label}
+                    data-kt-menu-trigger={
+                      item.children?.length ? 'click' : undefined
+                    }
                   >
-                    <NavLink
-                      exact
-                      className="menu-link"
-                      activeClassName="active"
-                      to={item.path}
-                    >
-                      <span className="menu-icon">
-                        <i className={item.iconClass}></i>
-                      </span>
-                      <span className="menu-title">{item.label}</span>
-                    </NavLink>
+                    {item.children?.length ? (
+                      <>
+                        <div className="menu-link">
+                          <span className="menu-icon">
+                            <i className={item.iconClass}></i>
+                          </span>
+                          <span className="menu-title">{item.label}</span>
+                          <span className="menu-arrow"></span>
+                        </div>
+
+                        <div className="menu-sub menu-sub-accordion ps-6">
+                          {item.children.map(child => (
+                            <div key={child.key} className="menu-item">
+                              <NavLink
+                                exact
+                                className="menu-link"
+                                activeClassName="active"
+                                to={child.path || '#'}
+                              >
+                                <span className="menu-icon">
+                                  <i className={child.iconClass}></i>
+                                </span>
+                                <span className="menu-title">
+                                  {child.label}
+                                </span>
+                              </NavLink>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <NavLink
+                        exact
+                        className="menu-link"
+                        activeClassName="active"
+                        to={item.path || '#'}
+                      >
+                        <span className="menu-icon">
+                          <i className={item.iconClass}></i>
+                        </span>
+                        <span className="menu-title">{item.label}</span>
+                      </NavLink>
+                    )}
                   </li>
                 ))}
               </ul>

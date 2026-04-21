@@ -1,13 +1,13 @@
 import React from 'react';
 import { AuthenticatedPageShell } from 'src/components/Layout/AuthenticatedPageShell';
-import { UserTimeSheet } from './Components/UserTimeSheet';
+import CallDetailContent from 'src/components/CallDetail/CallDetailContent';
 
-const MyProfileContent = () => {
+const CallDetail = () => {
   return (
     <AuthenticatedPageShell>
-      <UserTimeSheet />
+      <CallDetailContent />
     </AuthenticatedPageShell>
   );
 };
 
-export { MyProfileContent };
+export { CallDetail };

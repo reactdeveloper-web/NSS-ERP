@@ -244,16 +244,22 @@ const formatTypeCell = (
 );
 
 const getListingSortValue = (item: CitListingItem) => {
+  const normalizedEntryDate = normalizeApiDate(item.entryDate);
+
+  if (normalizedEntryDate) {
+    const entryTimeValue = new Date(item.entryDate).getTime();
+
+    if (Number.isFinite(entryTimeValue) && entryTimeValue > 0) {
+      return entryTimeValue;
+    }
+
+    return new Date(`${normalizedEntryDate}T00:00:00`).getTime();
+  }
+
   const numericInformationCode = Number(item.informationCode);
 
   if (Number.isFinite(numericInformationCode) && numericInformationCode > 0) {
     return numericInformationCode;
-  }
-
-  const normalizedEntryDate = normalizeApiDate(item.entryDate);
-
-  if (normalizedEntryDate) {
-    return new Date(`${normalizedEntryDate}T00:00:00`).getTime();
   }
 
   return 0;
