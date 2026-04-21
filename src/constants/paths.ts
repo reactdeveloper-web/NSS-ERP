@@ -3,7 +3,7 @@ export const PATH = {
   DASHBOARD: '/dashboard',
   LOGIN: '/login',
   ANNOUNCE_MASTER: '/announcement',
-  RECEIVE_ID_CREATION: '/receive-id-creation',
+  RECEIVE_ID_CREATION: '/donation-receive',
   CIT: '/cit',
   FORGOT: '/forgot',
   PROFILE: '/profile',

@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { ContentTypes } from 'src/constants/content';
 import { masterApiHeaders } from 'src/utils/masterApiHeaders';
 import { masterApiPaths } from 'src/utils/masterApiPaths';
@@ -615,16 +614,10 @@ const persistSavedAnnouncement = ({
   ]);
 };
 
-const getSaveErrorPayload = (error: unknown) =>
-  axios.isAxiosError(error)
-    ? error.response?.data || { message: error.message }
-    : { message: 'Failed to save announce.' };
-
 export {
   buildCurrentCauseForPayload,
   buildSavePayload,
   getPreferredValidationTab,
-  getSaveErrorPayload,
   persistSavedAnnouncement,
   submitSaveRequest,
   validateBeforeSave,

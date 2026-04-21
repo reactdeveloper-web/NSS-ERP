@@ -225,6 +225,11 @@ export const toNullableText = (value: string) => {
   return normalizedValue ? normalizedValue : null;
 };
 
+const toNullableDigitsText = (value: string) => {
+  const normalizedValue = value.replace(/[^\d]/g, '');
+  return normalizedValue ? normalizedValue : null;
+};
+
 export const toNumberValue = (value: string) => {
   const normalizedValue = value.replace(/[^\d]/g, '');
   return normalizedValue ? Number(normalizedValue) : 0;
@@ -267,7 +272,13 @@ export const validateCitForm = (
   if (!form.requestBy.trim()) {
     nextErrors.requestBy = 'Request By is required.';
   }
-  if (form.mobileNo1.trim() && !form.country1.trim()) {
+  const normalizedMobileNo1 = form.mobileNo1.replace(/[^\d]/g, '');
+  if (!normalizedMobileNo1) {
+    nextErrors.mobileNo1 = 'Mobile No 1 is required.';
+  } else if (normalizedMobileNo1.length !== 10) {
+    nextErrors.mobileNo1 = 'Mobile No 1 must be 10 digits.';
+  }
+  if (normalizedMobileNo1 && !form.country1.trim()) {
     nextErrors.country1 = 'Country 1 is required when Mobile No 1 is entered.';
   }
   if (!form.callBackDate.trim()) {
@@ -532,10 +543,15 @@ export const buildCitSavePayload = ({
   const resolvedNgCode = toNumberValue(form.ngCode || donorSearchValue || '');
   const currentLocalDate = getCurrentLocalDate();
   const currentLocalTime = getCurrentLocalTime();
+  const normalizedMobileNo1 = toNullableDigitsText(form.mobileNo1);
+  const normalizedMobileNo2 = toNullableDigitsText(form.mobileNo2);
   const resolvedRequestBy = toNullableText(form.requestBy);
-  const resolvedCountryCode1 = toNullableText(form.country1) || '1';
-  const resolvedCountryCode2 =
-    toNullableText(form.country2) || resolvedCountryCode1 || '1';
+  const resolvedCountryCode1 = normalizedMobileNo1
+    ? toNullableText(form.country1) || '1'
+    : null;
+  const resolvedCountryCode2 = normalizedMobileNo2
+    ? toNullableText(form.country2) || resolvedCountryCode1
+    : null;
   const resolvedCategoryName =
     toNullableText(form.callCategoryName) || selectedCategoryOption?.label || null;
   const resolvedAssignedEmpId =
@@ -574,8 +590,8 @@ export const buildCitSavePayload = ({
       Call: null,
       Call_Comp: resolvedCompletionValue,
       Call_User_Id: String(resolvedCreatorUserId),
-      Mno1: toNullableText(form.mobileNo1),
-      Mno2: toNullableText(form.mobileNo2),
+      Mno1: normalizedMobileNo1,
+      Mno2: normalizedMobileNo2,
       Call_Back_Date: form.callBackDate || null,
       Comp_Date: resolvedCompletionDate,
       NgCode: resolvedNgCode,

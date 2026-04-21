@@ -37,6 +37,7 @@ export interface CallCenterTicketValidationErrors {
   selectSadhakName?: string;
   requestBy?: string;
   country1?: string;
+  mobileNo1?: string;
   callBackDate?: string;
   details?: string;
   completionReply?: string;
@@ -190,6 +191,7 @@ export const CallCenterTicketTab = ({
             onChange={value => onChange('mobileNo1', value)}
             type="tel"
             disabled={disabled}
+            error={errors.mobileNo1}
           />
         </div>
           </div>

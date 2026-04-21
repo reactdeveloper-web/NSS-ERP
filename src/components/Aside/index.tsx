@@ -115,20 +115,57 @@ const _AppAside = (props: Props) => {
                 {APP_MENU_ITEMS.map(item => (
                   <li
                     key={item.key}
-                    className="menu-item"
+                    className={`menu-item ${
+                      item.children?.length ? 'menu-accordion' : ''
+                    }`}
                     data-submenu={item.label}
+                    data-kt-menu-trigger={
+                      item.children?.length ? 'click' : undefined
+                    }
                   >
-                    <NavLink
-                      exact
-                      className="menu-link"
-                      activeClassName="active"
-                      to={item.path}
-                    >
-                      <span className="menu-icon">
-                        <i className={item.iconClass}></i>
-                      </span>
-                      <span className="menu-title">{item.label}</span>
-                    </NavLink>
+                    {item.children?.length ? (
+                      <>
+                        <div className="menu-link">
+                          <span className="menu-icon">
+                            <i className={item.iconClass}></i>
+                          </span>
+                          <span className="menu-title">{item.label}</span>
+                          <span className="menu-arrow"></span>
+                        </div>
+
+                        <div className="menu-sub menu-sub-accordion ps-6">
+                          {item.children.map(child => (
+                            <div key={child.key} className="menu-item">
+                              <NavLink
+                                exact
+                                className="menu-link"
+                                activeClassName="active"
+                                to={child.path || '#'}
+                              >
+                                <span className="menu-icon">
+                                  <i className={child.iconClass}></i>
+                                </span>
+                                <span className="menu-title">
+                                  {child.label}
+                                </span>
+                              </NavLink>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <NavLink
+                        exact
+                        className="menu-link"
+                        activeClassName="active"
+                        to={item.path || '#'}
+                      >
+                        <span className="menu-icon">
+                          <i className={item.iconClass}></i>
+                        </span>
+                        <span className="menu-title">{item.label}</span>
+                      </NavLink>
+                    )}
                   </li>
                 ))}
               </ul>

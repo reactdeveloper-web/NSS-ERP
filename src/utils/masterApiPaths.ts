@@ -12,4 +12,5 @@ export const masterApiPaths = {
   updateCit: '/CIT/UpdateCIT',
   getCallCategoryList: '/CIT/GetCallCategoryList',
   getCallSubCategoryList: '/CIT/GetCallSubCategoryList',
+  getReceiveIdDetailsByFilter:'/DMS/GetReceiveIdDetailsbyFilter',
 } as const;

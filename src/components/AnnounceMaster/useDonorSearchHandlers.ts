@@ -200,7 +200,8 @@ export const useDonorSearchHandlers = ({
     }
   }, [
     applyDonorRecord,
-    donorIdentificationForm,
+    donorIdentificationForm.donorId,
+    donorIdentificationForm.donorSearchType,
     donorSearchRequestIdRef,
     resetPersonalInfo,
     setDonorOptions,
