@@ -1,15 +1,11 @@
 import React, { lazy, Suspense } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { PATH } from 'src/constants/paths';
 import { Loading } from 'src/components/Loading';
-import { Redirect, Route, Switch } from 'react-router-dom';
 import { MainLayout } from 'src/pages/layouts/MainLayout';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 
-// ---> Static pages
-const DashboardPage = lazy(
-  () => import('src/pages/DashboardPages/DashboardPage'),
-);
+const DashboardPage = lazy(() => import('src/pages/Dashboard/DashboardPage'));
 
 // ---> Auth pages
 const LoginPage = lazy(() => import('src/pages/AuthPages/LoginPage'));
@@ -21,13 +17,11 @@ const AnnounceMasterPage = lazy(
   () => import('src/pages/MasterPages/AnnounceMasterPage'),
 );
 
-
 const ReceiveIdCreationPage = lazy(
   () => import('src/pages/MasterPages/ReceiveIdCreationPage'),
 );
 
 const CitPage = lazy(() => import('src/pages/cit/CitPage'));
-
 
 const ProfileMasterPage = lazy(
   () => import('src/pages/MyProfilePage/ProfileMasterPage'),
@@ -66,19 +60,13 @@ export const Routes = () => {
               <Route exact path={PATH.CALL_DETAIL} component={CallDetailPage} />
               <Route exact path={PATH.FORGOT} component={ForgotPage} />
               <Route path={PATH.RESET_PASSWORD} component={ResetPassword} />
-              {/* <Route
-                exact
-                sensitive
-                path="/Announcement"
-                render={() => <Redirect to={PATH.ANNOUNCE_MASTER} />}
-              /> */}
               <Route
                 exact
                 path={PATH.ANNOUNCE_MASTER}
                 component={AnnounceMasterPage}
               />
 
-             <Route
+              <Route
                 exact
                 path={PATH.RECEIVE_ID_CREATION}
                 component={ReceiveIdCreationPage}
