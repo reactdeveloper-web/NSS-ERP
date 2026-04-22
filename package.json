@@ -52,7 +52,7 @@
     "start": "npm run dev",
     "build": "cross-env SASS_SILENCE_DEPRECATIONS=legacy-js-api vite build",
     "build:preview": "cross-env VITE_API_BASE_URL= SASS_SILENCE_DEPRECATIONS=legacy-js-api vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "npm run build:preview && vite preview --host 0.0.0.0"
   },
   "browserslist": {
     "production": [
