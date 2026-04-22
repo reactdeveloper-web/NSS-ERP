@@ -710,7 +710,8 @@ iframe {
   color: #233255 !important;
 }
 
-.floating-date-picker > .form-control.ant-input-floating-control {
+.floating-date-picker > .form-control.ant-input-floating-control,
+.floating-time-picker > .form-control.ant-input-floating-control {
   padding-right: 3.1rem;
 }
 
@@ -741,6 +742,34 @@ iframe {
 .floating-date-picker-icon .fa {
   font-size: 1.5rem;
   color: #27baa7;
+}
+
+.floating-time-picker-icon .fa {
+  font-size: 1.35rem;
+}
+
+.dashboard-task-form-table > thead > tr > th {
+  background: #19aa98;
+  color: #fff;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.dashboard-task-form-table > tbody > tr > td {
+  vertical-align: top;
+}
+
+.dashboard-task-modal {
+  max-width: 90vw;
+  width: 90vw;
+}
+
+.dashboard-task-detail-table thead th {
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 @media (max-width: 991.98px) {

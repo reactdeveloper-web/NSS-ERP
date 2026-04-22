@@ -2,6 +2,7 @@ export { getCountryAll } from './getCountryAll';
 export { getCurrencyByCountry } from './getCurrencyByCountry';
 export { getDepositBanks } from './getDepositBanks';
 export { getDistrictByState } from './getDistrictByState';
+export { getDashboard } from './getDashboard';
 export { getEmployeeAll } from './getEmployeeAll';
 export { getEventDetails } from './getEventDetails';
 export { getOperationAmountByQty } from './getOperationAmountByQty';

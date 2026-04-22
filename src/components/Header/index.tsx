@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { LeftMenu } from './LeftMenu';
 import { RightMenu } from './RightMenu';
-import { Dashboard } from './Dashboard';
 import { PATH } from 'src/constants/paths';
 import { Drawer, Button } from 'antd';
 import "flatpickr/dist/flatpickr.min.css";
@@ -32,7 +31,6 @@ export const AppHeader = () => {
 
   return (
     <>
-      <Dashboard />
       <RightMenu />
     </>
   );
