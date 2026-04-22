@@ -6,10 +6,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import { MainLayout } from 'src/pages/layouts/MainLayout';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 
-// ---> Static pages
-const DashboardPage = lazy(
-  () => import('src/pages/DashboardPages/DashboardPage'),
-);
+const DashboardPage = lazy(() => import('src/pages/Dashboard/DashboardPage'));
 
 // ---> Auth pages
 const LoginPage = lazy(() => import('src/pages/AuthPages/LoginPage'));

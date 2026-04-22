@@ -1,5 +1,4 @@
 import React, { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 
 interface PageToolbarProps {
   title: string;
@@ -29,14 +28,8 @@ export const PageToolbar = ({
             {description ? (
               <>
                 <span className="h-20px border-gray-200 border-start ms-3 mx-2"></span>
-                <Link
-                  to="/dashboard"
-                  className="login-form-register-link text-muted fs-7 fw-bold my-1 ms-1"
-                >
-                  Dashboard
-                </Link>
                 <small className="text-dark fs-7 fw-bold my-1 ms-1">
-                  - {description}
+                  {description}
                 </small>
               </>
             ) : null}
