@@ -1,4 +1,5 @@
 import React from 'react';
+import { TaskDetailTable } from './TaskDetailTable';
 import { StaticTaskRow, TaskItem } from './types';
 
 interface TaskTableProps {
@@ -6,6 +7,11 @@ interface TaskTableProps {
   tasks: TaskItem[];
   loading: boolean;
   staticRows?: StaticTaskRow[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  onPageChange: (pageNumber: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 }
 
 export const TaskTable = ({
@@ -13,8 +19,13 @@ export const TaskTable = ({
   tasks,
   loading,
   staticRows,
+  pageNumber,
+  pageSize,
+  totalCount,
+  onPageChange,
+  onPageSizeChange,
 }: TaskTableProps) => (
-  <div className="card card-xl-stretch mb-5 mb-xl-8">
+  <div className="card h-100 mb-5 mb-xl-8">
     <div className="card-header border-0 pt-5">
       <h3 className="card-title align-items-start flex-column">
         <span className="card-label fw-bolder fs-3 mb-1">{title}</span>
@@ -24,64 +35,22 @@ export const TaskTable = ({
       </h3>
     </div>
 
-    <div className="card-body py-3">
+    <div className="card-body py-3" style={{maxHeight:"620px", overflow:'auto'}}>
       {loading ? (
         <div className="text-muted fw-bold">Loading...</div>
       ) : staticRows ? (
         <StaticTaskTable rows={staticRows} />
       ) : (
-        <ApiTaskTable tasks={tasks} />
+        <TaskDetailTable
+          tasks={tasks}
+          pageNumber={pageNumber}
+          pageSize={pageSize}
+          totalCount={totalCount}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
       )}
     </div>
-  </div>
-);
-
-const ApiTaskTable = ({ tasks }: { tasks: TaskItem[] }) => (
-  <div className="table-responsive">
-    <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
-      <thead>
-        <tr className="fw-bolder text-muted">
-          <th>Sr No./Task Id/Program Id</th>
-          <th>Program Date/Name</th>
-          <th>Task Names</th>
-          <th>Days</th>
-          <th>Task Date</th>
-          <th>Responsible Person</th>
-          <th>Completed</th>
-          <th>Confirm By</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {tasks.map(task => (
-          <tr key={`${task.tid}-${task.RowNumber}`}>
-            <td>
-              {task.RowNumber}/{task.tid}/{task.pg_id}
-            </td>
-            <td>
-              <div className="fw-bold text-dark">{task.name_eng}</div>
-              <span className="text-muted fs-7">
-                {task.from_doe} To {task.to_doe}
-              </span>
-            </td>
-            <td>{task.task}</td>
-            <td>{task.days}</td>
-            <td>{task.tdate}</td>
-            <td>{task.responsible_person}</td>
-            <td>{task.completed}</td>
-            <td>{task.confirm_by_name || '-'}</td>
-          </tr>
-        ))}
-
-        {!tasks.length && (
-          <tr>
-            <td colSpan={8} className="text-center text-muted fw-bold">
-              No task records found.
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
   </div>
 );
 

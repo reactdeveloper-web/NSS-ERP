@@ -158,6 +158,9 @@ export const DashboardContent: React.FC = () => {
   const [activeItem, setActiveItem] = useState<DashboardItem | null>(null);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [showStaticTable, setShowStaticTable] = useState(false);
+  const [taskPageNumber, setTaskPageNumber] = useState(1);
+  const [taskPageSize, setTaskPageSize] = useState(10);
+  const [taskTotalCount, setTaskTotalCount] = useState(0);
   const [loadingTodos, setLoadingTodos] = useState(false);
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [error, setError] = useState('');
@@ -167,11 +170,18 @@ export const DashboardContent: React.FC = () => {
     hodName || hodCode || '-'
   }`;
 
-  const fetchTasks = useCallback(async (item: DashboardItem) => {
+  const fetchTasks = useCallback(async (
+    item: DashboardItem,
+    pageNumber = 1,
+    pageSize = 10,
+  ) => {
     setActiveItem(item);
+    setTaskPageNumber(pageNumber);
+    setTaskPageSize(pageSize);
 
     if (item.source === 'static') {
       setTasks([]);
+      setTaskTotalCount(staticRows.length);
       setShowStaticTable(true);
       setLoadingTasks(false);
       setError('');
@@ -192,18 +202,37 @@ export const DashboardContent: React.FC = () => {
         empnum: String(getEmpNum()),
         dataflag: getDataFlag(),
         Type: '2',
-        PageIndex: '1',
-        PageSize: '10',
+        PageIndex: String(pageNumber),
+        PageSize: String(pageSize),
       });
 
-      setTasks(response.data?.taskdetail || []);
+      const taskRows = response.data?.taskdetail || [];
+      setTasks(taskRows);
+      setTaskTotalCount(taskRows[0]?.RecordCount || 0);
     } catch (apiError) {
       setTasks([]);
+      setTaskTotalCount(0);
       setError('Unable to load task listing.');
     } finally {
       setLoadingTasks(false);
     }
   }, []);
+
+  const handleTaskPageChange = (pageNumber: number) => {
+    if (!activeItem) {
+      return;
+    }
+
+    fetchTasks(activeItem, pageNumber, taskPageSize);
+  };
+
+  const handleTaskPageSizeChange = (pageSize: number) => {
+    if (!activeItem) {
+      return;
+    }
+
+    fetchTasks(activeItem, 1, pageSize);
+  };
 
   const fetchDashboard = useCallback(async () => {
     setLoadingTodos(true);
@@ -266,21 +295,26 @@ export const DashboardContent: React.FC = () => {
           {error && <div className="alert alert-danger">{error}</div>}
 
           <div className="row">
-            <div className="col-md-4">
+            <div className="col-md-3">
               <TodoList
                 items={items}
                 activeId={activeItem?.PanelId}
                 loading={loadingTodos}
-                onSelect={fetchTasks}
+                onSelect={item => fetchTasks(item, 1, taskPageSize)}
               />
             </div>
 
-            <div className="col-md-8">
+            <div className="col-md-9">
               <TaskTable
                 title={activeItem?.Panel || 'Task Listing'}
                 tasks={tasks}
                 loading={loadingTasks}
                 staticRows={showStaticTable ? staticRows : undefined}
+                pageNumber={taskPageNumber}
+                pageSize={taskPageSize}
+                totalCount={taskTotalCount}
+                onPageChange={handleTaskPageChange}
+                onPageSizeChange={handleTaskPageSizeChange}
               />
             </div>
           </div>

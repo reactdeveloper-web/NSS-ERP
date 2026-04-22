@@ -11,6 +11,8 @@ export interface DashboardItem {
 export interface TaskItem {
   RowNumber: number;
   RecordCount: number;
+  sr_no?: number;
+  emp_num?: number;
   tid: number;
   pg_id: number;
   name_eng: string;
@@ -23,6 +25,14 @@ export interface TaskItem {
   completed: string;
   not_comp_reason: string | null;
   confirm_by_name: string | null;
+  due_task_date?: string;
+  revertcount?: string;
+  attachmentdneed?: boolean;
+  video_url?: string | null;
+  cdate?: string;
+  reasondtl?: string;
+  taskremakrs?: string | null;
+  taskfiles?: string | null;
 }
 
 export interface StaticTaskRow {
