@@ -8,10 +8,6 @@ export default defineConfig(({ mode }) => {
     env.VITE_PROXY_TARGET ||
     env.REACT_APP_PROXY_TARGET ||
     'https://deverp.narayanseva.org';
-  const todoProxyTarget =
-    env.VITE_TODO_PROXY_TARGET ||
-    env.REACT_APP_TODO_PROXY_TARGET ||
-    'http://10.32.1.187:84';
 
   return {
     plugins: [react()],
@@ -26,12 +22,6 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       proxy: {
-        '/api/erp/ToDo': {
-          target: todoProxyTarget,
-          changeOrigin: true,
-          secure: false,
-          rewrite: url => url.replace(/^\/api\/erp/, ''),
-        },
         '/api': {
           target: proxyTarget,
           changeOrigin: true,
@@ -43,12 +33,6 @@ export default defineConfig(({ mode }) => {
     preview: {
       port: 4173,
       proxy: {
-        '/api/erp/ToDo': {
-          target: todoProxyTarget,
-          changeOrigin: true,
-          secure: false,
-          rewrite: url => url.replace(/^\/api\/erp/, ''),
-        },
         '/api': {
           target: proxyTarget,
           changeOrigin: true,
