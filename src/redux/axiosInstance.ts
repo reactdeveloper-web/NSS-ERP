@@ -8,6 +8,9 @@ type FallbackAxiosRequestConfig = AxiosRequestConfig & {
 
 const env = import.meta.env;
 const DEFAULT_PROXY_BASE_URL = '/api/erp/';
+const FORCE_SAME_ORIGIN_API = String(
+  env.VITE_FORCE_SAME_ORIGIN_API || env.REACT_APP_FORCE_SAME_ORIGIN_API || '',
+).toLowerCase() === 'true';
 
 const stripTrailingSlashes = (value: string) => value.replace(/\/+$/, '');
 
@@ -26,9 +29,21 @@ const API_FALLBACK_BASE_URL = stripTrailingSlashes(
   env.VITE_API_FALLBACK_BASE_URL || env.REACT_APP_API_FALLBACK_BASE_URL || '',
 );
 
-const BASE_URL = API_BASE_URL
-  ? ensureErpBaseUrl(API_BASE_URL)
-  : DEFAULT_PROXY_BASE_URL;
+const shouldUseSameOriginProxy = () => {
+  if (env.DEV || FORCE_SAME_ORIGIN_API || !API_BASE_URL) {
+    return true;
+  }
+
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return window.location.hostname.endsWith('cloudfront.net');
+};
+
+const BASE_URL = shouldUseSameOriginProxy()
+  ? DEFAULT_PROXY_BASE_URL
+  : ensureErpBaseUrl(API_BASE_URL);
 
 const FALLBACK_BASE_URL =
   env.DEV && API_FALLBACK_BASE_URL
