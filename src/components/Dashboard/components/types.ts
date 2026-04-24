@@ -132,3 +132,27 @@ export interface MeetingPointItem {
   autoId: string | number;
   raw: Record<string, unknown>;
 }
+
+export interface PartyAdvanceItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  code: string | number;
+  entryDate: string;
+  billDueDate: string;
+  vendorName: string;
+  description: string;
+  status: string;
+  raw: Record<string, unknown>;
+}
+
+export interface SadhakAdvanceItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  code: string | number;
+  entryDate: string;
+  billDueDate: string;
+  employeeName: string;
+  description: string;
+  status: string;
+  raw: Record<string, unknown>;
+}
