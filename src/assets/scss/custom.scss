@@ -867,3 +867,8 @@ iframe {
   flex-wrap: nowrap;
   top: -2px;
 }
+.AccountList
+{
+    max-height: 120px;
+    overflow-y: scroll;
+}

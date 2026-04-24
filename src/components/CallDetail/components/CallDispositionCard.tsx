@@ -1,29 +1,70 @@
 import React, { useEffect, useRef, useState } from "react";
 import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.css";
+
+import {
+  getCallTypesApi,
+  getCallSubTypesApi,
+  getCallSubTypeConfigApi,
+} from "src/api/callDispositionApi";
+
+
+interface CallType {
+  call_type_id: number;
+  call_type: string;
+}
+
+interface CallSubType {
+  call_type_did: number;
+  call_type_dtl: string;
+  call_type_desc: string | null;
+  call_sub_type_id: string;
+}
+
+interface DynamicField {
+  config_id: number;
+  config_name: string;
+  field_type: string;
+  field_values: string;
+}
 
 const CallDispositionCard = () => {
-
   const dateRef = useRef<HTMLInputElement>(null);
   const timeRef = useRef<HTMLInputElement>(null);
+  const datePickerRef = useRef<any>(null);
+  const timePickerRef = useRef<any>(null);
 
-  // 🔥 API DATA STATE
-  const [callTypes, setCallTypes] = useState<any[]>([]);
-  const [callSubTypes, setCallSubTypes] = useState<any[]>([]);
+  const [callTypes, setCallTypes] = useState<CallType[]>([]);
+  const [callSubTypes, setCallSubTypes] = useState<CallSubType[]>([]);
+  const [selectedCallType, setSelectedCallType] = useState<number>(0);
+  const [wrapNotes, setWrapNotes] = useState("");
+  const [dynamicFields, setDynamicFields] = useState<DynamicField[]>([]);
+  const [dynamicValues, setDynamicValues] = useState<Record<number, string>>({});
 
-  const [selectedCallType, setSelectedCallType] = useState("");
-  const [selectedCallSubType, setSelectedCallSubType] = useState("");
+  // ⭐ Convert API time to Date
+  const convertTimeStringToDate = (timeStr: string) => {
+    const [time, modifier] = timeStr.trim().split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
 
-  // ---------------- DATE TIME PICKER ----------------
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(minutes);
+    return date;
+  };
+
+  // ⭐ Flatpickr Init
   useEffect(() => {
-    if (dateRef.current) {
-      flatpickr(dateRef.current, {
+    if (dateRef.current && !datePickerRef.current) {
+      datePickerRef.current = flatpickr(dateRef.current, {
         dateFormat: "d M Y",
         minDate: "today",
       });
     }
 
-    if (timeRef.current) {
-      flatpickr(timeRef.current, {
+    if (timeRef.current && !timePickerRef.current) {
+      timePickerRef.current = flatpickr(timeRef.current, {
         enableTime: true,
         noCalendar: true,
         dateFormat: "h:i K",
@@ -31,85 +72,163 @@ const CallDispositionCard = () => {
     }
   }, []);
 
-  // ---------------- CALL TYPES API ----------------
+  // ⭐ Load Call Types
   useEffect(() => {
-    fetchCallTypes();
+    loadCallTypes();
   }, []);
 
-  const fetchCallTypes = async () => {
+  const loadCallTypes = async () => {
     try {
-      const res = await fetch(
-        "https://deverp.narayanseva.org/erp/CRM/getCallTypes?calltypeid=0&dataflag=GANGOTRI&pageindex=1&pagesize=16"
-      );
-      const data = await res.json();
-
-      setCallTypes(data?.Data || []);
+      const res = await getCallTypesApi();
+      setCallTypes(res?.Data || []);
     } catch (err) {
-      console.error("Call Types Error", err);
+      console.error("CallTypes error", err);
     }
   };
 
-  // ---------------- CALL SUB TYPES API ----------------
-  const fetchCallSubTypes = async (callTypeId: string) => {
-    try {
-      const res = await fetch(
-        `https://deverp.narayanseva.org/erp/CRM/getCallSubType?calltypedid=${callTypeId}&status=I&pageindex=1&pagesize=10`
-      );
-      const data = await res.json();
+  // ⭐ Load Call SubTypes
+  useEffect(() => {
+    if (!selectedCallType) return;
+    loadCallSubTypes();
+  }, [selectedCallType]);
 
-      setCallSubTypes(data?.Data || []);
+  const loadCallSubTypes = async () => {
+    try {
+      const res = await getCallSubTypesApi(selectedCallType);
+      setCallSubTypes(res?.Data || []);
     } catch (err) {
-      console.error("Call SubTypes Error", err);
+      console.error("CallSubTypes error", err);
     }
+  };
+
+  // ⭐ SubType change → Load Config + Dynamic Fields
+  const handleSubTypeChange = async (subTypeId: number) => {
+    if (!subTypeId) return;
+
+    const selected = callSubTypes.find(x => x.call_type_did === subTypeId);
+    setWrapNotes(selected?.call_type_desc || "");
+    setDynamicFields([]);
+    setDynamicValues({});
+
+    const configId = selected?.call_sub_type_id;
+    if (!configId) {
+      datePickerRef.current?.clear();
+      timePickerRef.current?.clear();
+      return;
+    }
+
+    try {
+      const data = await getCallSubTypeConfigApi(configId);
+      const allConfigs = data?.Data || [];
+
+      // Dynamic fields
+      const fields = allConfigs.filter((x: any) => {
+        const type = x.config_type?.toLowerCase().trim();
+        return type === "field for pupup" || type === "url";
+      });
+      setDynamicFields(fields);
+
+      // Call back config
+      const callBackConfig = allConfigs.find(
+        (x: any) => x.config_type?.toLowerCase().trim() === "call back"
+      );
+
+      if (!callBackConfig) {
+        datePickerRef.current?.clear();
+        timePickerRef.current?.clear();
+        return;
+      }
+
+      const followUpDate = new Date();
+      followUpDate.setDate(
+        followUpDate.getDate() + (callBackConfig.call_back_days || 0)
+      );
+      datePickerRef.current?.setDate(followUpDate, true);
+
+      if (callBackConfig.call_back_time) {
+        const timeDate = convertTimeStringToDate(callBackConfig.call_back_time);
+        timePickerRef.current?.setDate(timeDate, true);
+      } else {
+        timePickerRef.current?.clear();
+      }
+    } catch (err) {
+      console.error("Config error", err);
+    }
+  };
+
+  const parseFieldValues = (fieldValues: string) =>
+    fieldValues.split(",").map(v => v.trim()).filter(v => v);
+
+  const renderDynamicField = (field: DynamicField) => {
+    if (field.field_type === "DD") {
+      return (
+        <select
+          className="form-select form-select-solid"
+          value={dynamicValues[field.config_id] || ""}
+          onChange={(e) =>
+            setDynamicValues(prev => ({
+              ...prev,
+              [field.config_id]: e.target.value,
+            }))
+          }
+        >
+          <option value="">Select {field.config_name}</option>
+          {parseFieldValues(field.field_values).map(val => (
+            <option key={val}>{val}</option>
+          ))}
+        </select>
+      );
+    }
+
+    return (
+      <input
+        type="text"
+        className="form-control form-control-solid"
+        placeholder={`Enter ${field.config_name}`}
+        value={dynamicValues[field.config_id] || ""}
+        onChange={(e) =>
+          setDynamicValues(prev => ({
+            ...prev,
+            [field.config_id]: e.target.value,
+          }))
+        }
+      />
+    );
   };
 
   return (
     <div className="card shadow-sm mb-5 h-100">
-
-      {/* Header */}
       <div className="card-header">
         <div className="card-title w-100 d-flex justify-content-between">
           <div>
             <h3 className="fw-bold mb-0">Call Disposition</h3>
             <span className="text-muted fs-7">Call meta + follow-up</span>
           </div>
-
           <button className="btn btn-primary btn-sm">
             <i className="fa fa-save"></i> Save
           </button>
         </div>
       </div>
 
-      {/* Body */}
       <div className="card-body">
         <div className="row g-5">
 
-          {/* Call ID */}
-          <div className="col-md-12">
-            <label className="form-label fw-semibold">Call ID / Inception</label>
-            <input
-              type="text"
-              className="form-control form-control-solid"
-              defaultValue="CALL-20260224-0007"
-            />
-          </div>
-
-          {/* ---------------- CALL TYPE (API) ---------------- */}
           <div className="col-md-6">
             <label className="form-label fw-semibold">Call Type</label>
             <select
               className="form-select form-select-solid"
-              value={selectedCallType}
               onChange={(e) => {
-                const id = e.target.value;
-                setSelectedCallType(id);
-                setSelectedCallSubType("");
-                fetchCallSubTypes(id);
+                setSelectedCallType(Number(e.target.value));
+                setCallSubTypes([]);
+                setWrapNotes("");
+                setDynamicFields([]);
+                setDynamicValues({});
+                datePickerRef.current?.clear();
+                timePickerRef.current?.clear();
               }}
             >
               <option value="">Select Call Type</option>
-
-              {callTypes.map((item: any) => (
+              {callTypes.map(item => (
                 <option key={item.call_type_id} value={item.call_type_id}>
                   {item.call_type}
                 </option>
@@ -117,78 +236,63 @@ const CallDispositionCard = () => {
             </select>
           </div>
 
-          {/* ---------------- CALL SUB TYPE (API) ---------------- */}
           <div className="col-md-6">
             <label className="form-label fw-semibold">Call Sub Type</label>
             <select
               className="form-select form-select-solid"
-              value={selectedCallSubType}
-              onChange={(e) => setSelectedCallSubType(e.target.value)}
-              disabled={!selectedCallType}
+              onChange={(e) => handleSubTypeChange(Number(e.target.value))}
             >
               <option value="">Select Call Sub Type</option>
-
-              {callSubTypes.map((item: any) => (
-                <option key={item.call_sub_type_id} value={item.call_sub_type_id}>
-                  {item.call_sub_type}
+              {callSubTypes.map(item => (
+                <option key={item.call_type_did} value={item.call_type_did}>
+                  {item.call_type_dtl}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Follow Up Date */}
-          <div className="col-md-6 position-relative">
+          <div className="col-md-6">
             <label className="form-label fw-semibold">Follow-up Date</label>
-            <input
-              ref={dateRef}
-              className="form-control form-control-solid"
-              placeholder="Select Date"
-            />
-            <i className="bi bi-calendar3 input-icon"></i>
+            <input ref={dateRef} className="form-control form-control-solid" />
           </div>
 
-          {/* Follow Up Time */}
-          <div className="col-md-6 position-relative">
+          <div className="col-md-6">
             <label className="form-label fw-semibold">Follow-up Time</label>
-            <input
-              ref={timeRef}
-              className="form-control form-control-solid"
-              placeholder="Select Time"
-            />
-            <i className="bi bi-clock input-icon"></i>
+            <input ref={timeRef} className="form-control form-control-solid" />
           </div>
 
-          {/* Outcome */}
-          <div className="col-12">
-            <label className="form-label fw-semibold">Disposition Outcome</label>
-            <select className="form-select form-select-solid">
-              <option>Interested</option>
-              <option>Callback Requested</option>
-              <option>Not Interested</option>
-              <option>No Answer</option>
-              <option>Wrong Number</option>
-            </select>
-          </div>
-
-          {/* Wrap-up */}
           <div className="col-12">
             <label className="form-label fw-semibold">Wrap-up Notes</label>
             <textarea
               className="form-control form-control-solid"
               rows={3}
-              placeholder="Call summary, objections, next steps..."
+              value={wrapNotes}
+              onChange={(e) => setWrapNotes(e.target.value)}
             />
           </div>
 
-        </div>
+          <div className="col-12 d-flex justify-content-end">
+            <button className="btn btn-light-primary">
+              <i className="fa fa-sms"></i> WhatsApp/SMS
+            </button>
+          </div>
 
-        {/* Bottom button */}
-        <div className="d-flex justify-content-end gap-3 mt-6 flex-wrap">
-          <button className="btn btn-light-primary">
-            <i className="fa fa-sms"></i> WhatsApp/SMS
-          </button>
-        </div>
+          {dynamicFields.length > 0 && (
+            <div className="col-12">
+              <div className="row g-5">
+                {dynamicFields.map(field => (
+                  <div className="col-md-6" key={field.config_id}>
+                    <label className="form-label fw-semibold">
+                      {field.config_name}
+                    </label>
+                    {renderDynamicField(field)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
+        </div>
       </div>
     </div>
   );

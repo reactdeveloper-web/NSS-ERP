@@ -12,4 +12,9 @@ export const masterApiPaths = {
   getCallCategoryList: '/CIT/GetCallCategoryList',
   getCallSubCategoryList: '/CIT/GetCallSubCategoryList',
   getReceiveIdDetailsByFilter:'/DMS/GetReceiveIdDetailsbyFilter',
+  getAccounts: '/CRM/getAccounts',
+  getCallTypes: "/CRM/getCallTypes",
+  getCallSubTypes: "/CRM/getCallSubType",
+  getCallSubTypeConfig: "/CRM/getCallSubTypeConfig",
+  getCallActivities: "/CRM/getCallActivities",
 } as const;
