@@ -6,6 +6,8 @@ import { BillDetailsTable } from './components/BillDetailsTable';
 import { BranchApprovalTable } from './components/BranchApprovalTable';
 import { IssueVerificationTable } from './components/IssueVerificationTable';
 import { MeetingPointTable } from './components/MeetingPointTable';
+import { PartyAdvanceTable } from './components/PartyAdvanceTable';
+import { SadhakAdvanceTable } from './components/SadhakAdvanceTable';
 import { TaskTable } from './components/TaskTable';
 import { TodoList } from './components/TodoList';
 import {
@@ -14,6 +16,8 @@ import {
   DashboardItem,
   IssueVerificationItem,
   MeetingPointItem,
+  PartyAdvanceItem,
+  SadhakAdvanceItem,
   StaticTaskRow,
   TaskItem,
 } from './components/types';
@@ -142,7 +146,7 @@ const getTaskFilterType = (item: DashboardItem) => {
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
-  Boolean(value) && typeof value === 'object';
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
 const getTextByKeys = (record: Record<string, unknown>, keys: string[]) => {
   for (const key of keys) {
@@ -242,6 +246,52 @@ const getDataRecords = (payload: unknown): Record<string, unknown>[] => {
   }
 
   return [];
+};
+
+const unwrapFirstRecord = (record: Record<string, unknown>): Record<string, unknown> => {
+  const directKeys = Object.keys(record);
+
+  if (
+    directKeys.some(key =>
+      [
+        'AR_CODE',
+        'ArCode',
+        'Code',
+        'EDate',
+        'VName',
+        'Audit_Remark',
+        'Stage',
+        'Final_Approve',
+      ].includes(key),
+    )
+  ) {
+    return record;
+  }
+
+  for (const value of Object.values(record)) {
+    if (isRecord(value)) {
+      const nestedKeys = Object.keys(value);
+
+      if (
+        nestedKeys.some(key =>
+          [
+            'AR_CODE',
+            'ArCode',
+            'Code',
+            'EDate',
+            'VName',
+            'Audit_Remark',
+            'Stage',
+            'Final_Approve',
+          ].includes(key),
+        )
+      ) {
+        return value;
+      }
+    }
+  }
+
+  return record;
 };
 
 const normalizeBillDetail = (record: Record<string, unknown>): BillDetailItem => {
@@ -451,6 +501,106 @@ const isMeetingPointItem = (item: DashboardItem) =>
     'meeting points confirmation pending',
   ].includes(normalizeLabel(item.Description));
 
+const getPartyAdvanceStatus = (record: Record<string, unknown>) => {
+  const stage = normalizeLabel(getTextByKeys(record, ['Stage', 'stage']));
+  const finalApprove = normalizeLabel(
+    getTextByKeys(record, ['Final_Approve', 'FinalApprove', 'finalApprove']),
+  );
+  const status = normalizeLabel(getTextByKeys(record, ['Status', 'status']));
+
+  if (['closed', 'c'].includes(stage) || ['closed', 'c'].includes(status)) {
+    return 'Closed';
+  }
+
+  if (
+    ['yes', 'y', 'approved'].includes(finalApprove) ||
+    ['yes', 'y', 'approved'].includes(status)
+  ) {
+    return 'Yes';
+  }
+
+  if (
+    ['no', 'n', 'rejected', 'reject'].includes(finalApprove) &&
+    !['p', 'pending'].includes(stage) &&
+    status !== 'pending'
+  ) {
+    return 'No';
+  }
+
+  if (
+    ['p', 'pending'].includes(stage) ||
+    ['pending'].includes(status) ||
+    finalApprove === 'no'
+  ) {
+    return 'Pending';
+  }
+
+  return 'Pending';
+};
+
+const normalizePartyAdvance = (record: Record<string, unknown>): PartyAdvanceItem => {
+  const source = unwrapFirstRecord(record);
+
+  return {
+    RowNumber: Number(getTextByKeys(source, ['RowNumber', 'rowNumber']) || 0),
+    RecordCount: Number(getTextByKeys(source, ['RecordCount', 'recordCount']) || 0),
+    code: getTextByKeys(source, ['AR_CODE', 'ArCode', 'Code', 'code']),
+    entryDate: String(
+      getTextByKeys(source, ['EDate', 'EntryDate', 'entryDate', 'FTDate']),
+    ),
+    billDueDate: String(
+      getTextByKeys(source, ['EDate', 'BillDueDate', 'billDueDate', 'DueDate', 'FTDate']),
+    ),
+    vendorName: String(
+      getTextByKeys(source, ['VName', 'VendorName', 'vendorName', 'V_Name']),
+    ),
+    description: String(
+      getTextByKeys(source, [
+        'Audit_Remark',
+        'AuditRemark',
+        'Description',
+        'description',
+        'Event_Name',
+      ]),
+    ),
+    status: getPartyAdvanceStatus(source),
+    raw: source,
+  };
+};
+
+const isPartyAdvanceItem = (item: DashboardItem) =>
+  normalizeLabel(item.Panel) === 'party advance' ||
+  normalizeLabel(item.Description) === 'party advance pending' ||
+  item.PanelId === 6;
+
+const isSadhakAdvanceItem = (item: DashboardItem) =>
+  normalizeLabel(item.Panel) === 'sadhak advance' ||
+  normalizeLabel(item.Description) === 'sadhak advance pending';
+
+const normalizeSadhakAdvance = (record: Record<string, unknown>): SadhakAdvanceItem => {
+  const source = unwrapFirstRecord(record);
+
+  return {
+    RowNumber: Number(getTextByKeys(source, ['RowNumber', 'rowNumber']) || 0),
+    RecordCount: Number(getTextByKeys(source, ['RecordCount', 'recordCount']) || 0),
+    code: getTextByKeys(source, ['AR_CODE', 'ArCode', 'Code', 'code']),
+    entryDate: String(
+      getTextByKeys(source, ['EDate', 'EntryDate', 'entryDate', 'FTDate']),
+    ),
+    billDueDate: String(
+      getTextByKeys(source, ['EDate', 'BillDueDate', 'billDueDate', 'DueDate', 'FTDate']),
+    ),
+    employeeName: String(
+      getTextByKeys(source, ['Emp_Name', 'EmpName', 'employeeName']),
+    ),
+    description: String(
+      getTextByKeys(source, ['Description', 'description', 'Advance_For']),
+    ),
+    status: getPartyAdvanceStatus(source),
+    raw: source,
+  };
+};
+
 const getEmployeeRecords = (payload: unknown): Record<string, unknown>[] => {
   if (Array.isArray(payload)) {
     return payload.filter(isRecord);
@@ -544,10 +694,15 @@ export const DashboardContent: React.FC = () => {
     IssueVerificationItem[]
   >([]);
   const [meetingPoints, setMeetingPoints] = useState<MeetingPointItem[]>([]);
+  const [partyAdvances, setPartyAdvances] = useState<PartyAdvanceItem[]>([]);
+  const [sadhakAdvances, setSadhakAdvances] = useState<SadhakAdvanceItem[]>([]);
+  const [partyAdvanceDebug, setPartyAdvanceDebug] = useState<unknown>(null);
   const [showBillDetails, setShowBillDetails] = useState(false);
   const [showBranchApprovals, setShowBranchApprovals] = useState(false);
   const [showIssueVerifications, setShowIssueVerifications] = useState(false);
   const [showMeetingPoints, setShowMeetingPoints] = useState(false);
+  const [showPartyAdvances, setShowPartyAdvances] = useState(false);
+  const [showSadhakAdvances, setShowSadhakAdvances] = useState(false);
   const [showStaticTable, setShowStaticTable] = useState(false);
   const [taskPageNumber, setTaskPageNumber] = useState(1);
   const [taskPageSize, setTaskPageSize] = useState(10);
@@ -573,10 +728,15 @@ export const DashboardContent: React.FC = () => {
     setBranchApprovals([]);
     setIssueVerifications([]);
     setMeetingPoints([]);
+    setPartyAdvances([]);
+    setSadhakAdvances([]);
+    setPartyAdvanceDebug(null);
     setShowBillDetails(false);
     setShowBranchApprovals(false);
     setShowIssueVerifications(false);
     setShowMeetingPoints(false);
+    setShowPartyAdvances(false);
+    setShowSadhakAdvances(false);
 
     if (item.source === 'static') {
       setTasks([]);
@@ -620,6 +780,85 @@ export const DashboardContent: React.FC = () => {
         setMeetingPoints([]);
         setTaskTotalCount(0);
         setError('Unable to load meeting points listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isSadhakAdvanceItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowSadhakAdvances(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetSadhakAdvanceApproval', {
+          empnum: getEmpNum(),
+          DataFlag: getDataFlag(),
+          Type: 2,
+          EmpName: '',
+          PageIndex: pageNumber,
+          PageSize: pageSize,
+        });
+        console.log('Sadhak advance response', response.data);
+        const advanceRows = getDataRecords(response.data).map(normalizeSadhakAdvance);
+        const totalRecords =
+          response.data?.Meta?.TotalRecords ||
+          response.data?.meta?.totalRecords ||
+          advanceRows[0]?.RecordCount ||
+          item.RecordCount ||
+          0;
+
+        setSadhakAdvances(advanceRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setSadhakAdvances([]);
+        setTaskTotalCount(0);
+        setError('Unable to load sadhak advance listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isPartyAdvanceItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowPartyAdvances(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetPartyAdvanceApproval', {
+          empnum: getEmpNum(),
+          DataFlag: getDataFlag(),
+          Type: 2,
+          VendorName: '',
+          PageIndex: pageNumber,
+          PageSize: pageSize,
+        });
+        console.log('Party advance response', response.data);
+        setPartyAdvanceDebug(response.data);
+        const advanceRows = getDataRecords(response.data).map(normalizePartyAdvance);
+        const totalRecords =
+          response.data?.Meta?.TotalRecords ||
+          response.data?.meta?.totalRecords ||
+          advanceRows[0]?.RecordCount ||
+          item.RecordCount ||
+          0;
+
+        setPartyAdvances(advanceRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setPartyAdvances([]);
+        setTaskTotalCount(0);
+        setError('Unable to load party advance listing.');
       } finally {
         setLoadingTasks(false);
       }
@@ -906,6 +1145,48 @@ export const DashboardContent: React.FC = () => {
               ) : showMeetingPoints ? (
                 <MeetingPointTable
                   meetings={meetingPoints}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                />
+              ) : showPartyAdvances ? (
+                <>
+                  <PartyAdvanceTable
+                    advances={partyAdvances}
+                    loading={loadingTasks}
+                    pageNumber={taskPageNumber}
+                    pageSize={taskPageSize}
+                    totalCount={taskTotalCount}
+                    onPageChange={handleTaskPageChange}
+                    onPageSizeChange={handleTaskPageSizeChange}
+                  />
+                  {partyAdvanceDebug && (
+                    <div className="card mt-5">
+                      <div className="card-header">
+                        <h3 className="card-title">Party Advance Debug</h3>
+                      </div>
+                      <div className="card-body">
+                        <pre
+                          style={{
+                            margin: 0,
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word',
+                            maxHeight: '420px',
+                            overflow: 'auto',
+                          }}
+                        >
+                          {JSON.stringify(partyAdvanceDebug, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : showSadhakAdvances ? (
+                <SadhakAdvanceTable
+                  advances={sadhakAdvances}
                   loading={loadingTasks}
                   pageNumber={taskPageNumber}
                   pageSize={taskPageSize}
