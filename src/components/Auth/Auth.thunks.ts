@@ -38,13 +38,13 @@ export const loadUser = (payload?: ReqUserActivity) => async dispatch => {
 export const login = (payload: ReqLogin) => async dispatch => {
   try {
     const res = await axiosInstance.post(`/login/UserLogin`, payload);
-    // const res = await axios.post('/api/erp/login/UserLogin', payload);
-    // const res = await axios.post(
-    //   'https://deverp.narayanseva.org/erp/login/UserLogin',
-    //   payload,
-    // );
     const allUsers = res.data;
-    let user = allUsers.userData;
+
+    if (!allUsers || typeof allUsers !== 'object' || !allUsers.userData) {
+      throw new Error('Unexpected login response.');
+    }
+
+    const user = allUsers.userData;
     //console.log('login',allUsers);
     if (
       allUsers.userData.status === 'Success' &&
@@ -65,13 +65,14 @@ export const login = (payload: ReqLogin) => async dispatch => {
       //dispatch(loadUser(reqUserActivity));
       return;
     }
+
     dispatch(
       setAlert({
         msg: 'Invalid credentials',
         type: AlertTypes.ERROR,
       }),
     );
-    //return dispatch(actions.loginFailed());
+    return dispatch(actions.loginFailed());
   } catch (error) {
     dispatch(
       setAlert({
