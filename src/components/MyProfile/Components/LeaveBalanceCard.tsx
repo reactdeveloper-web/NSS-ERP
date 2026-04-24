@@ -6,7 +6,7 @@ export const LeaveBalanceCard = () => {
       <div className="card card-xl-stretch mb-xl-4 shadow-sm">
 
         {/* HEADER */}
-        <div className="card-header border-0 pt-5">
+        <div className="card-header pt-3 pb-3">
           <h3 className="card-title align-items-start flex-column">
             <span className="card-label fw-bolder fs-3 mb-1">
               Leave Balance Status
