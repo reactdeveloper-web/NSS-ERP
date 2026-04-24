@@ -9,6 +9,7 @@ import { App } from './App/App';
 import { Provider } from 'react-redux';
 import { store } from './redux';
 import "flatpickr/dist/flatpickr.min.css";
+import 'src/redux/interceptor';
 
 ReactDOM.render(
   <React.StrictMode>
