@@ -156,3 +156,184 @@ export interface SadhakAdvanceItem {
   status: string;
   raw: Record<string, unknown>;
 }
+
+export interface PaymentTermsVerifyItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  qcsAppCode: string | number;
+  poId: string | number;
+  quotationNo: string | number;
+  autoId: string | number;
+  vendorName: string;
+  vendorId: string | number;
+  paymentTerm: string;
+  paymentType: string;
+  payDate: string;
+  scopeOfWork: string;
+  amount: string | number;
+  status: string;
+  remark: string;
+  qcsFiles: string;
+  orderLink: string;
+  verifyTermsList: Array<{
+    srno: string | number;
+    amcSrno: string | number;
+    workComplete: string;
+    maintenanceDesc: string;
+    maintenanceRemark: string;
+  }>;
+  raw: Record<string, unknown>;
+}
+
+export interface PurchaseQuotationItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  qcsId: string | number;
+  qcsDate: string;
+  qcsType: string;
+  vendorName1: string;
+  vendorName2: string;
+  vendorName3: string;
+  netTotal1: string | number;
+  netTotal2: string | number;
+  netTotal3: string | number;
+  location: string;
+  qcsFile: string;
+  qcsStage: string;
+  lineItems: Array<{
+    srNo: string | number;
+    itemName: string;
+    quantity: string | number;
+    unit: string;
+    rate1: string | number;
+    rate2: string | number;
+    rate3: string | number;
+    greenColor: string;
+    lastPurchaseHistory: unknown[];
+  }>;
+  paymentTerms: Array<{
+    payTerms: string;
+    percentage: string | number;
+    assignToName: string;
+  }>;
+  termsAndConditions: unknown[];
+  raw: Record<string, unknown>;
+}
+
+export interface RrsStatusItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  id: string | number;
+  employeeName: string;
+  storeName: string;
+  itemName: string;
+  employeeMobile: string;
+  rrsType: string;
+  raw: Record<string, unknown>;
+}
+
+export interface MaterialQualityItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  rmId: string | number;
+  poNo: string | number;
+  date: string;
+  vendorName: string;
+  mobile: string;
+  sadhakName: string;
+  storeName: string;
+  lineItems: Array<{
+    rrsFor: string | number;
+    demandBy: string | number;
+    sadhakName: string;
+    itemName: string;
+    amount: string | number;
+    poSrNo: string | number;
+    companyName: string;
+    pendingQuantity: string | number;
+    unit: string;
+    qmCode: string | number;
+    qmStatus: string;
+    remark: string;
+    qualityQuestions: unknown[];
+  }>;
+  raw: Record<string, unknown>;
+}
+
+export interface LeaveApprovalItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  leaveId: string | number;
+  sadhakName: string;
+  applyDate: string;
+  fromDate: string;
+  toDate: string;
+  applied: string | number;
+  leaveType: string;
+  leaveDay: string;
+  chargeGiven: string;
+  sanction: string;
+  department: string;
+  reason: string;
+  raw: Record<string, unknown>;
+}
+
+export interface ActionOnRecruitmentItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  applicationNo: string | number;
+  name: string;
+  dob: string;
+  sex: string;
+  departmentName: string;
+  postName: string;
+  salary: string | number;
+  raw: Record<string, unknown>;
+}
+
+export interface WorkOrderItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  orderNo: string | number;
+  date: string;
+  createdBy: string;
+  vendorName1: string;
+  vendorName2: string;
+  vendorName3: string;
+  netAmount1: string | number;
+  netAmount2: string | number;
+  netAmount3: string | number;
+  closeRenewed: string;
+  contractType: string;
+  place: string;
+  scopeOfWork: string;
+  filePath: string;
+  status: string;
+  lineItems: Array<{
+    srNo: string | number;
+    workScope: string;
+    totalPrice1: string | number;
+    totalPrice2: string | number;
+    totalPrice3: string | number;
+    insurance: string;
+    dateFrom: string;
+    dateTo: string;
+    remark: string;
+  }>;
+  paymentTerms: Array<{
+    payTerms: string;
+    percentage: string | number;
+    amount: string | number;
+    payType: string;
+    assignToName: string;
+    ptVerificationRequired: string;
+  }>;
+  termsAndConditions: Array<{
+    id: string | number;
+    srNo: string | number;
+    particulars: string;
+    description: string;
+    selected: boolean;
+  }>;
+  raw: Record<string, unknown>;
+}

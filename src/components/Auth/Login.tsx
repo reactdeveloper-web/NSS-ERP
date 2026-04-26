@@ -26,14 +26,13 @@ const _Login = (props: Props) => {
 
   const onFinish = async formData => {
     try {
-      //console.log('hello',formData);
-      //setLoading(true);
+      setLoading(true);
       await login(formData);
     } catch (error: any) {
       message.error(error.message);
       setError(error.payload.message);
     } finally {
-      // setLoading(false); // ✅ stop loader
+      setLoading(false);
     }
   };
 
@@ -137,7 +136,7 @@ const _Login = (props: Props) => {
                     >
                       <Input
                         className="form-control fs-5 fw-normal ps-10 pe-10"
-                        type={showPassword ? 'text' : 'password'} // ⭐ toggle here
+                        type={showPassword ? 'text' : 'password'} // â­ toggle here
                         placeholder="Enter your Password"
                       />
                     </Form.Item>
@@ -148,7 +147,7 @@ const _Login = (props: Props) => {
                         showPassword ? IMAGEPATH.EYE_OPEN : IMAGEPATH.EYE_CLOSE
                       }
                       alt="toggle password"
-                      onClick={() => setShowPassword(!showPassword)} // ⭐ toggle click
+                      onClick={() => setShowPassword(!showPassword)} // â­ toggle click
                       style={{ cursor: 'pointer' }}
                       className="position-absolute end-0 me-2 top-0 mt-4"
                     />

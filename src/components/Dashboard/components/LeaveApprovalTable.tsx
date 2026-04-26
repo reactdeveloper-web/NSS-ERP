@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { IssueVerificationItem } from './types';
+import { LeaveApprovalItem } from './types';
 
-interface IssueVerificationTableProps {
-  issues: IssueVerificationItem[];
+interface LeaveApprovalTableProps {
+  leaves: LeaveApprovalItem[];
   loading: boolean;
   pageNumber: number;
   pageSize: number;
@@ -13,8 +13,8 @@ interface IssueVerificationTableProps {
   onSearchChange?: (search: string) => void;
 }
 
-interface IssueVerificationModalProps {
-  issue: IssueVerificationItem | null;
+interface LeaveApprovalModalProps {
+  leave: LeaveApprovalItem | null;
   onClose: () => void;
 }
 
@@ -26,11 +26,18 @@ const formatValue = (value: unknown) => {
   return String(value);
 };
 
-const getStatusBadgeClass = (status: string) =>
-  status.toLowerCase() === 'yes' ? 'badge-light-success' : 'badge-light-warning';
+const getSanctionText = (value: string) => {
+  const normalizedValue = value.trim().toLowerCase();
 
-export const IssueVerificationTable = ({
-  issues,
+  if (['y', 'yes', 'approve', 'approved', 'a'].includes(normalizedValue)) {
+    return 'Yes';
+  }
+
+  return 'No';
+};
+
+export const LeaveApprovalTable = ({
+  leaves,
   loading,
   pageNumber,
   pageSize,
@@ -39,33 +46,34 @@ export const IssueVerificationTable = ({
   onPageSizeChange,
   searchValue,
   onSearchChange,
-}: IssueVerificationTableProps) => {
-  const [selectedIssue, setSelectedIssue] =
-    useState<IssueVerificationItem | null>(null);
+}: LeaveApprovalTableProps) => {
+  const [selectedLeave, setSelectedLeave] = useState<LeaveApprovalItem | null>(null);
   const [localSearch, setLocalSearch] = useState('');
   const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
   const isSearchActive = normalizedSearch.length >= 3;
-  const filteredIssues = useMemo(() => {
+  const filteredLeaves = useMemo(() => {
     if (!isSearchActive) {
-      return issues;
+      return leaves;
     }
 
-    return issues.filter(issue =>
+    return leaves.filter(leave =>
       [
-        issue.srNo,
-        issue.issueDate,
-        issue.sadhakName,
-        issue.category,
-        issue.itemName,
-        issue.quantityIssued,
-        issue.status,
+        leave.sadhakName,
+        leave.applyDate,
+        leave.fromDate,
+        leave.toDate,
+        leave.applied,
+        leave.leaveType,
+        leave.leaveDay,
+        leave.chargeGiven,
+        getSanctionText(leave.sanction),
       ]
-        .map(value => String(value ?? ''))
+        .map(formatValue)
         .some(value => value.toLowerCase().includes(normalizedSearch)),
     );
-  }, [isSearchActive, issues, normalizedSearch]);
-  const displayTotalCount = isSearchActive ? filteredIssues.length : totalCount;
+  }, [isSearchActive, leaves, normalizedSearch]);
+  const displayTotalCount = isSearchActive ? filteredLeaves.length : totalCount;
   const displayPageNumber = isSearchActive ? 1 : pageNumber;
   const totalPages = Math.max(1, Math.ceil(displayTotalCount / pageSize));
   const startRecord =
@@ -91,7 +99,7 @@ export const IssueVerificationTable = ({
         <div className="card-header pt-3 pb-3">
           <h3 className="card-title align-items-start flex-column">
             <span className="card-label fw-bolder fs-3 mb-1">
-              Issue Verification
+              Leave or Tour Records
             </span>
             <span className="text-muted mt-1 fw-bold fs-7">
               {displayTotalCount} records
@@ -120,46 +128,51 @@ export const IssueVerificationTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th width="8%">Sr No.</th>
-                      <th width="12%">Issue Date</th>
                       <th width="18%">Sadhak Name</th>
-                      <th width="18%">Category</th>
-                      <th width="24%">Item Name</th>
-                      <th width="10%">Quantity Issued</th>
-                      <th className="text-center" width="10%">
-                        Status
-                      </th>
+                      <th width="12%">Apply Date</th>
+                      <th width="16%">Apply From - To</th>
+                      <th width="9%">Applied</th>
+                      <th width="14%">Leave Type</th>
+                      <th width="11%">Leave Day</th>
+                      <th width="14%">Charge Given</th>
+                      <th width="6%">Sanction</th>
                     </tr>
                   </thead>
 
                   <tbody>
-                    {filteredIssues.map((issue, index) => (
-                      <tr key={`${issue.issueId}-${issue.srNo}-${index}`}>
-                        <td>{formatValue(issue.srNo)}</td>
-                        <td>{formatValue(issue.issueDate)}</td>
-                        <td>{formatValue(issue.sadhakName)}</td>
-                        <td>{formatValue(issue.category)}</td>
-                        <td>{formatValue(issue.itemName)}</td>
+                    {filteredLeaves.map((leave, index) => (
+                      <tr key={`${leave.leaveId}-${index}`}>
                         <td>
-                          {formatValue(issue.quantityIssued)}{' '}
-                          {formatValue(issue.unit)}
+                          <div className="fw-bold text-dark">
+                            {formatValue(leave.sadhakName)}
+                          </div>
                         </td>
-                        <td className="text-center">
+                        <td>{formatValue(leave.applyDate)}</td>
+                        <td>
+                          {formatValue(leave.fromDate)} To {formatValue(leave.toDate)}
+                        </td>
+                        <td>{formatValue(leave.applied)}</td>
+                        <td>{formatValue(leave.leaveType)}</td>
+                        <td>{formatValue(leave.leaveDay)}</td>
+                        <td>{formatValue(leave.chargeGiven)}</td>
+                        <td>
                           <span
-                            className={`badge fs-8 fw-bolder ${getStatusBadgeClass(
-                              issue.status,
-                            )}`}
+                            className={`badge fs-8 fw-bolder ${
+                              getSanctionText(leave.sanction) === 'Yes'
+                                ? 'badge-light-success'
+                                : 'badge-light-warning'
+                            }`}
                           >
-                            {formatValue(issue.status)}
+                            {getSanctionText(leave.sanction)}
                           </span>
                         </td>
                       </tr>
                     ))}
 
-                    {!filteredIssues.length && (
+                    {!filteredLeaves.length && (
                       <tr>
-                        <td colSpan={7} className="text-center text-muted fw-bold">
-                          No issue verification records found.
+                        <td colSpan={8} className="text-center text-muted fw-bold">
+                          No leave records found.
                         </td>
                       </tr>
                     )}
@@ -181,6 +194,7 @@ export const IssueVerificationTable = ({
                 <option value={10}>10</option>
                 <option value={25}>25</option>
                 <option value={50}>50</option>
+                <option value={100}>100</option>
               </select>
               <span className="text-muted fs-7">per page</span>
             </div>
@@ -242,33 +256,28 @@ export const IssueVerificationTable = ({
         </div>
       </div>
 
-      <IssueVerificationModal
-        issue={selectedIssue}
-        onClose={() => setSelectedIssue(null)}
+      <LeaveApprovalModal
+        leave={selectedLeave}
+        onClose={() => setSelectedLeave(null)}
       />
     </>
   );
 };
 
-const IssueVerificationModal = ({
-  issue,
-  onClose,
-}: IssueVerificationModalProps) => {
+const LeaveApprovalModal = ({ leave, onClose }: LeaveApprovalModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [status, setStatus] = useState('No');
 
   useEffect(() => {
-    if (!issue) {
+    if (!leave) {
       return;
     }
 
-    setStatus(issue.status || 'No');
     const animationFrame = window.requestAnimationFrame(() => setIsOpen(true));
 
     return () => window.cancelAnimationFrame(animationFrame);
-  }, [issue]);
+  }, [leave]);
 
-  if (!issue) {
+  if (!leave) {
     return null;
   }
 
@@ -287,19 +296,23 @@ const IssueVerificationModal = ({
         className={`dashboard-slide-modal ${isOpen ? 'is-open' : ''}`}
         role="dialog"
         aria-modal="true"
-        aria-label="Issue verification detail"
+        aria-label="Leave approval detail"
       >
         <div className="dashboard-slide-header">
           <div>
             <h4 className="mb-1 dashboard-panel-title fs-3">
-              Issue Verification Detail
+              Leave or Tour Records
             </h4>
             <div className="text-primary mt-1 fs-6">
-              Issue ID: {formatValue(issue.issueId)} | Sr No:{' '}
-              {formatValue(issue.srNo)}
+              Leave ID: {formatValue(leave.leaveId)}
+              <span className="mx-5">
+                Sanction: {getSanctionText(leave.sanction)}
+              </span>
+            </div>
+            <div className="text-muted mt-1 fw-bold fs-6">
+              {formatValue(leave.sadhakName)}
             </div>
           </div>
-
           <button
             type="button"
             className="btn btn-sm btn-icon btn-active-color-primary"
@@ -313,109 +326,67 @@ const IssueVerificationModal = ({
         <div className="dashboard-slide-body dashboard-bill-panel-body">
           <section className="card p-4 mb-3 border">
             <div className="row g-4">
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Item Name</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.itemName)}
+              <div className="col-sm-4">
+                <div className="dashboard-bill-label">Department</div>
+                <div className="dashboard-bill-text fw-bold">
+                  {formatValue(leave.department)}
+                </div>
+              </div>
+              <div className="col-sm-4">
+                <div className="dashboard-bill-label">Apply Date</div>
+                <div className="dashboard-bill-text fw-bold">
+                  {formatValue(leave.applyDate)}
+                </div>
+              </div>
+              <div className="col-sm-4">
+                <div className="dashboard-bill-label">Leave Type</div>
+                <div className="dashboard-bill-text fw-bold">
+                  {formatValue(leave.leaveType)}
+                </div>
+              </div>
+              <div className="col-sm-4">
+                <div className="dashboard-bill-label">From Date</div>
+                <div className="dashboard-bill-text fw-bold">
+                  {formatValue(leave.fromDate)}
+                </div>
+              </div>
+              <div className="col-sm-4">
+                <div className="dashboard-bill-label">To Date</div>
+                <div className="dashboard-bill-text fw-bold">
+                  {formatValue(leave.toDate)}
+                </div>
+              </div>
+              <div className="col-sm-4">
+                <div className="dashboard-bill-label">Total Leave</div>
+                <div className="dashboard-bill-text fw-bold">
+                  {formatValue(leave.applied)}
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="dashboard-bill-label">Charge Given</div>
+                <div className="dashboard-bill-text fw-bold">
+                  {formatValue(leave.chargeGiven)}
+                </div>
+              </div>
+              <div className="col-sm-6">
+                <div className="dashboard-bill-label">Leave Day</div>
+                <div className="dashboard-bill-text fw-bold">
+                  {formatValue(leave.leaveDay)}
+                </div>
+              </div>
+              <div className="col-12">
+                <div className="dashboard-bill-label">Reason</div>
+                <div className="dashboard-bill-text">
+                  {formatValue(leave.reason)}
+                </div>
               </div>
             </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Issue Date</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.issueDate)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Sadhak Name</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.sadhakName)}
-              </div>
-              <div className="text-muted fs-8">
-                Emp ID: {formatValue(issue.empId)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">HandOver / OPD ID</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.handedOver)} {formatValue(issue.handOverOpdId)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Category</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.category)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-amount-strip rounded fs-6">
-                <span>Quantity Issued</span>
-                <strong className="fs-3">
-                  {formatValue(issue.quantityIssued)} {formatValue(issue.unit)}
-                </strong>
-              </div>
-            </div>
-          </div>
-          </section>
-
-          <section className="card p-4 mb-3 border">
-            <h5 className="dashboard-bill-section-title">Issue Verification</h5>
-            <div className="dashboard-bill-text mb-3">
-              Take this item form store to {formatValue(issue.sadhakName)}
-            </div>
-            <div className="d-flex gap-4">
-              <label className="form-check form-check-custom form-check-solid">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="issue-verification-status"
-                  checked={status.toLowerCase() === 'yes'}
-                  onChange={() => setStatus('Yes')}
-                />
-                <span className="form-check-label fw-bold">Yes</span>
-              </label>
-              <label className="form-check form-check-custom form-check-solid">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="issue-verification-status"
-                  checked={status.toLowerCase() !== 'yes'}
-                  onChange={() => setStatus('No')}
-                />
-                <span className="form-check-label fw-bold">No</span>
-              </label>
-            </div>
-          </section>
-
-          <section className="card p-4 mb-3 border table-responsive">
-            <table className="table table-bordered align-middle dashboard-bill-modal-table">
-              <tbody>
-                <tr>
-                  <th>Item ID</th>
-                  <td>{formatValue(issue.itemId)}</td>
-                </tr>
-                <tr>
-                  <th>RRS ID</th>
-                  <td>{formatValue(issue.rrsId)}</td>
-                </tr>
-                <tr>
-                  <th>CM ID</th>
-                  <td>{formatValue(issue.raw.CM_ID)}</td>
-                </tr>
-                <tr>
-                  <th>Status</th>
-                  <td>{formatValue(status)}</td>
-                </tr>
-              </tbody>
-            </table>
           </section>
         </div>
 
         <div className="dashboard-slide-footer dashboard-bill-action-footer">
           <button type="button" className="btn btn-light" onClick={handleClose}>
-            Cancel
-          </button>
-          <button type="button" className="btn btn-primary">
-            Save
+            Close
           </button>
         </div>
       </aside>

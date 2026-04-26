@@ -9,6 +9,8 @@ interface BranchApprovalTableProps {
   totalCount: number;
   onPageChange: (pageNumber: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  searchValue?: string;
+  onSearchChange?: (search: string) => void;
 }
 
 interface BranchApprovalModalProps {
@@ -66,10 +68,13 @@ export const BranchApprovalTable = ({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  searchValue,
+  onSearchChange,
 }: BranchApprovalTableProps) => {
   const [selectedApproval, setSelectedApproval] =
     useState<BranchApprovalItem | null>(null);
-  const [search, setSearch] = useState('');
+  const [localSearch, setLocalSearch] = useState('');
+  const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
   const isSearchActive = normalizedSearch.length >= 3;
   const filteredApprovals = useMemo(() => {
@@ -130,7 +135,10 @@ export const BranchApprovalTable = ({
               className="form-control form-control-sm form-control-solid w-250px"
               placeholder="Advance Search"
               value={search}
-              onChange={event => setSearch(event.target.value)}
+              onChange={event => {
+                setLocalSearch(event.target.value);
+                onSearchChange?.(event.target.value);
+              }}
             />
           </div>
         </div>
@@ -157,11 +165,7 @@ export const BranchApprovalTable = ({
 
                   <tbody>
                     {filteredApprovals.map((approval, index) => (
-                      <tr
-                        key={`${approval.letterId}-${approval.sadhakId}-${index}`}
-                        className="cursor-pointer"
-                        onClick={() => setSelectedApproval(approval)}
-                      >
+                      <tr key={`${approval.letterId}-${approval.sadhakId}-${index}`}>
                         <td>{formatValue(approval.code)}</td>
                         <td>{formatValue(approval.sadhakId)}</td>
                         <td>{formatValue(approval.letterId)}</td>
@@ -324,8 +328,10 @@ const BranchApprovalModal = ({
       >
         <div className="dashboard-slide-header">
           <div>
-            <h4 className="mb-1">Branch Approval Detail</h4>
-            <div className="text-muted fs-7">
+            <h4 className="mb-1 dashboard-panel-title fs-3">
+              Branch Approval Detail
+            </h4>
+            <div className="text-primary mt-1 fs-6">
               Code: {formatValue(approval.code)} | Letter ID:{' '}
               {formatValue(approval.letterId)}
             </div>
@@ -341,60 +347,67 @@ const BranchApprovalModal = ({
           </button>
         </div>
 
-        <div className="dashboard-slide-body">
-          <div className="row g-4 mb-5">
+        <div className="dashboard-slide-body dashboard-bill-panel-body">
+          <section className="card p-4 mb-3 border">
+            <div className="row g-4">
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Code</label>
-              <div className="fw-bold text-dark">
+              <div className="dashboard-bill-label">Code</div>
+              <div className="dashboard-bill-text fw-bold">
                 {formatValue(approval.code)}
               </div>
             </div>
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                Sadhak ID / Letter ID
-              </label>
-              <div className="fw-bold text-dark">
+              <div className="dashboard-bill-label">Sadhak ID / Letter ID</div>
+              <div className="dashboard-bill-text fw-bold">
                 {formatValue(approval.sadhakId)} /{' '}
                 {formatValue(approval.letterId)}
               </div>
             </div>
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Name</label>
-              <div className="fw-bold text-dark">
+              <div className="dashboard-bill-label">Name</div>
+              <div className="dashboard-bill-text fw-bold">
                 {formatValue(approval.name)}
               </div>
             </div>
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Detail</label>
-              <div className="fw-bold text-dark">
+              <div className="dashboard-bill-label">Detail</div>
+              <div className="dashboard-bill-text fw-bold">
                 {formatValue(approval.detail)}
               </div>
             </div>
           </div>
+          </section>
 
-          <div className="mb-5">
-            <label className="form-label fs-8 text-muted mb-2">View Files</label>
+          <section className="card p-4 mb-3 border">
+            <h5 className="dashboard-bill-section-title">View Files</h5>
             {approval.fileList.length ? (
-              <div className="d-flex flex-column gap-2">
+              <div className="dashboard-bill-link-list">
                 {approval.fileList.map((file, index) => (
                   <a
                     key={`${file.imagePath}-${index}`}
                     href={normalizeFileUrl(file.imagePath)}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-primary text-hover-primary"
+                    className="dashboard-bill-link-item"
                   >
-                    View File {index + 1}
+                    <div className="dashboard-bill-link-icon">
+                      <i className="fa fa-file-text-o" aria-hidden="true" />
+                    </div>
+                    <div className="dashboard-bill-link-content">
+                      <p>View File {index + 1}</p>
+                      <span>{formatValue(file.imagePath)}</span>
+                    </div>
+                    <i className="fa fa-external-link" aria-hidden="true" />
                   </a>
                 ))}
               </div>
             ) : (
               <div className="text-muted fs-7">No files available.</div>
             )}
-          </div>
+          </section>
 
-          <div className="mb-5">
-            <label className="form-label fs-8 text-muted mb-2">Approval</label>
+          <section className="card p-4 mb-3 border">
+            <h5 className="dashboard-bill-section-title">Approval</h5>
             <div className="d-flex gap-3 flex-wrap">
               <label className="form-check form-check-custom form-check-solid">
                 <input
@@ -417,11 +430,12 @@ const BranchApprovalModal = ({
                 <span className="form-check-label fw-bold">Yes</span>
               </label>
             </div>
-          </div>
+          </section>
 
-          <div className="row g-4 mb-5">
+          <section className="card p-4 mb-3 border">
+            <div className="row g-4">
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Amount</label>
+              <div className="dashboard-bill-label">Amount</div>
               <input
                 type="text"
                 className="form-control form-control-sm"
@@ -430,7 +444,7 @@ const BranchApprovalModal = ({
               />
             </div>
             <div className="col-sm-12">
-              <label className="form-label fs-8 text-muted mb-1">Remark</label>
+              <div className="dashboard-bill-label">Remark</div>
               <textarea
                 className="form-control form-control-sm"
                 rows={4}
@@ -439,8 +453,9 @@ const BranchApprovalModal = ({
               />
             </div>
           </div>
+          </section>
 
-          <div className="table-responsive">
+          <section className="card p-4 mb-3 border table-responsive">
             <table className="table table-bordered align-middle dashboard-bill-modal-table">
               <tbody>
                 <tr>
@@ -460,10 +475,10 @@ const BranchApprovalModal = ({
                 </tr>
               </tbody>
             </table>
-          </div>
+          </section>
         </div>
 
-        <div className="dashboard-slide-footer">
+        <div className="dashboard-slide-footer dashboard-bill-action-footer">
           <button type="button" className="btn btn-light" onClick={handleClose}>
             Close
           </button>

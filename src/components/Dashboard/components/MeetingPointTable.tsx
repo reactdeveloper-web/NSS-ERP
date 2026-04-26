@@ -9,6 +9,8 @@ interface MeetingPointTableProps {
   totalCount: number;
   onPageChange: (pageNumber: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  searchValue?: string;
+  onSearchChange?: (search: string) => void;
 }
 
 interface MeetingPointModalProps {
@@ -40,11 +42,14 @@ export const MeetingPointTable = ({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  searchValue,
+  onSearchChange,
 }: MeetingPointTableProps) => {
   const [selectedMeeting, setSelectedMeeting] = useState<MeetingPointItem | null>(
     null,
   );
-  const [search, setSearch] = useState('');
+  const [localSearch, setLocalSearch] = useState('');
+  const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
   const isSearchActive = normalizedSearch.length >= 3;
   const filteredMeetings = useMemo(() => {
@@ -105,7 +110,10 @@ export const MeetingPointTable = ({
               className="form-control form-control-sm form-control-solid w-250px"
               placeholder="Advance Search"
               value={search}
-              onChange={event => setSearch(event.target.value)}
+              onChange={event => {
+                setLocalSearch(event.target.value);
+                onSearchChange?.(event.target.value);
+              }}
             />
           </div>
         </div>
@@ -134,11 +142,7 @@ export const MeetingPointTable = ({
 
                   <tbody>
                     {filteredMeetings.map((meeting, index) => (
-                      <tr
-                        key={`${meeting.code}-${meeting.srNo}-${index}`}
-                        className="cursor-pointer"
-                        onClick={() => setSelectedMeeting(meeting)}
-                      >
+                      <tr key={`${meeting.code}-${meeting.srNo}-${index}`}>
                         <td>{formatValue(meeting.srNo)}</td>
                         <td>{formatValue(meeting.code)}</td>
                         <td>{formatValue(meeting.date)}</td>
@@ -296,12 +300,16 @@ const MeetingPointModal = ({ meeting, onClose }: MeetingPointModalProps) => {
       >
         <div className="dashboard-slide-header">
           <div>
-            <h4 className="mb-1">Meeting Point Detail</h4>
-            <div className="text-muted fs-7">
+            <h4 className="mb-1 dashboard-panel-title fs-3">
+              Meeting Point Detail
+            </h4>
+            <div className="text-primary mt-1 fs-6">
               Code: {formatValue(meeting.code)} | Sr No:{' '}
               {formatValue(meeting.srNo)}
             </div>
-            <div className="fw-bold text-dark">{formatValue(meeting.title)}</div>
+            <div className="text-muted mt-1 fw-bold fs-6">
+              {formatValue(meeting.title)}
+            </div>
           </div>
 
           <button
@@ -314,11 +322,12 @@ const MeetingPointModal = ({ meeting, onClose }: MeetingPointModalProps) => {
           </button>
         </div>
 
-        <div className="dashboard-slide-body">
-          <div className="row g-4 mb-5">
+        <div className="dashboard-slide-body dashboard-bill-panel-body">
+          <section className="card p-4 mb-3 border">
+            <div className="row g-4">
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Assign Name</label>
-              <div className="fw-bold text-dark">
+              <div className="dashboard-bill-label">Assign Name</div>
+              <div className="dashboard-bill-text fw-bold">
                 {formatValue(meeting.assignName)}
               </div>
               <div className="text-muted fs-8">
@@ -326,8 +335,8 @@ const MeetingPointModal = ({ meeting, onClose }: MeetingPointModalProps) => {
               </div>
             </div>
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Owner</label>
-              <div className="fw-bold text-dark">
+              <div className="dashboard-bill-label">Owner</div>
+              <div className="dashboard-bill-text fw-bold">
                 {formatValue(meeting.employeeName)}
               </div>
               <div className="text-muted fs-8">
@@ -336,13 +345,13 @@ const MeetingPointModal = ({ meeting, onClose }: MeetingPointModalProps) => {
               </div>
             </div>
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Priority</label>
-              <div className="fw-bold text-dark">
+              <div className="dashboard-bill-label">Priority</div>
+              <div className="dashboard-bill-text fw-bold">
                 {formatValue(meeting.priority)}
               </div>
             </div>
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Due Date</label>
+              <div className="dashboard-bill-label">Due Date</div>
               <input
                 type="text"
                 className="form-control form-control-sm"
@@ -351,33 +360,39 @@ const MeetingPointModal = ({ meeting, onClose }: MeetingPointModalProps) => {
               />
             </div>
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Date</label>
-              <div className="fw-bold text-dark">{formatValue(meeting.date)}</div>
+              <div className="dashboard-bill-label">Date</div>
+              <div className="dashboard-bill-text fw-bold">
+                {formatValue(meeting.date)}
+              </div>
             </div>
           </div>
+          </section>
 
-          <div className="mb-5">
-            <label className="form-label fs-8 text-muted mb-1">Detail</label>
+          <section className="card p-4 mb-3 border">
+            <h5 className="dashboard-bill-section-title">Meeting Detail</h5>
             <textarea
               className="form-control form-control-sm"
               rows={4}
               value={meeting.detail || ''}
               readOnly
             />
-          </div>
+          </section>
 
-          <div className="mb-5">
-            <label className="form-label fs-8 text-muted mb-1">Remark</label>
+          <section className="card p-4 mb-3 border">
+            <h5 className="dashboard-bill-section-title">Remark</h5>
             <textarea
               className="form-control form-control-sm"
               rows={4}
               value={remark}
               onChange={event => setRemark(event.target.value)}
             />
-          </div>
+          </section>
 
-          <div className="mb-5">
-            <label className="form-label fs-8 text-muted mb-2">Complete</label>
+          <section className="dashboard-bill-flag-grid gap-2">
+            <label className="dashboard-bill-flag-item rounded-pill fs-6 fw-normal p-2 px-4">
+              <i className={`fa ${complete ? 'fa-check-circle' : 'fa-circle-o'} fs-3`} aria-hidden="true" />
+              <span>Complete</span>
+            </label>
             <label className="form-check form-check-custom form-check-solid">
               <input
                 className="form-check-input"
@@ -387,12 +402,10 @@ const MeetingPointModal = ({ meeting, onClose }: MeetingPointModalProps) => {
               />
               <span className="form-check-label fw-bold">Yes</span>
             </label>
-          </div>
+          </section>
 
-          <div className="mb-5">
-            <label className="form-label fs-8 text-muted mb-1">
-              Complete Proof
-            </label>
+          <section className="card p-4 mb-3 border">
+            <h5 className="dashboard-bill-section-title">Complete Proof</h5>
             <input type="file" className="form-control form-control-sm mb-2" />
             {meeting.completeProof ? (
               <a href={meeting.completeProof} target="_blank" rel="noreferrer">
@@ -401,10 +414,10 @@ const MeetingPointModal = ({ meeting, onClose }: MeetingPointModalProps) => {
             ) : (
               <div className="text-muted fs-8">No proof</div>
             )}
-          </div>
+          </section>
 
-          <div className="mb-5">
-            <label className="form-label fs-8 text-muted mb-1">Forward To</label>
+          <section className="card p-4 mb-3 border">
+            <h5 className="dashboard-bill-section-title">Forward To</h5>
             <select
               className="form-select form-select-sm"
               value={forwardedTo}
@@ -412,9 +425,9 @@ const MeetingPointModal = ({ meeting, onClose }: MeetingPointModalProps) => {
             >
               <option value="ALL">ALL</option>
             </select>
-          </div>
+          </section>
 
-          <div className="table-responsive">
+          <section className="card p-4 mb-3 border table-responsive">
             <table className="table table-bordered align-middle dashboard-bill-modal-table">
               <tbody>
                 <tr>
@@ -431,10 +444,10 @@ const MeetingPointModal = ({ meeting, onClose }: MeetingPointModalProps) => {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </section>
         </div>
 
-        <div className="dashboard-slide-footer">
+        <div className="dashboard-slide-footer dashboard-bill-action-footer">
           <button type="button" className="btn btn-light" onClick={handleClose}>
             Cancel
           </button>
