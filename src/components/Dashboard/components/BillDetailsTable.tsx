@@ -155,16 +155,16 @@ export const BillDetailsTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th width="5%">Bill Id</th>
-                      <th width="12%">Bill No</th>
-                      <th width="12%">Bill Date</th>
-                      <th width="22%">Vendor/Sadhak</th>
-                      <th width="27%">Material</th>
+                      <th className='width-5'>Bill Id</th>
+                      <th className='width-12'>Bill No</th>
+                      <th className='width-12'>Bill Date</th>
+                      <th className='width-22'>Vendor/Sadhak</th>
+                      <th className='width-27'>Material</th>
 
-                      <th className="text-end" width="10%">
+                      <th className="text-end width-10">
                         Bill Amount
                       </th>
-                      <th className="text-center" width="10%">
+                      <th className="text-center width-10">
                         Status
                       </th>
                     </tr>

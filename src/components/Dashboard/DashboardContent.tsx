@@ -1619,7 +1619,6 @@ export const DashboardContent: React.FC = () => {
           PageIndex: requestPageNumber,
           PageSize: requestPageSize,
         });
-        console.log('Sadhak advance response', response.data);
         const advanceRows = getDataRecords(response.data).map(normalizeSadhakAdvance);
         const totalRecords =
           response.data?.Meta?.TotalRecords ||

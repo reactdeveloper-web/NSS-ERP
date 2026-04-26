@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { IssueVerificationItem } from './types';
 
 interface IssueVerificationTableProps {
@@ -11,11 +11,6 @@ interface IssueVerificationTableProps {
   onPageSizeChange: (pageSize: number) => void;
   searchValue?: string;
   onSearchChange?: (search: string) => void;
-}
-
-interface IssueVerificationModalProps {
-  issue: IssueVerificationItem | null;
-  onClose: () => void;
 }
 
 const formatValue = (value: unknown) => {
@@ -40,8 +35,6 @@ export const IssueVerificationTable = ({
   searchValue,
   onSearchChange,
 }: IssueVerificationTableProps) => {
-  const [selectedIssue, setSelectedIssue] =
-    useState<IssueVerificationItem | null>(null);
   const [localSearch, setLocalSearch] = useState('');
   const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
@@ -120,13 +113,13 @@ export const IssueVerificationTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th width="8%">Sr No.</th>
-                      <th width="12%">Issue Date</th>
-                      <th width="18%">Sadhak Name</th>
-                      <th width="18%">Category</th>
-                      <th width="24%">Item Name</th>
-                      <th width="10%">Quantity Issued</th>
-                      <th className="text-center" width="10%">
+                      <th className='width-8'>Sr No.</th>
+                      <th className='width-12'>Issue Date</th>
+                      <th className='width-18'>Sadhak Name</th>
+                      <th className='width-18'>Category</th>
+                      <th className='width-24'>Item Name</th>
+                      <th className='width-10'>Quantity Issued</th>
+                      <th className="text-center width-10">
                         Status
                       </th>
                     </tr>
@@ -242,183 +235,6 @@ export const IssueVerificationTable = ({
         </div>
       </div>
 
-      <IssueVerificationModal
-        issue={selectedIssue}
-        onClose={() => setSelectedIssue(null)}
-      />
-    </>
-  );
-};
-
-const IssueVerificationModal = ({
-  issue,
-  onClose,
-}: IssueVerificationModalProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [status, setStatus] = useState('No');
-
-  useEffect(() => {
-    if (!issue) {
-      return;
-    }
-
-    setStatus(issue.status || 'No');
-    const animationFrame = window.requestAnimationFrame(() => setIsOpen(true));
-
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, [issue]);
-
-  if (!issue) {
-    return null;
-  }
-
-  const handleClose = () => {
-    setIsOpen(false);
-    window.setTimeout(onClose, 300);
-  };
-
-  return (
-    <>
-      <div
-        className={`dashboard-slide-backdrop ${isOpen ? 'is-open' : ''}`}
-        onClick={handleClose}
-      />
-      <aside
-        className={`dashboard-slide-modal ${isOpen ? 'is-open' : ''}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Issue verification detail"
-      >
-        <div className="dashboard-slide-header">
-          <div>
-            <h4 className="mb-1 dashboard-panel-title fs-3">
-              Issue Verification Detail
-            </h4>
-            <div className="text-primary mt-1 fs-6">
-              Issue ID: {formatValue(issue.issueId)} | Sr No:{' '}
-              {formatValue(issue.srNo)}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="btn btn-sm btn-icon btn-active-color-primary"
-            aria-label="Close"
-            onClick={handleClose}
-          >
-            <i className="fa fa-times" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div className="dashboard-slide-body dashboard-bill-panel-body">
-          <section className="card p-4 mb-3 border">
-            <div className="row g-4">
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Item Name</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.itemName)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Issue Date</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.issueDate)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Sadhak Name</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.sadhakName)}
-              </div>
-              <div className="text-muted fs-8">
-                Emp ID: {formatValue(issue.empId)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">HandOver / OPD ID</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.handedOver)} {formatValue(issue.handOverOpdId)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Category</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.category)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-amount-strip rounded fs-6">
-                <span>Quantity Issued</span>
-                <strong className="fs-3">
-                  {formatValue(issue.quantityIssued)} {formatValue(issue.unit)}
-                </strong>
-              </div>
-            </div>
-          </div>
-          </section>
-
-          <section className="card p-4 mb-3 border">
-            <h5 className="dashboard-bill-section-title">Issue Verification</h5>
-            <div className="dashboard-bill-text mb-3">
-              Take this item form store to {formatValue(issue.sadhakName)}
-            </div>
-            <div className="d-flex gap-4">
-              <label className="form-check form-check-custom form-check-solid">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="issue-verification-status"
-                  checked={status.toLowerCase() === 'yes'}
-                  onChange={() => setStatus('Yes')}
-                />
-                <span className="form-check-label fw-bold">Yes</span>
-              </label>
-              <label className="form-check form-check-custom form-check-solid">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="issue-verification-status"
-                  checked={status.toLowerCase() !== 'yes'}
-                  onChange={() => setStatus('No')}
-                />
-                <span className="form-check-label fw-bold">No</span>
-              </label>
-            </div>
-          </section>
-
-          <section className="card p-4 mb-3 border table-responsive">
-            <table className="table table-bordered align-middle dashboard-bill-modal-table">
-              <tbody>
-                <tr>
-                  <th>Item ID</th>
-                  <td>{formatValue(issue.itemId)}</td>
-                </tr>
-                <tr>
-                  <th>RRS ID</th>
-                  <td>{formatValue(issue.rrsId)}</td>
-                </tr>
-                <tr>
-                  <th>CM ID</th>
-                  <td>{formatValue(issue.raw.CM_ID)}</td>
-                </tr>
-                <tr>
-                  <th>Status</th>
-                  <td>{formatValue(status)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
-        </div>
-
-        <div className="dashboard-slide-footer dashboard-bill-action-footer">
-          <button type="button" className="btn btn-light" onClick={handleClose}>
-            Cancel
-          </button>
-          <button type="button" className="btn btn-primary">
-            Save
-          </button>
-        </div>
-      </aside>
     </>
   );
 };

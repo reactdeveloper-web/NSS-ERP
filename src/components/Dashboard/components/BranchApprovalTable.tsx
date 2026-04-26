@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { BranchApprovalItem } from './types';
 
 interface BranchApprovalTableProps {
@@ -13,11 +13,6 @@ interface BranchApprovalTableProps {
   onSearchChange?: (search: string) => void;
 }
 
-interface BranchApprovalModalProps {
-  approval: BranchApprovalItem | null;
-  onClose: () => void;
-}
-
 const formatValue = (value: unknown) => {
   if (value === null || value === undefined || value === '') {
     return '-';
@@ -25,12 +20,6 @@ const formatValue = (value: unknown) => {
 
   return String(value);
 };
-
-const normalizeFileUrl = (path: string) =>
-  path
-    .replace(/\\/g, '/')
-    .replace(/^http:\/*/i, 'http://')
-    .replace(/^https:\/*/i, 'https://');
 
 const getStatusBadgeClass = (status: string) => {
   const normalizedStatus = status.toLowerCase();
@@ -71,8 +60,6 @@ export const BranchApprovalTable = ({
   searchValue,
   onSearchChange,
 }: BranchApprovalTableProps) => {
-  const [selectedApproval, setSelectedApproval] =
-    useState<BranchApprovalItem | null>(null);
   const [localSearch, setLocalSearch] = useState('');
   const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
@@ -152,12 +139,12 @@ export const BranchApprovalTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th width="10%">Code</th>
-                      <th width="12%">Sadhak ID</th>
-                      <th width="12%">Letter ID</th>
-                      <th width="20%">Name</th>
-                      <th width="34%">Details</th>
-                      <th className="text-center" width="12%">
+                      <th className='width-10'>Code</th>
+                      <th className='width-12'>Sadhak ID</th>
+                      <th className='width-12'>Letter ID</th>
+                      <th className='width-20'>Name</th>
+                      <th className='width-34'>Details</th>
+                      <th className="text-center width-12">
                         Status
                       </th>
                     </tr>
@@ -275,218 +262,6 @@ export const BranchApprovalTable = ({
         </div>
       </div>
 
-      <BranchApprovalModal
-        approval={selectedApproval}
-        onClose={() => setSelectedApproval(null)}
-      />
-    </>
-  );
-};
-
-const BranchApprovalModal = ({
-  approval,
-  onClose,
-}: BranchApprovalModalProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [status, setStatus] = useState('N');
-  const [amount, setAmount] = useState('0');
-  const [remark, setRemark] = useState('');
-
-  useEffect(() => {
-    if (!approval) {
-      return;
-    }
-
-    setStatus(approval.status || 'N');
-    setAmount(String(approval.amountApproved || '0'));
-    setRemark(approval.remark || '');
-    const animationFrame = window.requestAnimationFrame(() => setIsOpen(true));
-
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, [approval]);
-
-  if (!approval) {
-    return null;
-  }
-
-  const handleClose = () => {
-    setIsOpen(false);
-    window.setTimeout(onClose, 300);
-  };
-
-  return (
-    <>
-      <div
-        className={`dashboard-slide-backdrop ${isOpen ? 'is-open' : ''}`}
-        onClick={handleClose}
-      />
-      <aside
-        className={`dashboard-slide-modal ${isOpen ? 'is-open' : ''}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Branch approval detail"
-      >
-        <div className="dashboard-slide-header">
-          <div>
-            <h4 className="mb-1 dashboard-panel-title fs-3">
-              Branch Approval Detail
-            </h4>
-            <div className="text-primary mt-1 fs-6">
-              Code: {formatValue(approval.code)} | Letter ID:{' '}
-              {formatValue(approval.letterId)}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="btn btn-sm btn-icon btn-active-color-primary"
-            aria-label="Close"
-            onClick={handleClose}
-          >
-            <i className="fa fa-times" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div className="dashboard-slide-body dashboard-bill-panel-body">
-          <section className="card p-4 mb-3 border">
-            <div className="row g-4">
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Code</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(approval.code)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Sadhak ID / Letter ID</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(approval.sadhakId)} /{' '}
-                {formatValue(approval.letterId)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Name</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(approval.name)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Detail</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(approval.detail)}
-              </div>
-            </div>
-          </div>
-          </section>
-
-          <section className="card p-4 mb-3 border">
-            <h5 className="dashboard-bill-section-title">View Files</h5>
-            {approval.fileList.length ? (
-              <div className="dashboard-bill-link-list">
-                {approval.fileList.map((file, index) => (
-                  <a
-                    key={`${file.imagePath}-${index}`}
-                    href={normalizeFileUrl(file.imagePath)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="dashboard-bill-link-item"
-                  >
-                    <div className="dashboard-bill-link-icon">
-                      <i className="fa fa-file-text-o" aria-hidden="true" />
-                    </div>
-                    <div className="dashboard-bill-link-content">
-                      <p>View File {index + 1}</p>
-                      <span>{formatValue(file.imagePath)}</span>
-                    </div>
-                    <i className="fa fa-external-link" aria-hidden="true" />
-                  </a>
-                ))}
-              </div>
-            ) : (
-              <div className="text-muted fs-7">No files available.</div>
-            )}
-          </section>
-
-          <section className="card p-4 mb-3 border">
-            <h5 className="dashboard-bill-section-title">Approval</h5>
-            <div className="d-flex gap-3 flex-wrap">
-              <label className="form-check form-check-custom form-check-solid">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="branch-approval-status"
-                  checked={status === 'N'}
-                  onChange={() => setStatus('N')}
-                />
-                <span className="form-check-label fw-bold">No</span>
-              </label>
-              <label className="form-check form-check-custom form-check-solid">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="branch-approval-status"
-                  checked={status === 'Y'}
-                  onChange={() => setStatus('Y')}
-                />
-                <span className="form-check-label fw-bold">Yes</span>
-              </label>
-            </div>
-          </section>
-
-          <section className="card p-4 mb-3 border">
-            <div className="row g-4">
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Amount</div>
-              <input
-                type="text"
-                className="form-control form-control-sm"
-                value={amount}
-                onChange={event => setAmount(event.target.value)}
-              />
-            </div>
-            <div className="col-sm-12">
-              <div className="dashboard-bill-label">Remark</div>
-              <textarea
-                className="form-control form-control-sm"
-                rows={4}
-                value={remark}
-                onChange={event => setRemark(event.target.value)}
-              />
-            </div>
-          </div>
-          </section>
-
-          <section className="card p-4 mb-3 border table-responsive">
-            <table className="table table-bordered align-middle dashboard-bill-modal-table">
-              <tbody>
-                <tr>
-                  <th>Approve By</th>
-                  <td>
-                    {formatValue(approval.approveByName)} (
-                    {formatValue(approval.approveBy)})
-                  </td>
-                </tr>
-                <tr>
-                  <th>Voucher Code</th>
-                  <td>{formatValue(approval.voucherCode)}</td>
-                </tr>
-                <tr>
-                  <th>Status</th>
-                  <td>{formatValue(getStatusText(status))}</td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
-        </div>
-
-        <div className="dashboard-slide-footer dashboard-bill-action-footer">
-          <button type="button" className="btn btn-light" onClick={handleClose}>
-            Close
-          </button>
-          <button type="button" className="btn btn-primary">
-            Save
-          </button>
-        </div>
-      </aside>
     </>
   );
 };
