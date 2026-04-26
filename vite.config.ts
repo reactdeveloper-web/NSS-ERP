@@ -8,6 +8,19 @@ export default defineConfig(({ mode }) => {
     env.VITE_PROXY_TARGET ||
     env.REACT_APP_PROXY_TARGET ||
     'https://deverp.narayanseva.org';
+  const proxy = {
+    '/api': {
+      target: proxyTarget,
+      changeOrigin: true,
+      secure: true,
+      rewrite: url => url.replace(/^\/api/, ''),
+    },
+    '/erp': {
+      target: proxyTarget,
+      changeOrigin: true,
+      secure: true,
+    },
+  };
 
   return {
     plugins: [react()],
@@ -21,25 +34,11 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 3000,
-      proxy: {
-        '/api': {
-          target: proxyTarget,
-          changeOrigin: true,
-          secure: true,
-          rewrite: url => url.replace(/^\/api/, ''),
-        },
-      },
+      proxy,
     },
     preview: {
       port: 4173,
-      proxy: {
-        '/api': {
-          target: proxyTarget,
-          changeOrigin: true,
-          secure: true,
-          rewrite: url => url.replace(/^\/api/, ''),
-        },
-      },
+      proxy,
     },
   };
 });
