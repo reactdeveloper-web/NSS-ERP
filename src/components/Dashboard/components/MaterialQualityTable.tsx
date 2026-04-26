@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { IssueVerificationItem } from './types';
+import { MaterialQualityItem } from './types';
 
-interface IssueVerificationTableProps {
-  issues: IssueVerificationItem[];
+interface MaterialQualityTableProps {
+  items: MaterialQualityItem[];
   loading: boolean;
   pageNumber: number;
   pageSize: number;
@@ -13,8 +13,8 @@ interface IssueVerificationTableProps {
   onSearchChange?: (search: string) => void;
 }
 
-interface IssueVerificationModalProps {
-  issue: IssueVerificationItem | null;
+interface MaterialQualityModalProps {
+  item: MaterialQualityItem | null;
   onClose: () => void;
 }
 
@@ -26,11 +26,8 @@ const formatValue = (value: unknown) => {
   return String(value);
 };
 
-const getStatusBadgeClass = (status: string) =>
-  status.toLowerCase() === 'yes' ? 'badge-light-success' : 'badge-light-warning';
-
-export const IssueVerificationTable = ({
-  issues,
+export const MaterialQualityTable = ({
+  items,
   loading,
   pageNumber,
   pageSize,
@@ -39,33 +36,32 @@ export const IssueVerificationTable = ({
   onPageSizeChange,
   searchValue,
   onSearchChange,
-}: IssueVerificationTableProps) => {
-  const [selectedIssue, setSelectedIssue] =
-    useState<IssueVerificationItem | null>(null);
+}: MaterialQualityTableProps) => {
+  const [selectedItem, setSelectedItem] = useState<MaterialQualityItem | null>(null);
   const [localSearch, setLocalSearch] = useState('');
   const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
   const isSearchActive = normalizedSearch.length >= 3;
-  const filteredIssues = useMemo(() => {
+  const filteredItems = useMemo(() => {
     if (!isSearchActive) {
-      return issues;
+      return items;
     }
 
-    return issues.filter(issue =>
+    return items.filter(item =>
       [
-        issue.srNo,
-        issue.issueDate,
-        issue.sadhakName,
-        issue.category,
-        issue.itemName,
-        issue.quantityIssued,
-        issue.status,
+        item.rmId,
+        item.poNo,
+        item.date,
+        item.vendorName,
+        item.mobile,
+        item.sadhakName,
+        item.storeName,
       ]
-        .map(value => String(value ?? ''))
+        .map(formatValue)
         .some(value => value.toLowerCase().includes(normalizedSearch)),
     );
-  }, [isSearchActive, issues, normalizedSearch]);
-  const displayTotalCount = isSearchActive ? filteredIssues.length : totalCount;
+  }, [isSearchActive, items, normalizedSearch]);
+  const displayTotalCount = isSearchActive ? filteredItems.length : totalCount;
   const displayPageNumber = isSearchActive ? 1 : pageNumber;
   const totalPages = Math.max(1, Math.ceil(displayTotalCount / pageSize));
   const startRecord =
@@ -91,7 +87,7 @@ export const IssueVerificationTable = ({
         <div className="card-header pt-3 pb-3">
           <h3 className="card-title align-items-start flex-column">
             <span className="card-label fw-bolder fs-3 mb-1">
-              Issue Verification
+              Material Quality
             </span>
             <span className="text-muted mt-1 fw-bold fs-7">
               {displayTotalCount} records
@@ -120,46 +116,35 @@ export const IssueVerificationTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th width="8%">Sr No.</th>
-                      <th width="12%">Issue Date</th>
-                      <th width="18%">Sadhak Name</th>
-                      <th width="18%">Category</th>
-                      <th width="24%">Item Name</th>
-                      <th width="10%">Quantity Issued</th>
-                      <th className="text-center" width="10%">
-                        Status
-                      </th>
+                      <th width="10%">RM ID</th>
+                      <th width="12%">PO No.</th>
+                      <th width="16%">Date</th>
+                      <th width="24%">Vendor Name</th>
+                      <th width="14%">Mobile</th>
+                      <th width="24%">Sadhak Name</th>
                     </tr>
                   </thead>
 
                   <tbody>
-                    {filteredIssues.map((issue, index) => (
-                      <tr key={`${issue.issueId}-${issue.srNo}-${index}`}>
-                        <td>{formatValue(issue.srNo)}</td>
-                        <td>{formatValue(issue.issueDate)}</td>
-                        <td>{formatValue(issue.sadhakName)}</td>
-                        <td>{formatValue(issue.category)}</td>
-                        <td>{formatValue(issue.itemName)}</td>
+                    {filteredItems.map((item, index) => (
+                      <tr key={`${item.rmId}-${index}`}>
+                        <td>{formatValue(item.rmId)}</td>
+                        <td>{formatValue(item.poNo)}</td>
+                        <td>{formatValue(item.date)}</td>
                         <td>
-                          {formatValue(issue.quantityIssued)}{' '}
-                          {formatValue(issue.unit)}
+                          <div className="fw-bold text-dark">
+                            {formatValue(item.vendorName)}
+                          </div>
                         </td>
-                        <td className="text-center">
-                          <span
-                            className={`badge fs-8 fw-bolder ${getStatusBadgeClass(
-                              issue.status,
-                            )}`}
-                          >
-                            {formatValue(issue.status)}
-                          </span>
-                        </td>
+                        <td>{formatValue(item.mobile)}</td>
+                        <td>{formatValue(item.sadhakName)}</td>
                       </tr>
                     ))}
 
-                    {!filteredIssues.length && (
+                    {!filteredItems.length && (
                       <tr>
-                        <td colSpan={7} className="text-center text-muted fw-bold">
-                          No issue verification records found.
+                        <td colSpan={6} className="text-center text-muted fw-bold">
+                          No material quality records found.
                         </td>
                       </tr>
                     )}
@@ -242,33 +227,28 @@ export const IssueVerificationTable = ({
         </div>
       </div>
 
-      <IssueVerificationModal
-        issue={selectedIssue}
-        onClose={() => setSelectedIssue(null)}
+      <MaterialQualityModal
+        item={selectedItem}
+        onClose={() => setSelectedItem(null)}
       />
     </>
   );
 };
 
-const IssueVerificationModal = ({
-  issue,
-  onClose,
-}: IssueVerificationModalProps) => {
+const MaterialQualityModal = ({ item, onClose }: MaterialQualityModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [status, setStatus] = useState('No');
 
   useEffect(() => {
-    if (!issue) {
+    if (!item) {
       return;
     }
 
-    setStatus(issue.status || 'No');
     const animationFrame = window.requestAnimationFrame(() => setIsOpen(true));
 
     return () => window.cancelAnimationFrame(animationFrame);
-  }, [issue]);
+  }, [item]);
 
-  if (!issue) {
+  if (!item) {
     return null;
   }
 
@@ -287,19 +267,21 @@ const IssueVerificationModal = ({
         className={`dashboard-slide-modal ${isOpen ? 'is-open' : ''}`}
         role="dialog"
         aria-modal="true"
-        aria-label="Issue verification detail"
+        aria-label="Material quality detail"
       >
         <div className="dashboard-slide-header">
           <div>
             <h4 className="mb-1 dashboard-panel-title fs-3">
-              Issue Verification Detail
+              Material Quality
             </h4>
             <div className="text-primary mt-1 fs-6">
-              Issue ID: {formatValue(issue.issueId)} | Sr No:{' '}
-              {formatValue(issue.srNo)}
+              RM ID: {formatValue(item.rmId)}
+              <span className="mx-5">PO No: {formatValue(item.poNo)}</span>
+            </div>
+            <div className="text-muted mt-1 fw-bold fs-6">
+              {formatValue(item.vendorName)}
             </div>
           </div>
-
           <button
             type="button"
             className="btn btn-sm btn-icon btn-active-color-primary"
@@ -313,98 +295,63 @@ const IssueVerificationModal = ({
         <div className="dashboard-slide-body dashboard-bill-panel-body">
           <section className="card p-4 mb-3 border">
             <div className="row g-4">
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Item Name</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.itemName)}
+              <div className="col-sm-4">
+                <div className="dashboard-bill-label">Date</div>
+                <div className="dashboard-bill-text fw-bold">
+                  {formatValue(item.date)}
+                </div>
               </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Issue Date</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.issueDate)}
+              <div className="col-sm-4">
+                <div className="dashboard-bill-label">Mobile</div>
+                <div className="dashboard-bill-text fw-bold">
+                  {formatValue(item.mobile)}
+                </div>
               </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Sadhak Name</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.sadhakName)}
+              <div className="col-sm-4">
+                <div className="dashboard-bill-label">Store</div>
+                <div className="dashboard-bill-text fw-bold">
+                  {formatValue(item.storeName)}
+                </div>
               </div>
-              <div className="text-muted fs-8">
-                Emp ID: {formatValue(issue.empId)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">HandOver / OPD ID</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.handedOver)} {formatValue(issue.handOverOpdId)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Category</div>
-              <div className="dashboard-bill-text fw-bold">
-                {formatValue(issue.category)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-amount-strip rounded fs-6">
-                <span>Quantity Issued</span>
-                <strong className="fs-3">
-                  {formatValue(issue.quantityIssued)} {formatValue(issue.unit)}
-                </strong>
-              </div>
-            </div>
-          </div>
-          </section>
-
-          <section className="card p-4 mb-3 border">
-            <h5 className="dashboard-bill-section-title">Issue Verification</h5>
-            <div className="dashboard-bill-text mb-3">
-              Take this item form store to {formatValue(issue.sadhakName)}
-            </div>
-            <div className="d-flex gap-4">
-              <label className="form-check form-check-custom form-check-solid">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="issue-verification-status"
-                  checked={status.toLowerCase() === 'yes'}
-                  onChange={() => setStatus('Yes')}
-                />
-                <span className="form-check-label fw-bold">Yes</span>
-              </label>
-              <label className="form-check form-check-custom form-check-solid">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="issue-verification-status"
-                  checked={status.toLowerCase() !== 'yes'}
-                  onChange={() => setStatus('No')}
-                />
-                <span className="form-check-label fw-bold">No</span>
-              </label>
             </div>
           </section>
 
           <section className="card p-4 mb-3 border table-responsive">
-            <table className="table table-bordered align-middle dashboard-bill-modal-table">
+            <h5 className="dashboard-bill-section-title">Line Items</h5>
+            <table className="table table-bordered align-middle dashboard-bill-modal-table mb-0">
+              <thead>
+                <tr>
+                  <th>PO Sr No</th>
+                  <th>Sadhak Name</th>
+                  <th>Item Name</th>
+                  <th>Qty</th>
+                  <th>Unit</th>
+                  <th>Company</th>
+                  <th>Amount</th>
+                  <th>QM Status</th>
+                </tr>
+              </thead>
               <tbody>
-                <tr>
-                  <th>Item ID</th>
-                  <td>{formatValue(issue.itemId)}</td>
-                </tr>
-                <tr>
-                  <th>RRS ID</th>
-                  <td>{formatValue(issue.rrsId)}</td>
-                </tr>
-                <tr>
-                  <th>CM ID</th>
-                  <td>{formatValue(issue.raw.CM_ID)}</td>
-                </tr>
-                <tr>
-                  <th>Status</th>
-                  <td>{formatValue(status)}</td>
-                </tr>
+                {item.lineItems.length ? (
+                  item.lineItems.map((line, index) => (
+                    <tr key={`${line.qmCode}-${index}`}>
+                      <td>{formatValue(line.poSrNo)}</td>
+                      <td>{formatValue(line.sadhakName)}</td>
+                      <td>{formatValue(line.itemName)}</td>
+                      <td>{formatValue(line.pendingQuantity)}</td>
+                      <td>{formatValue(line.unit)}</td>
+                      <td>{formatValue(line.companyName)}</td>
+                      <td>{formatValue(line.amount)}</td>
+                      <td>{formatValue(line.qmStatus)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="text-center text-muted">
+                      No line items available.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </section>
@@ -412,10 +359,7 @@ const IssueVerificationModal = ({
 
         <div className="dashboard-slide-footer dashboard-bill-action-footer">
           <button type="button" className="btn btn-light" onClick={handleClose}>
-            Cancel
-          </button>
-          <button type="button" className="btn btn-primary">
-            Save
+            Close
           </button>
         </div>
       </aside>

@@ -9,6 +9,8 @@ interface PartyAdvanceTableProps {
   totalCount: number;
   onPageChange: (pageNumber: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  searchValue?: string;
+  onSearchChange?: (search: string) => void;
 }
 
 interface PartyAdvanceModalProps {
@@ -62,14 +64,43 @@ export const PartyAdvanceTable = ({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  searchValue,
+  onSearchChange,
 }: PartyAdvanceTableProps) => {
   const [selectedAdvance, setSelectedAdvance] = useState<PartyAdvanceItem | null>(null);
-  const filteredAdvances = useMemo(() => advances, [advances]);
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const startRecord = totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
-  const endRecord = totalCount === 0 ? 0 : Math.min(pageNumber * pageSize, totalCount);
+  const [localSearch, setLocalSearch] = useState('');
+  const search = searchValue ?? localSearch;
+  const normalizedSearch = search.trim().toLowerCase();
+  const isSearchActive = normalizedSearch.length >= 3;
+  const filteredAdvances = useMemo(() => {
+    if (!isSearchActive) {
+      return advances;
+    }
+
+    return advances.filter(advance =>
+      [
+        advance.code,
+        advance.entryDate,
+        advance.billDueDate,
+        advance.vendorName,
+        advance.description,
+        advance.status,
+      ]
+        .map(formatValue)
+        .some(value => value.toLowerCase().includes(normalizedSearch)),
+    );
+  }, [advances, isSearchActive, normalizedSearch]);
+  const displayTotalCount = isSearchActive ? filteredAdvances.length : totalCount;
+  const displayPageNumber = isSearchActive ? 1 : pageNumber;
+  const totalPages = Math.max(1, Math.ceil(displayTotalCount / pageSize));
+  const startRecord =
+    displayTotalCount === 0 ? 0 : (displayPageNumber - 1) * pageSize + 1;
+  const endRecord =
+    displayTotalCount === 0
+      ? 0
+      : Math.min(displayPageNumber * pageSize, displayTotalCount);
   const pageNumbers = Array.from({ length: Math.min(totalPages, 5) }, (_, index) => {
-    const safeStartPage = Math.max(1, pageNumber - 2);
+    const safeStartPage = Math.max(1, displayPageNumber - 2);
     const safeEndPage = Math.min(totalPages, safeStartPage + 4);
     const adjustedStartPage = Math.max(1, safeEndPage - 4);
 
@@ -81,8 +112,22 @@ export const PartyAdvanceTable = ({
       <div className="card-header pt-3 pb-3">
         <h3 className="card-title align-items-start flex-column">
           <span className="card-label fw-bolder fs-3 mb-1">Party Advance Pending</span>
-          <span className="text-muted mt-1 fw-bold fs-7">{totalCount} records</span>
+          <span className="text-muted mt-1 fw-bold fs-7">
+            {displayTotalCount} records
+          </span>
         </h3>
+        <div className="card-toolbar m-0">
+          <input
+            type="text"
+            className="form-control form-control-sm form-control-solid w-250px"
+            placeholder="Advance Search"
+            value={search}
+            onChange={event => {
+              setLocalSearch(event.target.value);
+              onSearchChange?.(event.target.value);
+            }}
+          />
+        </div>
       </div>
 
       <div className="card-body py-3 dashboard-listing-body">
@@ -107,11 +152,7 @@ export const PartyAdvanceTable = ({
 
                 <tbody>
                   {filteredAdvances.map((advance, index) => (
-                    <tr
-                      key={`${advance.code}-${advance.entryDate}-${index}`}
-                      className="cursor-pointer"
-                      onClick={() => setSelectedAdvance(advance)}
-                    >
+                    <tr key={`${advance.code}-${advance.entryDate}-${index}`}>
                       <td>{formatValue(advance.code)}</td>
                       <td>{formatValue(advance.entryDate)}</td>
                       <td>{formatValue(advance.billDueDate)}</td>
@@ -164,14 +205,14 @@ export const PartyAdvanceTable = ({
 
           <div className="d-flex align-items-center gap-4">
             <span className="text-muted fs-7">
-              Showing {startRecord} to {endRecord} of {totalCount}
+              Showing {startRecord} to {endRecord} of {displayTotalCount}
             </span>
             <ul className="pagination pagination-circle pagination-outline mb-0">
-              <li className={`page-item ${pageNumber === 1 ? 'disabled' : ''}`}>
+              <li className={`page-item ${displayPageNumber === 1 ? 'disabled' : ''}`}>
                 <button
                   type="button"
                   className="page-link"
-                  onClick={() => onPageChange(Math.max(1, pageNumber - 1))}
+                  onClick={() => onPageChange(Math.max(1, displayPageNumber - 1))}
                 >
                   &laquo;
                 </button>
@@ -179,18 +220,18 @@ export const PartyAdvanceTable = ({
               {pageNumbers.map(page => (
                 <li
                   key={page}
-                  className={`page-item ${page === pageNumber ? 'active' : ''}`}
+                  className={`page-item ${page === displayPageNumber ? 'active' : ''}`}
                 >
                   <button type="button" className="page-link" onClick={() => onPageChange(page)}>
                     {page}
                   </button>
                 </li>
               ))}
-              <li className={`page-item ${pageNumber >= totalPages ? 'disabled' : ''}`}>
+              <li className={`page-item ${displayPageNumber >= totalPages ? 'disabled' : ''}`}>
                 <button
                   type="button"
                   className="page-link"
-                  onClick={() => onPageChange(Math.min(totalPages, pageNumber + 1))}
+                  onClick={() => onPageChange(Math.min(totalPages, displayPageNumber + 1))}
                 >
                   &raquo;
                 </button>
@@ -271,8 +312,10 @@ const PartyAdvanceModal = ({ advance, onClose }: PartyAdvanceModalProps) => {
       >
         <div className="dashboard-slide-header">
           <div>
-            <h4 className="mb-1">Party Advance Detail</h4>
-            <div className="text-muted fs-7">
+            <h4 className="mb-1 dashboard-panel-title fs-3">
+              Party Advance Detail
+            </h4>
+            <div className="text-primary mt-1 fs-6">
               Code: {formatValue(advance.code)} | Vendor: {formatValue(advance.vendorName)}
             </div>
           </div>
@@ -287,26 +330,27 @@ const PartyAdvanceModal = ({ advance, onClose }: PartyAdvanceModalProps) => {
           </button>
         </div>
 
-        <div className="dashboard-slide-body">
-          <div className="row g-4 mb-5">
+        <div className="dashboard-slide-body dashboard-bill-panel-body">
+          <section className="card p-4 mb-3 border">
+            <div className="row g-4">
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Code</label>
-              <div className="fw-bold text-dark">{formatValue(advance.code)}</div>
+              <div className="dashboard-bill-label">Code</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(advance.code)}</div>
             </div>
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Entry Date</label>
-              <div className="fw-bold text-dark">{formatValue(advance.entryDate)}</div>
+              <div className="dashboard-bill-label">Entry Date</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(advance.entryDate)}</div>
             </div>
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Bill Due Date</label>
-              <div className="fw-bold text-dark">{formatValue(advance.billDueDate)}</div>
+              <div className="dashboard-bill-label">Bill Due Date</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(advance.billDueDate)}</div>
             </div>
             <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Vendor Name</label>
-              <div className="fw-bold text-dark">{formatValue(advance.vendorName)}</div>
+              <div className="dashboard-bill-label">Vendor Name</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(advance.vendorName)}</div>
             </div>
             <div className="col-12">
-              <label className="form-label fs-8 text-muted mb-1">Description</label>
+              <div className="dashboard-bill-label">Description</div>
               <textarea
                 className="form-control form-control-sm"
                 rows={4}
@@ -315,10 +359,12 @@ const PartyAdvanceModal = ({ advance, onClose }: PartyAdvanceModalProps) => {
               />
             </div>
           </div>
+          </section>
 
-          <div className="row g-4 mb-5">
+          <section className="card p-4 mb-3 border">
+            <div className="row g-4">
             <div className="col-sm-6 col-lg-3">
-              <label className="form-label fs-8 text-muted mb-1">Billing Status</label>
+              <div className="dashboard-bill-label">Billing Status</div>
               <input
                 type="text"
                 className="form-control form-control-sm"
@@ -327,7 +373,7 @@ const PartyAdvanceModal = ({ advance, onClose }: PartyAdvanceModalProps) => {
               />
             </div>
             <div className="col-sm-6 col-lg-3">
-              <label className="form-label fs-8 text-muted mb-1">Account Status</label>
+              <div className="dashboard-bill-label">Account Status</div>
               <input
                 type="text"
                 className="form-control form-control-sm"
@@ -336,7 +382,7 @@ const PartyAdvanceModal = ({ advance, onClose }: PartyAdvanceModalProps) => {
               />
             </div>
             <div className="col-lg-6">
-              <label className="form-label fs-8 text-muted mb-1">Particulars</label>
+              <div className="dashboard-bill-label">Particulars</div>
               <div className="table-responsive">
                 <table className="table table-bordered align-middle dashboard-bill-modal-table mb-0">
                   <thead>
@@ -367,10 +413,12 @@ const PartyAdvanceModal = ({ advance, onClose }: PartyAdvanceModalProps) => {
               </div>
             </div>
           </div>
+          </section>
 
-          <div className="row g-4 mb-5">
+          <section className="card p-4 mb-3 border">
+            <div className="row g-4">
             <div className="col-lg-5">
-              <label className="form-label fs-8 text-muted mb-1">HOD Recommendation</label>
+              <div className="dashboard-bill-label">HOD Recommendation</div>
               <textarea
                 className="form-control form-control-sm"
                 rows={4}
@@ -387,7 +435,7 @@ const PartyAdvanceModal = ({ advance, onClose }: PartyAdvanceModalProps) => {
               </div>
             </div>
             <div className="col-lg-3">
-              <label className="form-label fs-8 text-muted mb-1">Comm Recommendation</label>
+              <div className="dashboard-bill-label">Comm Recommendation</div>
               <textarea
                 className="form-control form-control-sm"
                 rows={4}
@@ -401,12 +449,12 @@ const PartyAdvanceModal = ({ advance, onClose }: PartyAdvanceModalProps) => {
               </div>
             </div>
             <div className="col-lg-2">
-              <label className="form-label fs-8 text-muted mb-1">Entry By</label>
-              <div className="fw-bold text-dark">{formatValue(entryBy)}</div>
+              <div className="dashboard-bill-label">Entry By</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(entryBy)}</div>
               <div className="text-muted fs-7 mt-2">{formatValue(entrySadhak)}</div>
             </div>
             <div className="col-lg-2">
-              <label className="form-label fs-8 text-muted mb-1">Approved</label>
+              <div className="dashboard-bill-label">Approved</div>
               <input
                 type="text"
                 className="form-control form-control-sm mb-3"
@@ -436,8 +484,9 @@ const PartyAdvanceModal = ({ advance, onClose }: PartyAdvanceModalProps) => {
               <div className="text-muted fs-7 mt-2">{formatValue(approvedOn)}</div>
             </div>
           </div>
+          </section>
 
-          <div className="table-responsive">
+          <section className="card p-4 mb-3 border table-responsive">
             <table className="table table-bordered align-middle dashboard-bill-modal-table">
               <tbody>
                 <tr>
@@ -466,10 +515,10 @@ const PartyAdvanceModal = ({ advance, onClose }: PartyAdvanceModalProps) => {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </section>
         </div>
 
-        <div className="dashboard-slide-footer">
+        <div className="dashboard-slide-footer dashboard-bill-action-footer">
           <button type="button" className="btn btn-light" onClick={handleClose}>
             Close
           </button>

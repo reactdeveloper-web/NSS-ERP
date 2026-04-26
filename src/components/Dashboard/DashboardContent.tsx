@@ -2,24 +2,38 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { getDashboard, getEmployeeAll } from 'src/api/masterApi';
 import { PageToolbar } from 'src/components/Common/PageToolbar';
 import axiosInstance from 'src/redux/interceptor';
+import { ActionOnRecruitmentTable } from './components/ActionOnRecruitmentTable';
 import { BillDetailsTable } from './components/BillDetailsTable';
 import { BranchApprovalTable } from './components/BranchApprovalTable';
 import { IssueVerificationTable } from './components/IssueVerificationTable';
+import { LeaveApprovalTable } from './components/LeaveApprovalTable';
+import { MaterialQualityTable } from './components/MaterialQualityTable';
 import { MeetingPointTable } from './components/MeetingPointTable';
 import { PartyAdvanceTable } from './components/PartyAdvanceTable';
+import { PaymentTermsVerificationTable } from './components/PaymentTermsVerificationTable';
+import { PurchaseQuotationApprovalTable } from './components/PurchaseQuotationApprovalTable';
+import { RrsStatusTable } from './components/RrsStatusTable';
 import { SadhakAdvanceTable } from './components/SadhakAdvanceTable';
 import { TaskTable } from './components/TaskTable';
 import { TodoList } from './components/TodoList';
+import { WorkOrderApprovalTable } from './components/WorkOrderApprovalTable';
 import {
+  ActionOnRecruitmentItem,
   BillDetailItem,
   BranchApprovalItem,
   DashboardItem,
   IssueVerificationItem,
+  LeaveApprovalItem,
+  MaterialQualityItem,
   MeetingPointItem,
   PartyAdvanceItem,
+  PaymentTermsVerifyItem,
+  PurchaseQuotationItem,
+  RrsStatusItem,
   SadhakAdvanceItem,
   StaticTaskRow,
   TaskItem,
+  WorkOrderItem,
 } from './components/types';
 
 const staticTodoItems: DashboardItem[] = [
@@ -145,6 +159,13 @@ const getTaskFilterType = (item: DashboardItem) => {
   return String(item.PanelId);
 };
 
+const isTaskConfirmationItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+
+  return `${panel} ${description}`.includes('task confirmation');
+};
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 
@@ -246,6 +267,29 @@ const getDataRecords = (payload: unknown): Record<string, unknown>[] => {
   }
 
   return [];
+};
+
+const getTotalRecords = (
+  payload: unknown,
+  rows: Array<{ RecordCount?: number }>,
+) => {
+  if (isRecord(payload)) {
+    const meta = payload.Meta || payload.meta;
+
+    if (isRecord(meta)) {
+      const totalRecords =
+        meta.TotalRecords ||
+        meta.totalRecords ||
+        meta.TotalRecord ||
+        meta.totalRecord;
+
+      if (totalRecords !== null && totalRecords !== undefined && totalRecords !== '') {
+        return Number(totalRecords);
+      }
+    }
+  }
+
+  return Number(rows[0]?.RecordCount || rows.length || 0);
 };
 
 const unwrapFirstRecord = (record: Record<string, unknown>): Record<string, unknown> => {
@@ -377,6 +421,10 @@ const isBillsPendingItem = (item: DashboardItem) =>
   normalizeLabel(item.Description) === 'bills pending' ||
   (normalizeLabel(item.Panel) === 'billing' && item.PanelId === 1);
 
+const isMyRrsStatusItem = (item: DashboardItem) =>
+  normalizeLabel(item.Panel) === 'my rrs status' ||
+  normalizeLabel(item.Description) === 'my rrs status';
+
 const normalizeBranchApproval = (
   record: Record<string, unknown>,
 ): BranchApprovalItem => {
@@ -463,6 +511,32 @@ const isIssueVerificationItem = (item: DashboardItem) =>
   normalizeLabel(item.Description) === 'issue verification' ||
   normalizeLabel(item.Panel) === 'issue verification';
 
+const isActionOnRecruitmentItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return (
+    label.includes('actiononrecruitment') ||
+    label.includes('action on recruitment')
+  );
+};
+
+const normalizeActionOnRecruitment = (
+  record: Record<string, unknown>,
+): ActionOnRecruitmentItem => ({
+  RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+  RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+  applicationNo: getTextByKeys(record, ['APPLICANT_NUM_NR', 'applicantNumNr']),
+  name: String(getTextByKeys(record, ['APPLICANT_NAME', 'applicantName'])),
+  dob: String(getTextByKeys(record, ['APPLICANT_DOB', 'applicantDob'])),
+  sex: String(getTextByKeys(record, ['APPLICANT_SEX1', 'applicantSex'])),
+  departmentName: String(getTextByKeys(record, ['DEPT_NAME', 'deptName'])),
+  postName: String(getTextByKeys(record, ['HSR_POST_NAME', 'postName'])),
+  salary: getTextByKeys(record, ['NR_APPROVED_SALARY', 'approvedSalary']),
+  raw: record,
+});
+
 const normalizeMeetingPoint = (
   record: Record<string, unknown>,
 ): MeetingPointItem => ({
@@ -500,6 +574,17 @@ const isMeetingPointItem = (item: DashboardItem) =>
     'meeting points pending',
     'meeting points confirmation pending',
   ].includes(normalizeLabel(item.Description));
+
+const isMeetingPointConfirmationItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return (
+    label.includes('meeting points confirmation') ||
+    description.includes('meeting points confirmation pending')
+  );
+};
 
 const getPartyAdvanceStatus = (record: Record<string, unknown>) => {
   const stage = normalizeLabel(getTextByKeys(record, ['Stage', 'stage']));
@@ -601,6 +686,333 @@ const normalizeSadhakAdvance = (record: Record<string, unknown>): SadhakAdvanceI
   };
 };
 
+const isPaymentTermsVerificationItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return (
+    label.includes('payment terms verificaton') ||
+    label.includes('payment terms verification') ||
+    label.includes('pt verification') ||
+    description.includes('purchase / work order pt verification pending')
+  );
+};
+
+const normalizePaymentTermsVerification = (
+  record: Record<string, unknown>,
+): PaymentTermsVerifyItem => {
+  const verifyTermsValue =
+    record.VerifyTermsList || record.verifyTermsList || record.verify_terms_list;
+  const verifyTermsList = Array.isArray(verifyTermsValue)
+    ? verifyTermsValue.filter(isRecord).map(term => ({
+        srno: getTextByKeys(term, ['srno', 'SrNo', 'SRNO']),
+        amcSrno: getTextByKeys(term, ['amc_srno', 'amcSrno', 'AMCSRNO']),
+        workComplete: String(
+          getTextByKeys(term, ['workcomplete', 'workComplete', 'WorkComplete']),
+        ),
+        maintenanceDesc: String(
+          getTextByKeys(term, [
+            'maintenance_desc',
+            'maintenanceDesc',
+            'MaintenanceDesc',
+          ]),
+        ),
+        maintenanceRemark: String(
+          getTextByKeys(term, [
+            'maintenanceremark',
+            'maintenanceRemark',
+            'MaintenanceRemark',
+          ]),
+        ),
+      }))
+    : [];
+
+  return {
+    RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+    RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+    qcsAppCode: record.qcs_appcode ?? '',
+    poId: getTextByKeys(record, ['po_id', 'poId', 'POId']),
+    quotationNo: record.quotation_no ?? '',
+    autoId: getTextByKeys(record, ['auto_id', 'autoId', 'AutoId']),
+    vendorName: String(
+      getTextByKeys(record, ['svendor_name', 'vendorName', 'VendorName']),
+    ),
+    vendorId: getTextByKeys(record, ['ivendor_id', 'vendorId', 'VendorId']),
+    paymentTerm: String(
+      getTextByKeys(record, ['pay_terms', 'payTerms', 'PaymentTerm']),
+    ),
+    paymentType: String(
+      getTextByKeys(record, ['pay_type', 'payType', 'PaymentType']),
+    ),
+    payDate: String(getTextByKeys(record, ['PayDate', 'payDate'])),
+    scopeOfWork: String(
+      getTextByKeys(record, ['scope_of_work', 'scopeOfWork', 'ScopeOfWork']),
+    ),
+    amount: getTextByKeys(record, [
+      'approve_amount',
+      'approveAmount',
+      'ApproveAmount',
+    ]),
+    status: String(
+      getTextByKeys(record, ['pt_ver_status', 'ptVerStatus', 'Status']) ||
+        'Pending',
+    ),
+    remark: String(
+      getTextByKeys(record, ['pt_ver_remark', 'ptVerRemark', 'Remark']),
+    ),
+    qcsFiles: String(getTextByKeys(record, ['qcsfiles', 'qcsFiles', 'QCSFiles'])),
+    orderLink: String(getTextByKeys(record, ['orderlink', 'orderLink', 'OrderLink'])),
+    verifyTermsList,
+    raw: record,
+  };
+};
+
+const isPurchaseQuotationItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return (
+    label.includes('purchase quotation approval') ||
+    label.includes('purchase quotation')
+  );
+};
+
+const isWorkOrderItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return label.includes('work order approval') || label.includes('work order');
+};
+
+const normalizePurchaseQuotation = (
+  record: Record<string, unknown>,
+): PurchaseQuotationItem => {
+  const lineItemsValue = record.LineItems || record.lineItems;
+  const paymentTermsValue = record.PaymentTerms || record.paymentTerms;
+  const termsAndConditionsValue =
+    record.TermsAndConditions || record.termsAndConditions;
+
+  const lineItems = Array.isArray(lineItemsValue)
+    ? lineItemsValue.filter(isRecord).map(item => ({
+        srNo: getTextByKeys(item, ['Qcs_SrNo', 'qcsSrNo', 'srNo']),
+        itemName: String(
+          getTextByKeys(item, ['Im_Item_Name', 'itemName', 'ItemName']),
+        ),
+        quantity: getTextByKeys(item, ['Qcs_Quantity', 'quantity']),
+        unit: String(getTextByKeys(item, ['Um_Name', 'unit'])),
+        rate1: getTextByKeys(item, ['Qcs_Rate1', 'rate1']),
+        rate2: getTextByKeys(item, ['Qcs_Rate2', 'rate2']),
+        rate3: getTextByKeys(item, ['Qcs_Rate3', 'rate3']),
+        greenColor: String(getTextByKeys(item, ['Greencolor', 'greenColor'])),
+        lastPurchaseHistory: Array.isArray(item.LastPurchaseHistory)
+          ? item.LastPurchaseHistory
+          : [],
+      }))
+    : [];
+
+  const paymentTerms = Array.isArray(paymentTermsValue)
+    ? paymentTermsValue.filter(isRecord).map(term => ({
+        payTerms: String(
+          getTextByKeys(term, ['Pay_Terms1', 'payTerms', 'PayTerms']),
+        ),
+        percentage: getTextByKeys(term, ['Percentage1', 'percentage']),
+        assignToName: String(
+          getTextByKeys(term, ['Assign_to_name1', 'assignToName']),
+        ),
+      }))
+    : [];
+
+  return {
+    RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+    RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+    qcsId: getTextByKeys(record, ['Qcs_Id', 'qcsId']),
+    qcsDate: String(getTextByKeys(record, ['Qcs_Date', 'qcsDate'])),
+    qcsType: String(getTextByKeys(record, ['Qcs_Type', 'qcsType'])),
+    vendorName1: String(getTextByKeys(record, ['Qcs_VendorName1', 'vendorName1'])),
+    vendorName2: String(getTextByKeys(record, ['Qcs_VendorName2', 'vendorName2'])),
+    vendorName3: String(getTextByKeys(record, ['Qcs_VendorName3', 'vendorName3'])),
+    netTotal1: getTextByKeys(record, ['NetTotal1', 'netTotal1']),
+    netTotal2: getTextByKeys(record, ['NetTotal2', 'netTotal2']),
+    netTotal3: getTextByKeys(record, ['NetTotal3', 'netTotal3']),
+    location: String(getTextByKeys(record, ['Location', 'location'])),
+    qcsFile: String(getTextByKeys(record, ['Qcs_File', 'qcsFile'])),
+    qcsStage: String(getTextByKeys(record, ['Qcs_Stage', 'qcsStage'])),
+    lineItems,
+    paymentTerms,
+    termsAndConditions: Array.isArray(termsAndConditionsValue)
+      ? termsAndConditionsValue
+      : [],
+    raw: record,
+  };
+};
+
+const normalizeRrsStatus = (record: Record<string, unknown>): RrsStatusItem => ({
+  RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+  RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+  id: getTextByKeys(record, ['id', 'Id', 'ID', 'RRS_ID', 'rrs_id']),
+  employeeName: String(getTextByKeys(record, ['empname', 'empName', 'EmpName'])),
+  storeName: String(getTextByKeys(record, ['im_st_name', 'imStName', 'StoreName'])),
+  itemName: String(getTextByKeys(record, ['imname', 'imName', 'ItemName'])),
+  employeeMobile: String(
+    getTextByKeys(record, ['emp_mobile', 'empMobile', 'EmpMobile']),
+  ),
+  rrsType: String(getTextByKeys(record, ['rrs_type', 'rrsType', 'RRSType'])),
+  raw: record,
+});
+
+const isMaterialQualityItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return (
+    label.includes('material quality') ||
+    description.includes('material quality pending')
+  );
+};
+
+const normalizeMaterialQuality = (
+  record: Record<string, unknown>,
+): MaterialQualityItem => {
+  const lineItemsValue =
+    record.LineItemsList || record.lineItemsList || record.LineItems;
+  const lineItems = Array.isArray(lineItemsValue)
+    ? lineItemsValue.filter(isRecord).map(line => ({
+        rrsFor: getTextByKeys(line, ['rrs_for', 'rrsFor']),
+        demandBy: getTextByKeys(line, ['rrs_demandby', 'rrsDemandBy']),
+        sadhakName: String(getTextByKeys(line, ['emp_name', 'empName'])),
+        itemName: String(getTextByKeys(line, ['itemname', 'itemName'])),
+        amount: getTextByKeys(line, ['rd_amount', 'amount']),
+        poSrNo: getTextByKeys(line, ['po_srno', 'poSrNo']),
+        companyName: String(
+          getTextByKeys(line, ['po_com_name', 'rd_com_name', 'companyName']),
+        ),
+        pendingQuantity: getTextByKeys(line, ['po_inpenqty', 'pendingQuantity']),
+        unit: String(getTextByKeys(line, ['uname', 'unit'])),
+        qmCode: getTextByKeys(line, ['qm_code', 'qmCode']),
+        qmStatus: String(getTextByKeys(line, ['qm_status', 'qmStatus'])),
+        remark: String(getTextByKeys(line, ['utl_remark', 'remark'])),
+        qualityQuestions: Array.isArray(line.QualityQuesList)
+          ? line.QualityQuesList
+          : [],
+      }))
+    : [];
+
+  return {
+    RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+    RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+    rmId: getTextByKeys(record, ['rm_id', 'rmId']),
+    poNo: getTextByKeys(record, ['rm_po_no', 'rmPoNo']),
+    date: String(getTextByKeys(record, ['rm_date', 'rmDate'])),
+    vendorName: String(getTextByKeys(record, ['svendor_name', 'vendorName'])),
+    mobile: String(getTextByKeys(record, ['svendor_mobile', 'vendorMobile'])),
+    sadhakName: lineItems[0]?.sadhakName || '',
+    storeName: String(getTextByKeys(record, ['im_st_name', 'storeName'])),
+    lineItems,
+    raw: record,
+  };
+};
+
+const isLeaveApprovalItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return label.includes('leave or tour records') || label.includes('leave');
+};
+
+const normalizeLeaveApproval = (
+  record: Record<string, unknown>,
+): LeaveApprovalItem => ({
+  RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+  RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+  leaveId: getTextByKeys(record, ['LeaveId', 'leaveId']),
+  sadhakName: String(getTextByKeys(record, ['EmpName', 'empName'])),
+  applyDate: String(getTextByKeys(record, ['EntryDate', 'entryDate'])),
+  fromDate: String(getTextByKeys(record, ['FROMDATE', 'fromDate'])),
+  toDate: String(getTextByKeys(record, ['TODATE', 'toDate'])),
+  applied: getTextByKeys(record, ['TotalLeave', 'totalLeave']),
+  leaveType: String(getTextByKeys(record, ['LeaveType', 'leaveType'])),
+  leaveDay: String(getTextByKeys(record, ['LeaveDay', 'leaveDay'])),
+  chargeGiven: String(getTextByKeys(record, ['ChargesTo', 'chargesTo'])),
+  sanction: String(getTextByKeys(record, ['FSanction', 'fSanction'])),
+  department: String(getTextByKeys(record, ['DMName', 'dmName'])),
+  reason: String(getTextByKeys(record, ['LeaveReason', 'leaveReason'])),
+  raw: record,
+});
+
+const normalizeWorkOrder = (record: Record<string, unknown>): WorkOrderItem => {
+  const lineItemsValue = record.wolineitems || record.WOLineItems || record.lineItems;
+  const paymentTermsValue =
+    record.wopaymentterms1 || record.WOPaymentTerms1 || record.paymentTerms;
+  const termsValue = record.wotandc || record.WOTandC || record.termsAndConditions;
+
+  const lineItems = Array.isArray(lineItemsValue)
+    ? lineItemsValue.filter(isRecord).map(item => ({
+        srNo: getTextByKeys(item, ['amc_srno', 'srNo', 'SrNo']),
+        workScope: String(getTextByKeys(item, ['work_scope', 'workScope'])),
+        totalPrice1: getTextByKeys(item, ['totalprice1', 'totalPrice1']),
+        totalPrice2: getTextByKeys(item, ['totalprice2', 'totalPrice2']),
+        totalPrice3: getTextByKeys(item, ['totalprice3', 'totalPrice3']),
+        insurance: String(getTextByKeys(item, ['insurance', 'Insurance'])),
+        dateFrom: String(getTextByKeys(item, ['datefr', 'dateFrom'])),
+        dateTo: String(getTextByKeys(item, ['dateto', 'dateTo'])),
+        remark: String(getTextByKeys(item, ['remark', 'Remark'])),
+      }))
+    : [];
+  const paymentTerms = Array.isArray(paymentTermsValue)
+    ? paymentTermsValue.filter(isRecord).map(term => ({
+        payTerms: String(getTextByKeys(term, ['Pay_Terms', 'payTerms'])),
+        percentage: getTextByKeys(term, ['Percentage', 'percentage']),
+        amount: getTextByKeys(term, ['Amount', 'amount']),
+        payType: String(getTextByKeys(term, ['Pay_Type', 'payType'])),
+        assignToName: String(getTextByKeys(term, ['Assign_to_name', 'assignToName'])),
+        ptVerificationRequired: String(
+          getTextByKeys(term, ['PT_VER_REQ', 'ptVerReq']),
+        ),
+      }))
+    : [];
+  const termsAndConditions = Array.isArray(termsValue)
+    ? termsValue.filter(isRecord).map(term => ({
+        id: getTextByKeys(term, ['TC_ID', 'tcId']),
+        srNo: getTextByKeys(term, ['TCSrNo', 'tcSrNo']),
+        particulars: String(getTextByKeys(term, ['Particulars', 'particulars'])),
+        description: String(getTextByKeys(term, ['Description1', 'description'])),
+        selected: Boolean(term.selected),
+      }))
+    : [];
+  const workDate =
+    lineItems[0]?.dateTo ||
+    getTextByKeys(record, ['dateto', 'quotation_date', 'entry_date']);
+
+  return {
+    RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+    RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+    orderNo: getTextByKeys(record, ['quotation_no', 'quotationNo']),
+    date: String(workDate),
+    createdBy: String(getTextByKeys(record, ['user_name', 'userName'])),
+    vendorName1: String(getTextByKeys(record, ['vendor1_name', 'vendorName1'])),
+    vendorName2: String(getTextByKeys(record, ['vendor2_name', 'vendorName2'])),
+    vendorName3: String(getTextByKeys(record, ['vendor3_name', 'vendorName3'])),
+    netAmount1: getTextByKeys(record, ['netprice1', 'netAmount1']),
+    netAmount2: getTextByKeys(record, ['netprice2', 'netAmount2']),
+    netAmount3: getTextByKeys(record, ['netprice3', 'netAmount3']),
+    closeRenewed: String(getTextByKeys(record, ['close_by', 'renewal', 'rc'])),
+    contractType: String(getTextByKeys(record, ['contract_type', 'contractType'])),
+    place: String(getTextByKeys(record, ['place', 'Place'])),
+    scopeOfWork: String(getTextByKeys(record, ['scope_of_work', 'scopeOfWork'])),
+    filePath: String(getTextByKeys(record, ['file_path', 'filePath'])),
+    status: String(getTextByKeys(record, ['sanction', 'status']) || 'Pending'),
+    lineItems,
+    paymentTerms,
+    termsAndConditions,
+    raw: record,
+  };
+};
+
 const getEmployeeRecords = (payload: unknown): Record<string, unknown>[] => {
   if (Array.isArray(payload)) {
     return payload.filter(isRecord);
@@ -693,20 +1105,43 @@ export const DashboardContent: React.FC = () => {
   const [issueVerifications, setIssueVerifications] = useState<
     IssueVerificationItem[]
   >([]);
+  const [actionOnRecruitments, setActionOnRecruitments] = useState<
+    ActionOnRecruitmentItem[]
+  >([]);
   const [meetingPoints, setMeetingPoints] = useState<MeetingPointItem[]>([]);
   const [partyAdvances, setPartyAdvances] = useState<PartyAdvanceItem[]>([]);
   const [sadhakAdvances, setSadhakAdvances] = useState<SadhakAdvanceItem[]>([]);
-  const [partyAdvanceDebug, setPartyAdvanceDebug] = useState<unknown>(null);
+  const [paymentTermsVerifications, setPaymentTermsVerifications] = useState<
+    PaymentTermsVerifyItem[]
+  >([]);
+  const [purchaseQuotations, setPurchaseQuotations] = useState<
+    PurchaseQuotationItem[]
+  >([]);
+  const [rrsStatuses, setRrsStatuses] = useState<RrsStatusItem[]>([]);
+  const [materialQualities, setMaterialQualities] = useState<
+    MaterialQualityItem[]
+  >([]);
+  const [leaveApprovals, setLeaveApprovals] = useState<LeaveApprovalItem[]>([]);
+  const [workOrders, setWorkOrders] = useState<WorkOrderItem[]>([]);
   const [showBillDetails, setShowBillDetails] = useState(false);
   const [showBranchApprovals, setShowBranchApprovals] = useState(false);
   const [showIssueVerifications, setShowIssueVerifications] = useState(false);
+  const [showActionOnRecruitments, setShowActionOnRecruitments] = useState(false);
   const [showMeetingPoints, setShowMeetingPoints] = useState(false);
   const [showPartyAdvances, setShowPartyAdvances] = useState(false);
   const [showSadhakAdvances, setShowSadhakAdvances] = useState(false);
+  const [showPaymentTermsVerifications, setShowPaymentTermsVerifications] =
+    useState(false);
+  const [showPurchaseQuotations, setShowPurchaseQuotations] = useState(false);
+  const [showRrsStatuses, setShowRrsStatuses] = useState(false);
+  const [showMaterialQualities, setShowMaterialQualities] = useState(false);
+  const [showLeaveApprovals, setShowLeaveApprovals] = useState(false);
+  const [showWorkOrders, setShowWorkOrders] = useState(false);
   const [showStaticTable, setShowStaticTable] = useState(false);
   const [taskPageNumber, setTaskPageNumber] = useState(1);
   const [taskPageSize, setTaskPageSize] = useState(10);
   const [taskTotalCount, setTaskTotalCount] = useState(0);
+  const [taskSearch, setTaskSearch] = useState('');
   const [loadingTodos, setLoadingTodos] = useState(false);
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [error, setError] = useState('');
@@ -720,23 +1155,129 @@ export const DashboardContent: React.FC = () => {
     item: DashboardItem,
     pageNumber = 1,
     pageSize = 10,
+    searchText = '',
   ) => {
+    const normalizedSearchText = searchText.trim();
+    const isSearchActive = normalizedSearchText.length >= 3;
+    const requestPageNumber = isSearchActive ? 1 : pageNumber;
+    const requestPageSize = isSearchActive
+      ? Math.max(pageSize, item.RecordCount || 0, 500)
+      : pageSize;
+
     setActiveItem(item);
-    setTaskPageNumber(pageNumber);
+    setTaskPageNumber(requestPageNumber);
     setTaskPageSize(pageSize);
     setBillDetails([]);
     setBranchApprovals([]);
     setIssueVerifications([]);
+    setActionOnRecruitments([]);
     setMeetingPoints([]);
     setPartyAdvances([]);
     setSadhakAdvances([]);
-    setPartyAdvanceDebug(null);
+    setPaymentTermsVerifications([]);
+    setPurchaseQuotations([]);
+    setRrsStatuses([]);
+    setMaterialQualities([]);
+    setLeaveApprovals([]);
+    setWorkOrders([]);
     setShowBillDetails(false);
     setShowBranchApprovals(false);
     setShowIssueVerifications(false);
+    setShowActionOnRecruitments(false);
     setShowMeetingPoints(false);
     setShowPartyAdvances(false);
     setShowSadhakAdvances(false);
+    setShowPaymentTermsVerifications(false);
+    setShowPurchaseQuotations(false);
+    setShowRrsStatuses(false);
+    setShowMaterialQualities(false);
+    setShowLeaveApprovals(false);
+    setShowWorkOrders(false);
+
+    if (isMyRrsStatusItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(0);
+      setShowStaticTable(false);
+      setShowRrsStatuses(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetRRSDetails', {
+          rrsid: 0,
+          filtertype: '',
+          userid: getEmpNum(),
+          searchempnum: '',
+          dataflag: getDataFlag(),
+          type: 2,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
+        });
+        const rrsRows = getDataRecords(response.data).map(normalizeRrsStatus);
+        const totalRecords = getTotalRecords(response.data, rrsRows);
+        const nextTotalCount = Number(totalRecords);
+
+        setRrsStatuses(rrsRows);
+        setTaskTotalCount(nextTotalCount);
+        setActiveItem(currentItem =>
+          currentItem?.PanelId === item.PanelId
+            ? { ...currentItem, RecordCount: nextTotalCount }
+            : currentItem,
+        );
+        setItems(currentItems =>
+          currentItems.map(currentItem =>
+            currentItem.PanelId === item.PanelId
+              ? { ...currentItem, RecordCount: nextTotalCount }
+              : currentItem,
+          ),
+        );
+      } catch (apiError) {
+        setRrsStatuses([]);
+        setTaskTotalCount(0);
+        setError('Unable to load RRS status listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isLeaveApprovalItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowLeaveApprovals(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetLeaveApproval', {
+          EmpNum: 219,
+          Type: 2,
+          PageIndex: requestPageNumber,
+          PageSize: isSearchActive ? requestPageSize : Math.max(pageSize, 100),
+          DataFlag: getDataFlag(),
+        });
+        const leaveRows = getDataRecords(response.data).map(normalizeLeaveApproval);
+        const totalRecords =
+          response.data?.Meta?.TotalRecords ||
+          response.data?.meta?.totalRecords ||
+          leaveRows[0]?.RecordCount ||
+          item.RecordCount ||
+          0;
+
+        setLeaveApprovals(leaveRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setLeaveApprovals([]);
+        setTaskTotalCount(0);
+        setError('Unable to load leave or tour records listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
 
     if (item.source === 'static') {
       setTasks([]);
@@ -744,6 +1285,94 @@ export const DashboardContent: React.FC = () => {
       setShowStaticTable(true);
       setLoadingTasks(false);
       setError('');
+      return;
+    }
+
+    if (isActionOnRecruitmentItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowActionOnRecruitments(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post(
+          '/ToDo/GetActionOnRecruitmentDetails',
+          {
+            DM_ID: '',
+            DG_ID: '',
+            HSR_POST_NAME: '',
+            APPLICANT_NAME: '',
+            SHOW_EXPERIENCED: '',
+            INTERVIEW_DATE: '',
+            ADMIN_ACTION: '',
+            COMPANY: '',
+            DataFlag: getDataFlag(),
+            empnum: String(getEmpNum()),
+            Type: 2,
+            PageIndex: requestPageNumber,
+            PageSize: requestPageSize,
+          },
+        );
+        const recruitmentRows = getDataRecords(response.data).map(
+          normalizeActionOnRecruitment,
+        );
+        const totalRecords = Math.max(
+          getTotalRecords(response.data, recruitmentRows),
+          recruitmentRows.length,
+        );
+
+        setActionOnRecruitments(recruitmentRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setActionOnRecruitments([]);
+        setTaskTotalCount(0);
+        setError('Unable to load action on recruitment listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isMeetingPointConfirmationItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowMeetingPoints(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetMeetingPointConfApproval', {
+          empnum: getEmpNum(),
+          DataFlag: getDataFlag(),
+          Type: 2,
+          MeetId: 0,
+          Title: '',
+          FromDate: '',
+          ToDate: '',
+          Priority: '',
+          EmpName: '',
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
+        });
+        const meetingRows = getDataRecords(response.data).map(
+          normalizeMeetingPoint,
+        );
+        const totalRecords = getTotalRecords(response.data, meetingRows);
+
+        setMeetingPoints(meetingRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setMeetingPoints([]);
+        setTaskTotalCount(0);
+        setError('Unable to load meeting points confirmation listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
       return;
     }
 
@@ -760,9 +1389,9 @@ export const DashboardContent: React.FC = () => {
           empnum: String(getEmpNum()),
           dataflag: getDataFlag(),
           DataFlag: getDataFlag(),
-          PageNumber: pageNumber,
-          PageIndex: pageNumber,
-          PageSize: pageSize,
+          PageNumber: requestPageNumber,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
         });
         const meetingRows = getDataRecords(response.data).map(
           normalizeMeetingPoint,
@@ -787,6 +1416,192 @@ export const DashboardContent: React.FC = () => {
       return;
     }
 
+    if (isPaymentTermsVerificationItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(0);
+      setShowStaticTable(false);
+      setShowPaymentTermsVerifications(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetPaymentTerms', {
+          poid: 0,
+          filtertype: '',
+          contract_type: '',
+          userid: 188,
+          dataflag: getDataFlag(),
+          searchvendor: '',
+          Type: 2,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
+        });
+        const paymentTermsRows = getDataRecords(response.data).map(
+          normalizePaymentTermsVerification,
+        );
+        const totalRecords = getTotalRecords(response.data, paymentTermsRows);
+        const nextTotalCount = Number(totalRecords);
+
+        setPaymentTermsVerifications(paymentTermsRows);
+        setTaskTotalCount(nextTotalCount);
+        setActiveItem(currentItem =>
+          currentItem?.PanelId === item.PanelId
+            ? { ...currentItem, RecordCount: nextTotalCount }
+            : currentItem,
+        );
+        setItems(currentItems =>
+          currentItems.map(currentItem =>
+            currentItem.PanelId === item.PanelId
+              ? { ...currentItem, RecordCount: nextTotalCount }
+              : currentItem,
+          ),
+        );
+      } catch (apiError) {
+        setPaymentTermsVerifications([]);
+        setTaskTotalCount(0);
+        setError('Unable to load payment terms verification listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isPurchaseQuotationItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowPurchaseQuotations(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetPurchaseQuotation', {
+          qcsid: 0,
+          filtertype: '',
+          userid: getEmpNum(),
+          username: '',
+          dataflag: getDataFlag(),
+          searchvendor: '',
+          Type: 2,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
+        });
+        const quotationRows = getDataRecords(response.data).map(
+          normalizePurchaseQuotation,
+        );
+        const totalRecords =
+          response.data?.Meta?.TotalRecords ||
+          response.data?.meta?.totalRecords ||
+          quotationRows[0]?.RecordCount ||
+          item.RecordCount ||
+          0;
+
+        setPurchaseQuotations(quotationRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setPurchaseQuotations([]);
+        setTaskTotalCount(0);
+        setError('Unable to load purchase quotation listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isWorkOrderItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(0);
+      setShowStaticTable(false);
+      setShowWorkOrders(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetWorkOrders', {
+          quotation_no: 0,
+          filtertype: '',
+          userid: 267,
+          username: '',
+          dataflag: getDataFlag(),
+          searchvendor: '',
+          Type: 2,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
+        });
+        const workOrderRows = getDataRecords(response.data).map(normalizeWorkOrder);
+        const totalRecords = getTotalRecords(response.data, workOrderRows);
+        const nextTotalCount = Number(totalRecords);
+
+        setWorkOrders(workOrderRows);
+        setTaskTotalCount(nextTotalCount);
+        setActiveItem(currentItem =>
+          currentItem?.PanelId === item.PanelId
+            ? { ...currentItem, RecordCount: nextTotalCount }
+            : currentItem,
+        );
+        setItems(currentItems =>
+          currentItems.map(currentItem =>
+            currentItem.PanelId === item.PanelId
+              ? { ...currentItem, RecordCount: nextTotalCount }
+              : currentItem,
+          ),
+        );
+      } catch (apiError) {
+        setWorkOrders([]);
+        setTaskTotalCount(0);
+        setError('Unable to load work order listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isMaterialQualityItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowMaterialQualities(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetMaterialQuality', {
+          rmid: 0,
+          filtertype: '',
+          userid: 9225,
+          username: '',
+          dataflag: getDataFlag(),
+          searchvendor: '',
+          Type: 2,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
+        });
+        const qualityRows = getDataRecords(response.data).map(
+          normalizeMaterialQuality,
+        );
+        const totalRecords =
+          response.data?.Meta?.TotalRecords ||
+          response.data?.meta?.totalRecords ||
+          qualityRows[0]?.RecordCount ||
+          item.RecordCount ||
+          0;
+
+        setMaterialQualities(qualityRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setMaterialQualities([]);
+        setTaskTotalCount(0);
+        setError('Unable to load material quality listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
     if (isSadhakAdvanceItem(item)) {
       setTasks([]);
       setTaskTotalCount(item.RecordCount || 0);
@@ -801,8 +1616,8 @@ export const DashboardContent: React.FC = () => {
           DataFlag: getDataFlag(),
           Type: 2,
           EmpName: '',
-          PageIndex: pageNumber,
-          PageSize: pageSize,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
         });
         console.log('Sadhak advance response', response.data);
         const advanceRows = getDataRecords(response.data).map(normalizeSadhakAdvance);
@@ -840,11 +1655,9 @@ export const DashboardContent: React.FC = () => {
           DataFlag: getDataFlag(),
           Type: 2,
           VendorName: '',
-          PageIndex: pageNumber,
-          PageSize: pageSize,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
         });
-        console.log('Party advance response', response.data);
-        setPartyAdvanceDebug(response.data);
         const advanceRows = getDataRecords(response.data).map(normalizePartyAdvance);
         const totalRecords =
           response.data?.Meta?.TotalRecords ||
@@ -880,9 +1693,9 @@ export const DashboardContent: React.FC = () => {
             empnum: String(getEmpNum()),
             dataflag: getDataFlag(),
             DataFlag: getDataFlag(),
-            PageNumber: pageNumber,
-            PageIndex: pageNumber,
-            PageSize: pageSize,
+            PageNumber: requestPageNumber,
+            PageIndex: requestPageNumber,
+            PageSize: requestPageSize,
           }),
           getEmployeeAll({
             emp_num: 0,
@@ -926,9 +1739,9 @@ export const DashboardContent: React.FC = () => {
           empnum: String(getEmpNum()),
           dataflag: getDataFlag(),
           DataFlag: getDataFlag(),
-          PageNumber: pageNumber,
-          PageIndex: pageNumber,
-          PageSize: pageSize,
+          PageNumber: requestPageNumber,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
         });
         const approvalRows = getBranchApprovalRecords(response.data).map(
           normalizeBranchApproval,
@@ -967,8 +1780,8 @@ export const DashboardContent: React.FC = () => {
           dataflag: getDataFlag(),
           DataFlag: getDataFlag(),
           Type: '2',
-          PageIndex: String(pageNumber),
-          PageSize: String(pageSize),
+          PageIndex: String(requestPageNumber),
+          PageSize: String(requestPageSize),
         });
         const billRows = getBillRecords(response.data).map(normalizeBillDetail);
 
@@ -999,8 +1812,8 @@ export const DashboardContent: React.FC = () => {
         empnum: String(getEmpNum()),
         dataflag: getDataFlag(),
         Type: '2',
-        PageIndex: String(pageNumber),
-        PageSize: String(pageSize),
+        PageIndex: String(requestPageNumber),
+        PageSize: String(requestPageSize),
       });
 
       const taskRows =
@@ -1009,13 +1822,25 @@ export const DashboardContent: React.FC = () => {
         response.data?.Data ||
         response.data?.data ||
         [];
+      const taskList = Array.isArray(taskRows) ? taskRows : [];
+      const visibleTaskRows = isTaskConfirmationItem(item)
+        ? taskList.filter(
+            task =>
+              isRecord(task) &&
+              normalizeLabel(getTextByKeys(task, ['completed', 'Completed'])) === 'y',
+          )
+        : taskList;
       const totalRecords =
         response.data?.Meta?.TotalRecords ||
         response.data?.meta?.totalRecords ||
-        taskRows[0]?.RecordCount ||
+        visibleTaskRows[0]?.RecordCount ||
         0;
-      setTasks(taskRows);
-      setTaskTotalCount(Number(totalRecords));
+      setTasks(visibleTaskRows as TaskItem[]);
+      setTaskTotalCount(
+        isTaskConfirmationItem(item)
+          ? visibleTaskRows.length
+          : Number(totalRecords),
+      );
     } catch (apiError) {
       setTasks([]);
       setTaskTotalCount(0);
@@ -1030,7 +1855,7 @@ export const DashboardContent: React.FC = () => {
       return;
     }
 
-    fetchTasks(activeItem, pageNumber, taskPageSize);
+    fetchTasks(activeItem, pageNumber, taskPageSize, taskSearch);
   };
 
   const handleTaskPageSizeChange = (pageSize: number) => {
@@ -1038,8 +1863,64 @@ export const DashboardContent: React.FC = () => {
       return;
     }
 
-    fetchTasks(activeItem, 1, pageSize);
+    fetchTasks(activeItem, 1, pageSize, taskSearch);
   };
+
+  const handleTaskSearchChange = (searchText: string) => {
+    setTaskSearch(searchText);
+
+    if (!activeItem) {
+      return;
+    }
+
+    fetchTasks(activeItem, 1, taskPageSize, searchText);
+  };
+
+  const refreshPaymentTermsDashboardCount = useCallback(
+    async (dashboardItems: DashboardItem[]) => {
+      const paymentTermsItem = dashboardItems.find(isPaymentTermsVerificationItem);
+
+      if (!paymentTermsItem) {
+        return;
+      }
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetPaymentTerms', {
+          poid: 0,
+          filtertype: '',
+          contract_type: '',
+          userid: 188,
+          dataflag: getDataFlag(),
+          searchvendor: '',
+          Type: 2,
+          PageIndex: 1,
+          PageSize: 10,
+        });
+        const paymentTermsRows = getDataRecords(response.data).map(
+          normalizePaymentTermsVerification,
+        );
+        const nextTotalCount = Number(
+          getTotalRecords(response.data, paymentTermsRows),
+        );
+
+        setItems(currentItems =>
+          currentItems.map(currentItem =>
+            currentItem.PanelId === paymentTermsItem.PanelId
+              ? { ...currentItem, RecordCount: nextTotalCount }
+              : currentItem,
+          ),
+        );
+        setActiveItem(currentItem =>
+          currentItem?.PanelId === paymentTermsItem.PanelId
+            ? { ...currentItem, RecordCount: nextTotalCount }
+            : currentItem,
+        );
+      } catch (apiError) {
+        // Keep the dashboard count if the count refresh fails.
+      }
+    },
+    [],
+  );
 
   const fetchDashboard = useCallback(async () => {
     setLoadingTodos(true);
@@ -1056,6 +1937,7 @@ export const DashboardContent: React.FC = () => {
       const dashboardItems = response.data?.Dashboard || [];
       const allDashboardItems = [...staticTodoItems, ...dashboardItems];
       setItems(allDashboardItems);
+      await refreshPaymentTermsDashboardCount(allDashboardItems);
 
       if (allDashboardItems.length) {
         fetchTasks(allDashboardItems[0]);
@@ -1065,7 +1947,7 @@ export const DashboardContent: React.FC = () => {
     } finally {
       setLoadingTodos(false);
     }
-  }, [fetchTasks]);
+  }, [fetchTasks, refreshPaymentTermsDashboardCount]);
 
   useEffect(() => {
     fetchDashboard();
@@ -1107,7 +1989,10 @@ export const DashboardContent: React.FC = () => {
                 items={items}
                 activeId={activeItem?.PanelId}
                 loading={loadingTodos}
-                onSelect={item => fetchTasks(item, 1, taskPageSize)}
+                onSelect={item => {
+                  setTaskSearch('');
+                  fetchTasks(item, 1, taskPageSize, '');
+                }}
               />
             </div>
 
@@ -1121,6 +2006,8 @@ export const DashboardContent: React.FC = () => {
                   totalCount={taskTotalCount}
                   onPageChange={handleTaskPageChange}
                   onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
                 />
               ) : showBranchApprovals ? (
                 <BranchApprovalTable
@@ -1131,6 +2018,8 @@ export const DashboardContent: React.FC = () => {
                   totalCount={taskTotalCount}
                   onPageChange={handleTaskPageChange}
                   onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
                 />
               ) : showIssueVerifications ? (
                 <IssueVerificationTable
@@ -1141,6 +2030,20 @@ export const DashboardContent: React.FC = () => {
                   totalCount={taskTotalCount}
                   onPageChange={handleTaskPageChange}
                   onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showActionOnRecruitments ? (
+                <ActionOnRecruitmentTable
+                  items={actionOnRecruitments}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
                 />
               ) : showMeetingPoints ? (
                 <MeetingPointTable
@@ -1151,39 +2054,21 @@ export const DashboardContent: React.FC = () => {
                   totalCount={taskTotalCount}
                   onPageChange={handleTaskPageChange}
                   onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
                 />
               ) : showPartyAdvances ? (
-                <>
-                  <PartyAdvanceTable
-                    advances={partyAdvances}
-                    loading={loadingTasks}
-                    pageNumber={taskPageNumber}
-                    pageSize={taskPageSize}
-                    totalCount={taskTotalCount}
-                    onPageChange={handleTaskPageChange}
-                    onPageSizeChange={handleTaskPageSizeChange}
-                  />
-                  {partyAdvanceDebug && (
-                    <div className="card mt-5">
-                      <div className="card-header">
-                        <h3 className="card-title">Party Advance Debug</h3>
-                      </div>
-                      <div className="card-body">
-                        <pre
-                          style={{
-                            margin: 0,
-                            whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-word',
-                            maxHeight: '420px',
-                            overflow: 'auto',
-                          }}
-                        >
-                          {JSON.stringify(partyAdvanceDebug, null, 2)}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
-                </>
+                <PartyAdvanceTable
+                  advances={partyAdvances}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
               ) : showSadhakAdvances ? (
                 <SadhakAdvanceTable
                   advances={sadhakAdvances}
@@ -1193,6 +2078,80 @@ export const DashboardContent: React.FC = () => {
                   totalCount={taskTotalCount}
                   onPageChange={handleTaskPageChange}
                   onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showPaymentTermsVerifications ? (
+                <PaymentTermsVerificationTable
+                  items={paymentTermsVerifications}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showPurchaseQuotations ? (
+                <PurchaseQuotationApprovalTable
+                  quotations={purchaseQuotations}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showRrsStatuses ? (
+                <RrsStatusTable
+                  items={rrsStatuses}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showMaterialQualities ? (
+                <MaterialQualityTable
+                  items={materialQualities}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showLeaveApprovals ? (
+                <LeaveApprovalTable
+                  leaves={leaveApprovals}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showWorkOrders ? (
+                <WorkOrderApprovalTable
+                  orders={workOrders}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
                 />
               ) : (
                 <TaskTable
@@ -1205,6 +2164,8 @@ export const DashboardContent: React.FC = () => {
                   totalCount={taskTotalCount}
                   onPageChange={handleTaskPageChange}
                   onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
                 />
               )}
             </div>

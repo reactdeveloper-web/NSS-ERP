@@ -61,11 +61,7 @@ export const TaskDetailTable = ({
 
             <tbody>
               {tasks.map(task => (
-                <tr
-                  key={`${task.tid}-${task.RowNumber}`}
-                  className="cursor-pointer"
-                  onClick={() => setSelectedTask(task)}
-                >
+                <tr key={`${task.tid}-${task.RowNumber}`}>
                   <td align='center'>{task.RowNumber}</td>
                   <td align='center'>{task.pg_id}</td>
                   <td align='center'>{task.tid}</td>

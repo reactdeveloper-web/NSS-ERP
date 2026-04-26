@@ -9,6 +9,8 @@ interface SadhakAdvanceTableProps {
   totalCount: number;
   onPageChange: (pageNumber: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  searchValue?: string;
+  onSearchChange?: (search: string) => void;
 }
 
 interface SadhakAdvanceModalProps {
@@ -62,14 +64,43 @@ export const SadhakAdvanceTable = ({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  searchValue,
+  onSearchChange,
 }: SadhakAdvanceTableProps) => {
   const [selectedAdvance, setSelectedAdvance] = useState<SadhakAdvanceItem | null>(null);
-  const filteredAdvances = useMemo(() => advances, [advances]);
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const startRecord = totalCount === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
-  const endRecord = totalCount === 0 ? 0 : Math.min(pageNumber * pageSize, totalCount);
+  const [localSearch, setLocalSearch] = useState('');
+  const search = searchValue ?? localSearch;
+  const normalizedSearch = search.trim().toLowerCase();
+  const isSearchActive = normalizedSearch.length >= 3;
+  const filteredAdvances = useMemo(() => {
+    if (!isSearchActive) {
+      return advances;
+    }
+
+    return advances.filter(advance =>
+      [
+        advance.code,
+        advance.entryDate,
+        advance.billDueDate,
+        advance.employeeName,
+        advance.description,
+        advance.status,
+      ]
+        .map(formatValue)
+        .some(value => value.toLowerCase().includes(normalizedSearch)),
+    );
+  }, [advances, isSearchActive, normalizedSearch]);
+  const displayTotalCount = isSearchActive ? filteredAdvances.length : totalCount;
+  const displayPageNumber = isSearchActive ? 1 : pageNumber;
+  const totalPages = Math.max(1, Math.ceil(displayTotalCount / pageSize));
+  const startRecord =
+    displayTotalCount === 0 ? 0 : (displayPageNumber - 1) * pageSize + 1;
+  const endRecord =
+    displayTotalCount === 0
+      ? 0
+      : Math.min(displayPageNumber * pageSize, displayTotalCount);
   const pageNumbers = Array.from({ length: Math.min(totalPages, 5) }, (_, index) => {
-    const safeStartPage = Math.max(1, pageNumber - 2);
+    const safeStartPage = Math.max(1, displayPageNumber - 2);
     const safeEndPage = Math.min(totalPages, safeStartPage + 4);
     const adjustedStartPage = Math.max(1, safeEndPage - 4);
 
@@ -81,8 +112,22 @@ export const SadhakAdvanceTable = ({
       <div className="card-header pt-3 pb-3">
         <h3 className="card-title align-items-start flex-column">
           <span className="card-label fw-bolder fs-3 mb-1">Sadhak Advance Pending</span>
-          <span className="text-muted mt-1 fw-bold fs-7">{totalCount} records</span>
+          <span className="text-muted mt-1 fw-bold fs-7">
+            {displayTotalCount} records
+          </span>
         </h3>
+        <div className="card-toolbar m-0">
+          <input
+            type="text"
+            className="form-control form-control-sm form-control-solid w-250px"
+            placeholder="Advance Search"
+            value={search}
+            onChange={event => {
+              setLocalSearch(event.target.value);
+              onSearchChange?.(event.target.value);
+            }}
+          />
+        </div>
       </div>
 
       <div className="card-body py-3 dashboard-listing-body">
@@ -107,11 +152,7 @@ export const SadhakAdvanceTable = ({
 
                 <tbody>
                   {filteredAdvances.map((advance, index) => (
-                    <tr
-                      key={`${advance.code}-${advance.entryDate}-${index}`}
-                      className="cursor-pointer"
-                      onClick={() => setSelectedAdvance(advance)}
-                    >
+                    <tr key={`${advance.code}-${advance.entryDate}-${index}`}>
                       <td>{formatValue(advance.code)}</td>
                       <td>{formatValue(advance.entryDate)}</td>
                       <td>{formatValue(advance.billDueDate)}</td>
@@ -160,14 +201,14 @@ export const SadhakAdvanceTable = ({
 
           <div className="d-flex align-items-center gap-4">
             <span className="text-muted fs-7">
-              Showing {startRecord} to {endRecord} of {totalCount}
+              Showing {startRecord} to {endRecord} of {displayTotalCount}
             </span>
             <ul className="pagination pagination-circle pagination-outline mb-0">
-              <li className={`page-item ${pageNumber === 1 ? 'disabled' : ''}`}>
+              <li className={`page-item ${displayPageNumber === 1 ? 'disabled' : ''}`}>
                 <button
                   type="button"
                   className="page-link"
-                  onClick={() => onPageChange(Math.max(1, pageNumber - 1))}
+                  onClick={() => onPageChange(Math.max(1, displayPageNumber - 1))}
                 >
                   &laquo;
                 </button>
@@ -175,18 +216,18 @@ export const SadhakAdvanceTable = ({
               {pageNumbers.map(page => (
                 <li
                   key={page}
-                  className={`page-item ${page === pageNumber ? 'active' : ''}`}
+                  className={`page-item ${page === displayPageNumber ? 'active' : ''}`}
                 >
                   <button type="button" className="page-link" onClick={() => onPageChange(page)}>
                     {page}
                   </button>
                 </li>
               ))}
-              <li className={`page-item ${pageNumber >= totalPages ? 'disabled' : ''}`}>
+              <li className={`page-item ${displayPageNumber >= totalPages ? 'disabled' : ''}`}>
                 <button
                   type="button"
                   className="page-link"
-                  onClick={() => onPageChange(Math.min(totalPages, pageNumber + 1))}
+                  onClick={() => onPageChange(Math.min(totalPages, displayPageNumber + 1))}
                 >
                   &raquo;
                 </button>
@@ -251,6 +292,7 @@ const SadhakAdvanceModal = ({ advance, onClose }: SadhakAdvanceModalProps) => {
   const lastAdvance = getValueByKeys(advance.raw, ['LastAdvance']);
   const last15DayAdvance = getValueByKeys(advance.raw, ['Last15DayAdvance']);
   const expDue = getValueByKeys(advance.raw, ['ExpDue']);
+  const approvedAmount = getValueByKeys(advance.raw, ['AppAmt', 'RAmount']);
 
   return (
     <>
@@ -266,8 +308,10 @@ const SadhakAdvanceModal = ({ advance, onClose }: SadhakAdvanceModalProps) => {
       >
         <div className="dashboard-slide-header">
           <div>
-            <h4 className="mb-1">Sadhak Advance Detail</h4>
-            <div className="text-muted fs-7">
+            <h4 className="mb-1 dashboard-panel-title fs-3">
+              Sadhak Advance Detail
+            </h4>
+            <div className="text-primary mt-1 fs-6">
               Code: {formatValue(advance.code)} | Employee: {formatValue(advance.employeeName)}
             </div>
           </div>
@@ -281,21 +325,22 @@ const SadhakAdvanceModal = ({ advance, onClose }: SadhakAdvanceModalProps) => {
           </button>
         </div>
 
-        <div className="dashboard-slide-body">
-          <div className="row g-4 mb-5">
+        <div className="dashboard-slide-body dashboard-bill-panel-body">
+          <section className="card p-4 mb-3 border">
+            <div className="row g-4">
             <div className="col-lg-2 col-md-6">
-              <label className="form-label fs-8 text-muted mb-1">Code</label>
-              <div className="fw-bold text-dark mb-3">{formatValue(advance.code)}</div>
-              <label className="form-label fs-8 text-muted mb-1">Event / Ashram</label>
-              <div className="fw-bold text-dark">{formatValue(eventName)}</div>
-              <div className="fw-bold text-dark">{formatValue(ashramName)}</div>
+              <div className="dashboard-bill-label">Code</div>
+              <div className="dashboard-bill-text fw-bold mb-3">{formatValue(advance.code)}</div>
+              <div className="dashboard-bill-label">Event / Ashram</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(eventName)}</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(ashramName)}</div>
             </div>
             <div className="col-lg-3 col-md-6">
-              <label className="form-label fs-8 text-muted mb-1">Incharge Name</label>
-              <div className="fw-bold text-dark">{formatValue(inchargeName)}</div>
+              <div className="dashboard-bill-label">Incharge Name</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(inchargeName)}</div>
               <div className="text-muted fs-7 mb-2">{formatValue(departmentName)}</div>
-              <label className="form-label fs-8 text-muted mb-1">Advance For</label>
-              <div className="fw-bold text-dark">{formatValue(advanceFor)}</div>
+              <div className="dashboard-bill-label">Advance For</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(advanceFor)}</div>
               <div className="mt-3 pt-2 border-top">
                 <div className="d-flex justify-content-between fs-7">
                   <span className="fw-bold">Last Advance:</span>
@@ -312,14 +357,14 @@ const SadhakAdvanceModal = ({ advance, onClose }: SadhakAdvanceModalProps) => {
               </div>
             </div>
             <div className="col-lg-2 col-md-6">
-              <label className="form-label fs-8 text-muted mb-1">Entry Date / Due Date</label>
-              <div className="fw-bold text-dark">{formatValue(advance.entryDate)}</div>
-              <div className="fw-bold text-dark">{formatValue(advance.billDueDate)}</div>
-              <label className="form-label fs-8 text-muted mb-1 mt-4">From &amp; To Date</label>
-              <div className="fw-bold text-dark">{formatValue(fromToDate)}</div>
+              <div className="dashboard-bill-label">Entry Date / Due Date</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(advance.entryDate)}</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(advance.billDueDate)}</div>
+              <div className="dashboard-bill-label mt-4">From &amp; To Date</div>
+              <div className="dashboard-bill-text fw-bold">{formatValue(fromToDate)}</div>
             </div>
             <div className="col-lg-5 col-md-12">
-              <label className="form-label fs-8 text-muted mb-1">Description</label>
+              <div className="dashboard-bill-label">Description</div>
               <textarea
                 className="form-control form-control-sm"
                 rows={8}
@@ -328,107 +373,144 @@ const SadhakAdvanceModal = ({ advance, onClose }: SadhakAdvanceModalProps) => {
               />
             </div>
           </div>
+          </section>
 
-          <div className="row g-4 mb-5">
-            <div className="col-lg-2 col-md-6">
-              <label className="form-label fs-8 text-muted mb-1">Status</label>
-              <div className="mb-3">
-                <div className="text-muted fs-8">Billing</div>
-                <div className="fw-bold text-dark">{formatValue(hodRemark)}</div>
-                <div className="form-control form-control-sm mt-1">
-                  {formatValue(billAmount)}
+          <section className="dashboard-bill-workflow">
+            <h5 className="dashboard-bill-workflow-title">
+              Approval Workflow Stages
+            </h5>
+            <div className="dashboard-bill-workflow-line">
+              <article className="dashboard-bill-workflow-card is-active">
+                <span className="dashboard-bill-workflow-dot" />
+                <div className="dashboard-bill-workflow-header">
+                  <h6>Status</h6>
+                  <span>{formatValue(advance.status)}</span>
                 </div>
-              </div>
-              <div>
-                <div className="text-muted fs-8">Account</div>
-                <div className="fw-bold text-dark">{formatValue(commRecommendation)}</div>
-                <div className="form-control form-control-sm mt-1">
-                  {formatValue(accountPendingAmount)}
+                <div className="dashboard-bill-workflow-meta">
+                  <span>Billing: {formatValue(hodRemark)}</span>
                 </div>
-                <div className="fw-bold text-dark mt-2">{formatValue(requestAmount)}</div>
-              </div>
-            </div>
-            <div className="col-lg-4 col-md-6">
-              <label className="form-label fs-8 text-muted mb-1">Particulars</label>
-              <div className="table-responsive">
-                <table className="table table-bordered align-middle dashboard-bill-modal-table mb-0">
-                  <thead>
-                    <tr>
-                      <th>Advance Type</th>
-                      <th>Days</th>
-                      <th>Expected Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {particulars.length ? (
-                      particulars.map((item, index) => (
-                        <tr key={index}>
-                          <td>{formatValue(getValueByKeys(item, ['Adv_Particular']))}</td>
-                          <td>{formatValue(getValueByKeys(item, ['ForDays']))}</td>
-                          <td>{formatValue(getValueByKeys(item, ['Advance_Amount']))}</td>
-                        </tr>
-                      ))
-                    ) : (
+                <p>Bill Amount: {formatValue(billAmount)}</p>
+                <div className="dashboard-bill-workflow-meta">
+                  <span>Account: {formatValue(commRecommendation)}</span>
+                </div>
+                <p>Account Pending: {formatValue(accountPendingAmount)}</p>
+                <div className="dashboard-bill-workflow-footer">
+                  Requested Amount: {formatValue(requestAmount)}
+                </div>
+              </article>
+
+              <article
+                className={`dashboard-bill-workflow-card ${
+                  particulars.length ? 'is-active' : 'is-pending'
+                }`}
+              >
+                <span className="dashboard-bill-workflow-dot" />
+                <div className="dashboard-bill-workflow-header">
+                  <h6>Particulars</h6>
+                  <span>{particulars.length} item(s)</span>
+                </div>
+                <div className="table-responsive">
+                  <table className="table table-bordered align-middle dashboard-bill-modal-table mb-0">
+                    <thead>
                       <tr>
-                        <td colSpan={3} className="text-center text-muted">
-                          No particulars available.
-                        </td>
+                        <th>Advance Type</th>
+                        <th>Days</th>
+                        <th>Expected Amount</th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div className="col-lg-3 col-md-6">
-              <label className="form-label fs-8 text-muted mb-1">HOD Recommendation</label>
-              <textarea
-                className="form-control form-control-sm"
-                rows={5}
-                value={formatValue(hodRemark)}
-                readOnly
-              />
-              <div className="form-control form-control-sm mt-2">
-                {formatValue(requestAmount)}
-              </div>
-              <div className="d-flex gap-2 mt-2">
-                <span className="badge badge-light-success">Yes</span>
-                <span className="badge badge-light-secondary">No</span>
-              </div>
-            </div>
-            <div className="col-lg-2 col-md-6">
-              <label className="form-label fs-8 text-muted mb-1">GHOD Recommendation</label>
-              <textarea
-                className="form-control form-control-sm"
-                rows={5}
-                value={formatValue(ghodRemark || 'OK')}
-                readOnly
-              />
-              <div className="form-control form-control-sm mt-2">
-                {formatValue(getValueByKeys(advance.raw, ['AppAmt', 'RAmount']))}
-              </div>
-              <div className="d-flex gap-2 mt-2">
-                <span className="badge badge-light-success">
-                  {formatValue(ghodRecomm || 'Yes')}
-                </span>
-                <span className="badge badge-light-secondary">No</span>
-              </div>
-            </div>
-            <div className="col-lg-1 col-md-6">
-              <label className="form-label fs-8 text-muted mb-1">Approved</label>
-              <div className="form-control form-control-sm">
-                {formatValue(getValueByKeys(advance.raw, ['AppAmt']))}
-              </div>
-              <div className="d-flex gap-2 mt-3">
-                <span className="badge badge-light-success">
-                  {formatValue(commRecomm || 'Yes')}
-                </span>
-                <span className="badge badge-light-secondary">No</span>
-              </div>
-              <div className="text-muted fs-7 mt-2">{formatValue(approvedOn)}</div>
-            </div>
-          </div>
+                    </thead>
+                    <tbody>
+                      {particulars.length ? (
+                        particulars.map((item, index) => (
+                          <tr key={index}>
+                            <td>
+                              {formatValue(getValueByKeys(item, ['Adv_Particular']))}
+                            </td>
+                            <td>{formatValue(getValueByKeys(item, ['ForDays']))}</td>
+                            <td>
+                              {formatValue(getValueByKeys(item, ['Advance_Amount']))}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={3} className="text-center text-muted">
+                            No particulars available.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="dashboard-bill-workflow-footer mt-3">
+                  ADVANCE PARTICULARS
+                </div>
+              </article>
 
-          <div className="table-responsive">
+              <article className="dashboard-bill-workflow-card is-active">
+                <span className="dashboard-bill-workflow-dot" />
+                <div className="dashboard-bill-workflow-header">
+                  <h6>HOD Recommendation</h6>
+                  <span>{formatValue(hodRecomm || 'Yes')}</span>
+                </div>
+                <div className="dashboard-bill-workflow-meta">
+                  <span>Amt: {formatValue(requestAmount)}</span>
+                </div>
+                <textarea
+                  className="form-control form-control-sm"
+                  rows={4}
+                  value={formatValue(hodRemark)}
+                  readOnly
+                />
+                <div className="dashboard-bill-tag-row mt-3 mb-0">
+                  <span className="dashboard-bill-tag">Yes</span>
+                  <span className="dashboard-bill-tag">No</span>
+                </div>
+              </article>
+
+              <article className="dashboard-bill-workflow-card is-active">
+                <span className="dashboard-bill-workflow-dot" />
+                <div className="dashboard-bill-workflow-header">
+                  <h6>GHOD Recommendation</h6>
+                  <span>{formatValue(ghodRecomm || 'Yes')}</span>
+                </div>
+                <div className="dashboard-bill-workflow-meta">
+                  <span>Amt: {formatValue(approvedAmount)}</span>
+                </div>
+                <textarea
+                  className="form-control form-control-sm"
+                  rows={4}
+                  value={formatValue(ghodRemark || 'OK')}
+                  readOnly
+                />
+                <div className="dashboard-bill-tag-row mt-3 mb-0">
+                  <span className="dashboard-bill-tag">
+                    {formatValue(ghodRecomm || 'Yes')}
+                  </span>
+                  <span className="dashboard-bill-tag">No</span>
+                </div>
+              </article>
+
+              <article className="dashboard-bill-workflow-card is-active">
+                <span className="dashboard-bill-workflow-dot" />
+                <div className="dashboard-bill-workflow-header">
+                  <h6>Approved</h6>
+                  <span>{formatValue(approvedOn)}</span>
+                </div>
+                <div className="dashboard-bill-workflow-meta">
+                  <span>Approved Amount: {formatValue(approvedAmount)}</span>
+                </div>
+                <p>Final recommendation: {formatValue(commRecomm || 'Yes')}</p>
+                <div className="dashboard-bill-tag-row mb-0">
+                  <span className="dashboard-bill-tag">
+                    {formatValue(commRecomm || 'Yes')}
+                  </span>
+                  <span className="dashboard-bill-tag">No</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section className="card p-4 mb-3 border table-responsive">
             <table className="table table-bordered align-middle dashboard-bill-modal-table">
               <tbody>
                 <tr>
@@ -455,10 +537,10 @@ const SadhakAdvanceModal = ({ advance, onClose }: SadhakAdvanceModalProps) => {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </section>
         </div>
 
-        <div className="dashboard-slide-footer">
+        <div className="dashboard-slide-footer dashboard-bill-action-footer">
           <button type="button" className="btn btn-light" onClick={handleClose}>
             Close
           </button>
