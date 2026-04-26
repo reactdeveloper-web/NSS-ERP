@@ -99,12 +99,12 @@ export const TaskDetailModal = ({ task, onClose }: TaskDetailModalProps) => {
         <form className="h-100 d-flex flex-column" onSubmit={handleSubmit}>
           <div className="dashboard-slide-header">
             <div>
-              <h4 className="mb-1">Task Detail</h4>
-              <div className="text-muted fs-7">
+              <h4 className="mb-1 dashboard-panel-title fs-3">Task Detail</h4>
+              <div className="text-primary mt-1 fs-6">
                 Sr No: {task.RowNumber} | Program ID: {task.pg_id} | Task ID:{' '}
                 {task.tid}
               </div>
-              <div className="fw-bold text-dark">{task.name_eng}</div>
+              <div className="text-muted mt-1 fw-bold fs-6">{task.name_eng}</div>
             </div>
 
             <button
@@ -117,9 +117,10 @@ export const TaskDetailModal = ({ task, onClose }: TaskDetailModalProps) => {
             </button>
           </div>
 
-          <div className="dashboard-slide-body">
-            <div className="mb-5">
-              <div className="fw-bolder text-dark mb-1">{task.task}</div>
+          <div className="dashboard-slide-body dashboard-bill-panel-body">
+            <section className="card p-4 mb-3 border">
+              <div className="dashboard-bill-label">Task</div>
+              <div className="dashboard-bill-text fw-bolder mb-2">{task.task}</div>
               <div className="text-muted fs-7">
                 Task Date: {task.tdate || '-'} | Due Task Date:{' '}
                 {task.due_task_date || '-'}
@@ -130,14 +131,13 @@ export const TaskDetailModal = ({ task, onClose }: TaskDetailModalProps) => {
               <div className="text-muted fs-7">
                 Reason Detail: {task.reasondtl || '-'}
               </div>
-            </div>
+            </section>
 
-            <div className="row g-4 mb-5">
+            <section className="card p-4 mb-3 border">
+              <div className="row g-4">
               <div className="col-sm-6">
-                <label className="form-label fs-8 text-muted mb-1">
-                  Responsible Person
-                </label>
-                <div className="fw-bold text-dark">
+                <div className="dashboard-bill-label">Responsible Person</div>
+                <div className="dashboard-bill-text fw-bold">
                   {formatValue(task.responsible_person)}
                 </div>
                 <div className="text-muted fs-8">
@@ -145,17 +145,13 @@ export const TaskDetailModal = ({ task, onClose }: TaskDetailModalProps) => {
                 </div>
               </div>
               <div className="col-sm-6">
-                <label className="form-label fs-8 text-muted mb-1">
-                  Confirm By
-                </label>
-                <div className="fw-bold text-dark">
+                <div className="dashboard-bill-label">Confirm By</div>
+                <div className="dashboard-bill-text fw-bold">
                   {formatValue(task.confirm_by_name)}
                 </div>
               </div>
               <div className="col-sm-6">
-                <label className="form-label fs-8 text-muted mb-1">
-                  Completed
-                </label>
+                <div className="dashboard-bill-label">Completed</div>
                 <label className="form-check form-check-sm form-check-custom form-check-solid">
                   <input
                     className="form-check-input"
@@ -167,17 +163,13 @@ export const TaskDetailModal = ({ task, onClose }: TaskDetailModalProps) => {
                 </label>
               </div>
               <div className="col-sm-6">
-                <label className="form-label fs-8 text-muted mb-1">
-                  Completed Date
-                </label>
-                <div className="fw-bold text-dark">
+                <div className="dashboard-bill-label">Completed Date</div>
+                <div className="dashboard-bill-text fw-bold">
                   {formatValue(task.cdate || (completed ? task.tdate : ''))}
                 </div>
               </div>
               <div className="col-sm-6">
-                <label className="form-label fs-8 text-muted mb-1">
-                  Due Task Date
-                </label>
+                <div className="dashboard-bill-label">Due Task Date</div>
                 <input
                   type="text"
                   className="form-control form-control-sm"
@@ -186,34 +178,29 @@ export const TaskDetailModal = ({ task, onClose }: TaskDetailModalProps) => {
                 />
               </div>
               <div className="col-sm-6">
-                <label className="form-label fs-8 text-muted mb-1">
-                  Revert Count
-                </label>
-                <div className="fw-bold text-dark">
+                <div className="dashboard-bill-label">Revert Count</div>
+                <div className="dashboard-bill-text fw-bold">
                   {formatValue(task.revertcount || '0')}
                 </div>
               </div>
             </div>
+            </section>
 
-            <div className="mb-5">
-              <label className="form-label fs-8 text-muted mb-1">
-                Not Complete Reason
-              </label>
+            <section className="card p-4 mb-3 border">
+              <h5 className="dashboard-bill-section-title">Not Complete Reason</h5>
               <textarea
                 className="form-control form-control-sm"
                 rows={4}
                 value={reason}
                 onChange={event => setReason(event.target.value)}
               />
-            </div>
+            </section>
 
-            <div className="mb-5">
-              <label className="form-label fs-8 text-muted mb-1">
-                Attachment
-              </label>
+            <section className="card p-4 mb-3 border">
+              <h5 className="dashboard-bill-section-title">Attachment</h5>
               <input type="file" className="form-control form-control-sm mb-3" />
               {taskFiles.length ? (
-                <div className="d-flex flex-column gap-1">
+                <div className="dashboard-bill-link-list">
                   {taskFiles.map(file => {
                     const filePath = getTaskFilePath(file);
 
@@ -223,8 +210,16 @@ export const TaskDetailModal = ({ task, onClose }: TaskDetailModalProps) => {
                         href={filePath}
                         target="_blank"
                         rel="noreferrer"
+                        className="dashboard-bill-link-item"
                       >
-                        {getFileName(filePath)}
+                        <div className="dashboard-bill-link-icon">
+                          <i className="fa fa-paperclip" aria-hidden="true" />
+                        </div>
+                        <div className="dashboard-bill-link-content">
+                          <p>{getFileName(filePath)}</p>
+                          <span>{formatValue(filePath)}</span>
+                        </div>
+                        <i className="fa fa-external-link" aria-hidden="true" />
                       </a>
                     );
                   })}
@@ -232,24 +227,20 @@ export const TaskDetailModal = ({ task, onClose }: TaskDetailModalProps) => {
               ) : (
                 <span className="text-muted fs-8">No file</span>
               )}
-            </div>
+            </section>
 
-            <div className="mb-5">
-              <label className="form-label fs-8 text-muted mb-1">
-                Video URL
-              </label>
+            <section className="card p-4 mb-3 border">
+              <h5 className="dashboard-bill-section-title">Video URL</h5>
               <input
                 type="text"
                 className="form-control form-control-sm"
                 value={videoUrl}
                 onChange={event => setVideoUrl(event.target.value)}
               />
-            </div>
+            </section>
 
-            <div className="mb-5">
-              <label className="form-label fs-8 text-muted mb-1">
-                Forwarded
-              </label>
+            <section className="card p-4 mb-3 border">
+              <h5 className="dashboard-bill-section-title">Forwarded</h5>
               <select
                 className="form-select form-select-sm"
                 value={forwardedTo}
@@ -257,9 +248,9 @@ export const TaskDetailModal = ({ task, onClose }: TaskDetailModalProps) => {
               >
                 <option value="ALL">ALL</option>
               </select>
-            </div>
+            </section>
 
-            <div className="table-responsive">
+            <section className="card p-4 mb-3 border table-responsive">
               <table className="table table-bordered align-middle dashboard-bill-modal-table">
                 <tbody>
                   <tr>
@@ -288,10 +279,10 @@ export const TaskDetailModal = ({ task, onClose }: TaskDetailModalProps) => {
                   </tr>
                 </tbody>
               </table>
-            </div>
+            </section>
           </div>
 
-          <div className="dashboard-slide-footer">
+          <div className="dashboard-slide-footer dashboard-bill-action-footer">
             <button type="button" className="btn btn-light" onClick={handleClose}>
               Cancel
             </button>

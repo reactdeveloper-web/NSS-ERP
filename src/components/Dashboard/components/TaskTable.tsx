@@ -12,6 +12,8 @@ interface TaskTableProps {
   totalCount: number;
   onPageChange: (pageNumber: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  searchValue?: string;
+  onSearchChange?: (search: string) => void;
 }
 
 export const TaskTable = ({
@@ -24,8 +26,11 @@ export const TaskTable = ({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  searchValue,
+  onSearchChange,
 }: TaskTableProps) => {
-  const [search, setSearch] = useState('');
+  const [localSearch, setLocalSearch] = useState('');
+  const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
   const isSearchActive = normalizedSearch.length >= 3;
   const filteredTasks = useMemo(() => {
@@ -71,7 +76,10 @@ export const TaskTable = ({
               className="form-control form-control-sm form-control-solid w-250px"
               placeholder="Advance Search"
               value={search}
-              onChange={event => setSearch(event.target.value)}
+              onChange={event => {
+                setLocalSearch(event.target.value);
+                onSearchChange?.(event.target.value);
+              }}
             />
           </div>
         )}

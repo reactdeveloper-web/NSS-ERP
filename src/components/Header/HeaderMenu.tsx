@@ -622,8 +622,8 @@ const _HeaderMenu = (props: Props) => {
                       Sign Out
                     </a>
                   </div>
-                  <div className="separator my-2"></div>
-                  <div className="menu-item px-5">
+                  {/* <div className="separator my-2"></div> */}
+                  {/* <div className="menu-item px-5">
                     <div className="menu-content px-5">
                       <label
                         className="form-check form-switch form-check-custom form-check-solid pulse pulse-success"
@@ -643,7 +643,7 @@ const _HeaderMenu = (props: Props) => {
                         </span>
                       </label>
                     </div>
-                  </div>
+                  </div> */}
                 </MetronicDropdown>
               </div>
               {/* <!--end::User --> */}

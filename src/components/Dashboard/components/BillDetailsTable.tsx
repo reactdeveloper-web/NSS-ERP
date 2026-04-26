@@ -9,6 +9,8 @@ interface BillDetailsTableProps {
   totalCount: number;
   onPageChange: (pageNumber: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  searchValue?: string;
+  onSearchChange?: (search: string) => void;
 }
 
 interface BillDetailModalProps {
@@ -69,9 +71,12 @@ export const BillDetailsTable = ({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  searchValue,
+  onSearchChange,
 }: BillDetailsTableProps) => {
   const [selectedBill, setSelectedBill] = useState<BillDetailItem | null>(null);
-  const [search, setSearch] = useState("");
+  const [localSearch, setLocalSearch] = useState("");
+  const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
   const isSearchActive = normalizedSearch.length >= 3;
   const filteredBills = useMemo(() => {
@@ -132,7 +137,10 @@ export const BillDetailsTable = ({
                 className="form-control form-control-sm form-control-solid w-250px"
                 placeholder="Advance Search"
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => {
+                  setLocalSearch(event.target.value);
+                  onSearchChange?.(event.target.value);
+                }}
               />
             </div>
           </div>
@@ -415,6 +423,123 @@ const BillDetailModal = ({ bill, onClose }: BillDetailModalProps) => {
     "PresidentAmount",
     "President_Amount",
   ]);
+  const contractType = getValueByKeys(raw, ["Contracts", "ContractType"]);
+  const createdDate = getValueByKeys(raw, [
+    "CreatedDate",
+    "Created_Date",
+    "Bill_Rec_Date",
+    "BillRecDate",
+    "bill_rec_date",
+    "BillDate",
+    "BDate",
+  ]);
+  const verifyCode = getValueByKeys(raw, ["VerifyCode"]);
+  const paymentStatus = getValueByKeys(raw, ["PaymentStatus", "Payment_Status"]);
+  const payTermsAndApproval = getValueByKeys(raw, [
+    "PayTermsAndApproval",
+    "Pay_Terms_And_Approval",
+    "PayTerms",
+  ]);
+  const delayReason = getValueByKeys(raw, ["DelayReason", "Delay_Reason"]);
+  const flagItems = [
+    { label: "Gate Seal", checked: gateSeal, icon: "fa-check-circle" },
+    { label: "Store Seal", checked: storeSeal, icon: "fa-check-circle" },
+    { label: "PO Linked", checked: po, icon: "fa-check-circle" },
+    { label: "Direct", checked: direct, icon: "fa-circle-o" },
+    { label: "Contract", checked: contract, icon: "fa-check-circle" },
+    {
+      label: "Visit Done",
+      checked: getFlagChecked(raw, ["VisitDone", "Visit_Done"]),
+      icon: "fa-check-circle",
+    },
+    {
+      label: "Interaction",
+      checked: getFlagChecked(raw, ["Interaction", "InteractionDone"]),
+      icon: "fa-check-circle",
+    },
+    {
+      label: "Verified",
+      checked: getFlagChecked(raw, ["Verified", "IsVerified"]),
+      icon: "fa-shield",
+    },
+  ];
+  const fileLinks = [
+    {
+      title: "Bill Files (Final Scan)",
+      meta: String(getValueByKeys(raw, ["BillFileMeta", "BillFilesMeta"])),
+      href: String(getValueByKeys(raw, ["BillFiles", "Bill_File", "FilePath"])),
+      icon: "fa-file-pdf-o",
+      actionIcon: "fa-download",
+    },
+    {
+      title: "Quotation Files",
+      meta: String(
+        getValueByKeys(raw, ["QuotationMeta", "QuotationFilesMeta", "Quotation"]),
+      ),
+      href: String(getValueByKeys(raw, ["QuotationFile", "Quotation_Path", "QuotationPath"])),
+      icon: "fa-paperclip",
+      actionIcon: "fa-eye",
+    },
+    {
+      title: "Vendor/Agreement Files",
+      meta: String(getValueByKeys(raw, ["AgreementMeta", "AgreementNo", "AgreementId"])),
+      href: String(getValueByKeys(raw, ["AgreementFile", "Agreement_Path", "VendorFile"])),
+      icon: "fa-file-text-o",
+      actionIcon: "fa-external-link",
+    },
+    {
+      title: "Purchase Order (PO)",
+      meta: String(getValueByKeys(raw, ["PONumber", "PO_Number", "PO"])),
+      href: String(getValueByKeys(raw, ["POFile", "PO_Path", "PurchaseOrderFile"])),
+      icon: "fa-shopping-bag",
+      actionIcon: "fa-cog",
+    },
+  ];
+  const stageCards = [
+    {
+      title: "Billing Forward",
+      time: String(gateReceiveDate || billRecDate),
+      amount: bill.billAmount,
+      remark: gateRemark || "Documents complete.",
+      footer: "FORWARD TO HOD",
+      active: Boolean(gateReceiveDate || gateRemark),
+    },
+    {
+      title: "HOD Remark",
+      time: String(storeReceiveDate || paymentDueDate),
+      amount: bill.billAmount,
+      remark: storeRemark || sachivalayaRemark || "No remarks available.",
+      footer: "FORWARD TO AUDIT",
+      active: Boolean(storeReceiveDate || storeRemark || sachivalayaRemark),
+    },
+    {
+      title: "Commercial Forward",
+      time: String(poReceiveDate || paymentDueDate),
+      amount: bill.billAmount,
+      remark: poRemark || "Price verified against PO reference.",
+      footer: "FORWARD TO AUDIT",
+      active: Boolean(poReceiveDate || poRemark),
+    },
+    {
+      title: "Audit Forward",
+      time: String(auditReceiveDate || paymentDueDate),
+      amount: presidentAmount || bill.billAmount,
+      remark: auditRemark || "Internal audit check passed. All seals verified.",
+      footer: "FINAL SANCTION",
+      active: Boolean(auditReceiveDate || auditRemark),
+      tags: [po ? "PO" : "", contract ? "Contract" : "", quotation ? "Quotation" : ""].filter(Boolean),
+    },
+    {
+      title: "Advisor Forward",
+      time: "Pending",
+      amount: "",
+      remark: "Awaiting advisor input for high-value sanction.",
+      footer: "",
+      active: false,
+      pending: true,
+      tags: [],
+    },
+  ];
 
   return (
     <>
@@ -430,10 +555,13 @@ const BillDetailModal = ({ bill, onClose }: BillDetailModalProps) => {
       >
         <div className="dashboard-slide-header">
           <div>
-            <h4 className="mb-1">Bill Pending Detail</h4>
-            <div className="text-muted fs-7">
-              Bill Id: {formatValue(bill.billId)} | Bill No:{" "}
-              {formatValue(bill.billNo)}
+            <h4 className="mb-1 dashboard-panel-title fs-3">
+              {formatValue(bill.vendorSadhak || department)}
+              <div className="text-muted mt-1 fw-bold fs-6">{formatValue(department)}</div>
+            </h4>
+            <div className="text-primary mt-1 fs-6">
+               ID: {formatValue(bill.billNo || bill.billId)}
+              <span className="mx-5">Created: {formatValue(createdDate)}</span>
             </div>
           </div>
 
@@ -447,268 +575,161 @@ const BillDetailModal = ({ bill, onClose }: BillDetailModalProps) => {
           </button>
         </div>
 
-        <div className="dashboard-slide-body">
-          <div className="row g-4 mb-5">
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                Contracts
-              </label>
-              <div className="fw-bold text-dark">
-                {formatValue(getValueByKeys(raw, ["Contracts", "ContractType"]))}
+        <div className="dashboard-slide-body dashboard-bill-panel-body">
+          <section className="card p-4 mb-3 border">
+            <div className="row g-4">              
+              <div className="col-12">
+                <div className="dashboard-bill-label fs-6">Material Description</div>
+                <div className="dashboard-bill-text">{formatValue(bill.material)}</div>
+              </div>
+              <div className="col-12">
+                <div className="dashboard-bill-amount-strip rounded fs-5">
+                  <span>Total Bill Amount</span>
+                  <strong className="fs-3">{formatValue(bill.billAmount)} INR</strong>
+                </div>
               </div>
             </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                Vendor/Sadhak
-              </label>
-              <div className="fw-bold text-dark">
-                {formatValue(bill.vendorSadhak)}
-              </div>
-              <div className="text-muted fs-8">
-                Approval Status: {formatValue(vendorStatus)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                Dept.
-              </label>
-              <div className="fw-bold text-dark">
-                {formatValue(department)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                Material Desc.
-              </label>
-              <div className="fw-bold text-dark">
-                {formatValue(bill.material)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                Bill Id
-              </label>
-              <div className="fw-bold text-dark">{formatValue(bill.billId)}</div>
-            </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Bill No</label>
-              <div className="fw-bold text-dark">{formatValue(bill.billNo)}</div>
-            </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Bill Date</label>
-              <div className="fw-bold text-dark">
-                {formatValue(bill.billDate)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                Entry By
-              </label>
-              <div className="fw-bold text-dark">{formatValue(entryBy)}</div>
-            </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">N.A.</label>
-              <div className="fw-bold text-dark">{formatValue(na)}</div>
-            </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                Bill Amount
-              </label>
-              <div className="fw-bold text-dark">
-                {formatValue(bill.billAmount)}
-              </div>
-            </div>
-          </div>
+          </section>
 
-          <div className="row g-4 mb-5">
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                Bill Rec Date
-              </label>
-              <div className="fw-bold text-primary fs-4">
-                {formatValue(billRecDate)}
-              </div>
-            </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                Payment Due Date
-              </label>
-              <div className="fw-bold text-primary fs-4">
-                {formatValue(paymentDueDate)}
-              </div>
-            </div>
-          </div>
-
-          <div className="row g-4 mb-5">
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">Status</label>
-              <select
-                className="form-select form-select-sm"
-                value={status}
-                onChange={(event) => setStatus(event.target.value)}
+          <section className="dashboard-bill-flag-grid gap-2">
+            {flagItems.map((item) => (
+              <div
+                key={item.label}
+                className={`dashboard-bill-flag-item rounded-pill fs-6 fw-normal p-2 px-4  ${item.checked ? "is-active" : "is-muted"}`}
               >
-                {statusOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-2">
-                Document Flags
-              </label>
-              <div className="d-flex flex-column gap-3">
-                {[
-                  ["Gate Seal", gateSeal, setGateSeal],
-                  ["Store Seal", storeSeal, setStoreSeal],
-                  ["PO", po, setPo],
-                  ["Direct", direct, setDirect],
-                  ["Contract", contract, setContract],
-                  ["Quotation", quotation, setQuotation],
-                  ["Forward To HOD", forwardToHod, setForwardToHod],
-                  ["Forward To Audit", forwardToAudit, setForwardToAudit],
-                ].map(([label, checked, setChecked]) => (
-                  <label
-                    className="form-check form-check-custom form-check-solid"
-                    key={String(label)}
-                  >
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={Boolean(checked)}
-                      onChange={event =>
-                        (setChecked as React.Dispatch<React.SetStateAction<boolean>>)(
-                          event.target.checked,
-                        )
-                      }
-                    />
-                    <span className="form-check-label fw-bold">
-                      {String(label)}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="row g-4 mb-5">
-            {[
-              ["Gate", gateReceiveDate, gateRemark],
-              ["Store", storeReceiveDate, storeRemark],
-              ["Audit", auditReceiveDate, auditRemark],
-              ["PO", poReceiveDate, poRemark],
-              ["President", presidentReceiveDate, ""],
-            ].map(([label, date, remark]) => (
-              <div className="col-sm-6" key={String(label)}>
-                <label className="form-label fs-8 text-muted mb-1">
-                  {String(label)} Receive Date
-                </label>
-                <input
-                  type="text"
-                  className="form-control form-control-sm mb-2"
-                  value={String(date || "")}
-                  readOnly
-                />
-                <label className="form-label fs-8 text-muted mb-1">
-                  Amount
-                </label>
-                <input
-                  type="text"
-                  className="form-control form-control-sm mb-2"
-                  value={String(bill.billAmount || "")}
-                  readOnly
-                />
-                <label className="form-label fs-8 text-muted mb-1">
-                  Remark
-                </label>
-                <textarea
-                  className="form-control form-control-sm"
-                  rows={3}
-                  value={String(remark || "")}
-                  readOnly
-                />
+                <i className={`fa ${item.icon} fs-3`} aria-hidden="true" />
+                <span>{item.label}</span>
               </div>
             ))}
-          </div>
+          </section>
 
-          <div className="row g-4 mb-5">
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                Sachivalaya Remark
-              </label>
-              <textarea
-                className="form-control form-control-sm"
-                rows={5}
-                value={sachivalayaRemark}
-                onChange={event => setSachivalayaRemark(event.target.value)}
-              />
-            </div>
-            <div className="col-sm-6">
-              <label className="form-label fs-8 text-muted mb-1">
-                President Remark
-              </label>
-              <textarea
-                className="form-control form-control-sm mb-3"
-                rows={5}
-                value={presidentRemark}
-                onChange={event => setPresidentRemark(event.target.value)}
-              />
-              <label className="form-label fs-8 text-muted mb-1">
-                President Amount
-              </label>
-              <div className="fw-bold text-dark">
-                {formatValue(presidentAmount || bill.billAmount)} INR
+          <section className="card p-4 mb-3 border">
+            <h5 className="dashboard-bill-section-title">Attachments &amp; Links</h5>
+            <div className="dashboard-bill-link-list">
+              {fileLinks.map((item) => (
+                <a
+                  key={item.title}
+                  className="dashboard-bill-link-item"
+                  href={item.href || "#"}
+                  target={item.href ? "_blank" : undefined}
+                  rel={item.href ? "noreferrer" : undefined}
+                >
+                  <div className="dashboard-bill-link-icon">
+                    <i className={`fa ${item.icon}`} aria-hidden="true" />
+                  </div>
+                  <div className="dashboard-bill-link-content">
+                    <p>{item.title}</p>
+                    <span>{formatValue(item.meta || "Not Available")}</span>
+                  </div>
+                  <i className={`fa ${item.actionIcon}`} aria-hidden="true" />
+                </a>
+              ))}
+              <div className="dashboard-bill-payment-status">
+                <div className="d-flex align-items-center gap-2">
+                  <i className="fa fa-money" aria-hidden="true" />
+                  <span>Payment Status</span>
+                </div>
+                <span className="dashboard-bill-payment-pill">
+                  {formatValue(paymentStatus || "Processing")}
+                </span>
               </div>
             </div>
-          </div>
+          </section>
 
-          <div className="table-responsive">
-            <table className="table table-bordered align-middle dashboard-bill-modal-table">
-              <tbody>
-                <tr>
-                  <th>Pay Terms And Approval</th>
-                  <td>
-                    {formatValue(
-                      getValueByKeys(raw, [
-                        "PayTermsAndApproval",
-                        "Pay_Terms_And_Approval",
-                        "PayTerms",
-                      ]),
-                    )}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Delay Reason</th>
-                  <td>
-                    {formatValue(
-                      getValueByKeys(raw, ["DelayReason", "Delay_Reason"]),
-                    )}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Payment Status</th>
-                  <td>
-                    {formatValue(
-                      getValueByKeys(raw, ["PaymentStatus", "Payment_Status"]),
-                    )}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Verify Code</th>
-                  <td>{formatValue(getValueByKeys(raw, ["VerifyCode"]))}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <section className="dashboard-bill-workflow">
+            <h5 className="dashboard-bill-workflow-title">Approval Workflow Stages</h5>
+            <div className="dashboard-bill-workflow-line">
+              {stageCards.map((stage) => (
+                <article
+                  key={stage.title}
+                  className={`dashboard-bill-workflow-card ${
+                    stage.active ? "is-active" : "is-pending"
+                  }`}
+                >
+                  <span className="dashboard-bill-workflow-dot" />
+                  <div className="dashboard-bill-workflow-header">
+                    <h6>{stage.title}</h6>
+                    <span>{formatValue(stage.time)}</span>
+                  </div>
+                  {stage.tags?.length ? (
+                    <div className="dashboard-bill-tag-row">
+                      {stage.tags.map((tag) => (
+                        <span key={tag} className="dashboard-bill-tag">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  {stage.amount ? (
+                    <div className="dashboard-bill-workflow-meta">
+                      <span>Amt: ₹ {formatValue(stage.amount)}</span>
+                    </div>
+                  ) : null}
+                  <p>{formatValue(stage.remark)}</p>
+                  {stage.footer ? (
+                    <div className="dashboard-bill-workflow-footer">{stage.footer}</div>
+                  ) : null}
+                </article>
+              ))}
+
+              <section className="dashboard-bill-final-card">
+                <h6>Final Sanction Details</h6>
+                <div className="mb-4">
+                  <label className="form-label fs-8 text-muted mb-2">
+                    Sachivalaya Remark
+                  </label>
+                  <textarea
+                    className="form-control"
+                    rows={4}
+                    value={sachivalayaRemark}
+                    onChange={(event) => setSachivalayaRemark(event.target.value)}
+                    placeholder="Enter remarks..."
+                  />
+                </div>
+                <div>
+                  <label className="form-label fs-8 text-muted mb-2">
+                    President Remark
+                  </label>
+                  <input
+                    className="form-control"
+                    value={presidentRemark}
+                    onChange={(event) => setPresidentRemark(event.target.value)}
+                    placeholder="Enter final decision..."
+                  />
+                </div>
+              </section>
+            </div>
+          </section>
+
         </div>
 
-        <div className="dashboard-slide-footer">
-          <button type="button" className="btn btn-light" onClick={handleClose}>
-            Cancel
-          </button>
-          <button type="button" className="btn btn-primary">
-            Save
+        <div className="dashboard-slide-footer dashboard-bill-action-footer">
+          <div className="dashboard-bill-verify d-flex justify-content-between gap-3">
+            <div className=" d-flex align-items-center gap-3">
+            <label className="form-label fs-8 text-muted mb-0">Verify Code</label>
+            <div className="dashboard-bill-verify-input">
+              <i className="fa fa-lock" aria-hidden="true" />
+              <input
+                type="text"
+                className="form-control"
+                defaultValue={String(verifyCode || "")}
+                placeholder="Enter 6-digit security code"
+              />
+            </div>
+            </div>
+            <div className=" d-flex align-items-center gap-3">
+            <button type="button" className="btn btn-light-danger">
+              Reject
+            </button>
+            <button type="button" className="btn btn-light">
+              Hold
+            </button>
+            </div>
+          </div>
+          
+          <button type="button" className="btn nssBtnColor text-white dashboard-bill-submit">
+            <i className="fa fa-shield" aria-hidden="true" />
+            <span>Sanction &amp; Authorize Payment</span>
           </button>
         </div>
       </aside>
