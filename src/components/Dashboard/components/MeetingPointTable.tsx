@@ -127,14 +127,14 @@ export const MeetingPointTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th width="7%">Sr No.</th>
-                      <th width="10%">Code</th>
-                      <th width="12%">Date</th>
-                      <th width="16%">Assign Name</th>
-                      <th width="10%">Priority</th>
-                      <th width="12%">Due Date</th>
-                      <th width="23%">Title</th>
-                      <th className="text-center" width="10%">
+                      <th className='width-7'>Sr No.</th>
+                      <th className='width-10'>Code</th>
+                      <th className='width-12'>Date</th>
+                      <th className='width-16'>Assign Name</th>
+                      <th className='width-10'>Priority</th>
+                      <th className='width-12'>Due Date</th>
+                      <th className='width-23'>Title</th>
+                      <th className="text-center width-10">
                         Complete
                       </th>
                     </tr>

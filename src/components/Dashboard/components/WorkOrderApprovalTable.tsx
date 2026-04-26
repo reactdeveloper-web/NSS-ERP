@@ -144,14 +144,14 @@ export const WorkOrderApprovalTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th width="10%">Order No</th>
-                      <th width="12%">Date</th>
-                      <th width="16%">Created By</th>
-                      <th width="30%">Vendor Name</th>
-                      <th className="text-end" width="16%">
+                      <th className='width-10'>Order No</th>
+                      <th className='width-12'>Date</th>
+                      <th className='width-16'>Created By</th>
+                      <th className='width-30'>Vendor Name</th>
+                      <th className="text-end width-16%">
                         Net Amount
                       </th>
-                      <th width="16%">Close / Renewed</th>
+                      <th className='width-16%'>Close / Renewed</th>
                     </tr>
                   </thead>
 

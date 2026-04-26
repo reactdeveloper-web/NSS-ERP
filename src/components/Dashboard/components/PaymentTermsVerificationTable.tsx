@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { PaymentTermsVerifyItem } from './types';
 
 interface PaymentTermsVerificationTableProps {
@@ -11,11 +11,6 @@ interface PaymentTermsVerificationTableProps {
   onPageSizeChange: (pageSize: number) => void;
   searchValue?: string;
   onSearchChange?: (search: string) => void;
-}
-
-interface PaymentTermsVerificationModalProps {
-  item: PaymentTermsVerifyItem | null;
-  onClose: () => void;
 }
 
 const formatValue = (value: unknown) => {
@@ -65,8 +60,6 @@ export const PaymentTermsVerificationTable = ({
   searchValue,
   onSearchChange,
 }: PaymentTermsVerificationTableProps) => {
-  const [selectedItem, setSelectedItem] =
-    useState<PaymentTermsVerifyItem | null>(null);
   const [localSearch, setLocalSearch] = useState('');
   const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
@@ -114,7 +107,6 @@ export const PaymentTermsVerificationTable = ({
   );
 
   return (
-    <>
       <div className="card h-100 mb-5 mb-xl-8 dashboard-listing-card">
         <div className="card-header pt-3 pb-3">
           <h3 className="card-title align-items-start flex-column">
@@ -148,15 +140,15 @@ export const PaymentTermsVerificationTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th width="10%">App. OT. No.</th>
-                      <th width="12%">Quotation No.</th>
-                      <th width="24%">Vendor Name</th>
-                      <th width="18%">Payment Term</th>
-                      <th width="12%">Pay Date</th>
-                      <th className="text-end" width="12%">
+                      <th className='width-10'>App. OT. No.</th>
+                      <th className='width-12'>Quotation No.</th>
+                      <th className='width-24'>Vendor Name</th>
+                      <th className='width-18'>Payment Term</th>
+                      <th className='width-12'>Pay Date</th>
+                      <th className="text-end width-12%">
                         Amount
                       </th>
-                      <th className="text-center" width="12%">
+                      <th className="text-center width-12%">
                         Status
                       </th>
                     </tr>
@@ -272,244 +264,5 @@ export const PaymentTermsVerificationTable = ({
           </div>
         </div>
       </div>
-
-      <PaymentTermsVerificationModal
-        item={selectedItem}
-        onClose={() => setSelectedItem(null)}
-      />
-    </>
-  );
-};
-
-const PaymentTermsVerificationModal = ({
-  item,
-  onClose,
-}: PaymentTermsVerificationModalProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [status, setStatus] = useState('Pending');
-  const [remark, setRemark] = useState('');
-  const [advanceAmount, setAdvanceAmount] = useState('');
-
-  useEffect(() => {
-    if (!item) {
-      return;
-    }
-
-    setStatus(getStatusText(item.status));
-    setRemark(item.remark || '');
-    setAdvanceAmount('');
-    const animationFrame = window.requestAnimationFrame(() => setIsOpen(true));
-
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, [item]);
-
-  if (!item) {
-    return null;
-  }
-
-  const handleClose = () => {
-    setIsOpen(false);
-    window.setTimeout(onClose, 300);
-  };
-
-  return (
-    <>
-      <div
-        className={`dashboard-slide-backdrop ${isOpen ? 'is-open' : ''}`}
-        onClick={handleClose}
-      />
-      <aside
-        className={`dashboard-slide-modal ${isOpen ? 'is-open' : ''}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Payment terms verification detail"
-      >
-        <div className="dashboard-slide-header">
-          <div>
-            <h4 className="mb-1 dashboard-panel-title fs-3">
-              Payment Terms Verification
-            </h4>
-            <div className="text-primary mt-1 fs-6">
-              App. OT. No: {formatValue(item.qcsAppCode)}
-              <span className="mx-5">
-                PO No: {formatValue(item.poId || item.qcsAppCode)}
-              </span>
-            </div>
-            <div className="text-muted mt-1 fw-bold fs-6">
-              {formatValue(item.vendorName)}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="btn btn-sm btn-icon btn-active-color-primary"
-            aria-label="Close"
-            onClick={handleClose}
-          >
-            <i className="fa fa-times" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div className="dashboard-slide-body dashboard-bill-panel-body">
-          <section className="card p-4 mb-3 border">
-            <div className="row g-4">
-              <div className="col-sm-6">
-                <div className="dashboard-bill-label">Quotation No.</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(item.quotationNo)}
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="dashboard-bill-label">Pay Date</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(item.payDate)}
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="dashboard-bill-label">Payment Term</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(item.paymentTerm)}
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="dashboard-bill-label">Payment Type</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(item.paymentType)}
-                </div>
-              </div>
-              <div className="col-12">
-                <div className="dashboard-bill-label">Scope of Work</div>
-                <div className="dashboard-bill-text">
-                  {formatValue(item.scopeOfWork)}
-                </div>
-              </div>
-              <div className="col-12">
-                <div className="dashboard-bill-amount-strip rounded fs-5">
-                  <span>Amount</span>
-                  <strong className="fs-3">{formatValue(item.amount)}</strong>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="dashboard-bill-workflow">
-            <h5 className="dashboard-bill-workflow-title">To Be Verified</h5>
-            <div className="dashboard-bill-workflow-line">
-              {item.verifyTermsList.length ? (
-                item.verifyTermsList.map(term => (
-                  <article
-                    key={`${term.amcSrno}-${term.srno}`}
-                    className="dashboard-bill-workflow-card is-active"
-                  >
-                    <span className="dashboard-bill-workflow-dot" />
-                    <div className="dashboard-bill-workflow-header">
-                      <h6>Work / Purchase Dtl.</h6>
-                      <span>{formatValue(term.workComplete)}</span>
-                    </div>
-                    <p>{formatValue(term.maintenanceDesc)}</p>
-                    <div className="dashboard-bill-workflow-footer">
-                      Remark: {formatValue(term.maintenanceRemark)}
-                    </div>
-                  </article>
-                ))
-              ) : (
-                <article className="dashboard-bill-workflow-card is-pending">
-                  <span className="dashboard-bill-workflow-dot" />
-                  <div className="dashboard-bill-workflow-header">
-                    <h6>Work / Purchase Dtl.</h6>
-                    <span>-</span>
-                  </div>
-                  <p>No verification terms available.</p>
-                </article>
-              )}
-            </div>
-          </section>
-
-          <section className="card p-4 mb-3 border">
-            <h5 className="dashboard-bill-section-title">Over All Status</h5>
-            <textarea
-              className="form-control mb-3"
-              rows={4}
-              value={remark}
-              onChange={event => setRemark(event.target.value)}
-              placeholder="Remark show to account dept in advance"
-            />
-            <div className="d-flex gap-3 flex-wrap mb-4">
-              {['Approve', 'Pending', 'Close'].map(option => (
-                <button
-                  key={option}
-                  type="button"
-                  className={`btn ${
-                    status === option ? 'btn-secondary' : 'btn-light'
-                  }`}
-                  onClick={() => setStatus(option)}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-            <div className="row g-3 align-items-center">
-              <div className="col-sm-3">
-                <div className="dashboard-bill-label mb-0">Adv. Amount</div>
-              </div>
-              <div className="col-sm-9">
-                <input
-                  type="text"
-                  className="form-control"
-                  value={advanceAmount}
-                  onChange={event => setAdvanceAmount(event.target.value)}
-                />
-              </div>
-              <div className="col-12">
-                <input type="file" className="form-control" />
-              </div>
-            </div>
-          </section>
-
-          <section className="card p-4 mb-3 border">
-            <h5 className="dashboard-bill-section-title">Attachments &amp; Links</h5>
-            <div className="dashboard-bill-link-list">
-              <a
-                className="dashboard-bill-link-item"
-                href={item.orderLink || '#'}
-                target={item.orderLink ? '_blank' : undefined}
-                rel={item.orderLink ? 'noreferrer' : undefined}
-              >
-                <div className="dashboard-bill-link-icon">
-                  <i className="fa fa-file-text-o" aria-hidden="true" />
-                </div>
-                <div className="dashboard-bill-link-content">
-                  <p>Purchase / Work Order</p>
-                  <span>{formatValue(item.orderLink || 'Not Available')}</span>
-                </div>
-                <i className="fa fa-external-link" aria-hidden="true" />
-              </a>
-              <div className="dashboard-bill-payment-status">
-                <div className="d-flex align-items-center gap-2">
-                  <i className="fa fa-check-circle" aria-hidden="true" />
-                  <span>Current Status</span>
-                </div>
-                <span className="dashboard-bill-payment-pill">{status}</span>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <div className="dashboard-slide-footer dashboard-bill-action-footer">
-          <button type="button" className="btn btn-light" onClick={handleClose}>
-            Close
-          </button>
-          <button type="button" className="btn btn-light-primary">
-            WO seal and sign copy
-          </button>
-          <button type="button" className="btn btn-light-info">
-            TS seal and sign copy
-          </button>
-          <button type="button" className="btn nssBtnColor text-white">
-            Account Status
-          </button>
-        </div>
-      </aside>
-    </>
   );
 };
