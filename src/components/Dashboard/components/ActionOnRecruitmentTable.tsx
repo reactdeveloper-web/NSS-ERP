@@ -109,13 +109,13 @@ export const ActionOnRecruitmentTable = ({
               <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                 <thead>
                   <tr className="fw-bolder text-muted">
-                    <th width="12%">Application No.</th>
-                    <th width="18%">Name</th>
-                    <th width="15%">DOB</th>
-                    <th width="10%">Sex</th>
-                    <th width="20%">Dept Name</th>
-                    <th width="17%">Post Name</th>
-                    <th className="text-end" width="8%">
+                    <th className='width-12'>Application No.</th>
+                    <th className='width-18'>Name</th>
+                    <th className='width-15'>DOB</th>
+                    <th className='width-10'>Sex</th>
+                    <th className='width-20'>Dept Name</th>
+                    <th className='width-17'>Post Name</th>
+                    <th className="text-end width-8">
                       Salary
                     </th>
                   </tr>

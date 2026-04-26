@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { PartyAdvanceItem } from './types';
 
 interface PartyAdvanceTableProps {
@@ -13,29 +13,12 @@ interface PartyAdvanceTableProps {
   onSearchChange?: (search: string) => void;
 }
 
-interface PartyAdvanceModalProps {
-  advance: PartyAdvanceItem | null;
-  onClose: () => void;
-}
-
 const formatValue = (value: unknown) => {
   if (value === null || value === undefined || value === '') {
     return '-';
   }
 
   return String(value);
-};
-
-const getValueByKeys = (record: Record<string, unknown>, keys: string[]) => {
-  for (const key of keys) {
-    const value = record[key];
-
-    if (value !== null && value !== undefined && value !== '') {
-      return value;
-    }
-  }
-
-  return '';
 };
 
 const getStatusBadgeClass = (status: string) => {
@@ -67,7 +50,6 @@ export const PartyAdvanceTable = ({
   searchValue,
   onSearchChange,
 }: PartyAdvanceTableProps) => {
-  const [selectedAdvance, setSelectedAdvance] = useState<PartyAdvanceItem | null>(null);
   const [localSearch, setLocalSearch] = useState('');
   const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
@@ -139,12 +121,12 @@ export const PartyAdvanceTable = ({
               <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                 <thead>
                   <tr className="fw-bolder text-muted">
-                    <th width="10%">Code</th>
-                    <th width="12%">Entry Date</th>
-                    <th width="18%">Bill Due Date</th>
-                    <th width="18%">Vendor Name</th>
-                    <th width="28%">Description</th>
-                    <th className="text-center" width="14%">
+                    <th className='width-10'>Code</th>
+                    <th className='width-12'>Entry Date</th>
+                    <th className='width-18'>Bill Due Date</th>
+                    <th className='width-18'>Vendor Name</th>
+                    <th className='width-28'>Description</th>
+                    <th className="text-center width-14%">
                       Status
                     </th>
                   </tr>
@@ -222,7 +204,11 @@ export const PartyAdvanceTable = ({
                   key={page}
                   className={`page-item ${page === displayPageNumber ? 'active' : ''}`}
                 >
-                  <button type="button" className="page-link" onClick={() => onPageChange(page)}>
+                  <button
+                    type="button"
+                    className="page-link"
+                    onClick={() => onPageChange(page)}
+                  >
                     {page}
                   </button>
                 </li>
@@ -240,293 +226,6 @@ export const PartyAdvanceTable = ({
           </div>
         </div>
       </div>
-      <PartyAdvanceModal
-        advance={selectedAdvance}
-        onClose={() => setSelectedAdvance(null)}
-      />
     </div>
-  );
-};
-
-const PartyAdvanceModal = ({ advance, onClose }: PartyAdvanceModalProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [billingStatus, setBillingStatus] = useState('');
-  const [accountStatus, setAccountStatus] = useState('');
-  const [hodRecommendation, setHodRecommendation] = useState('');
-  const [commRecommendation, setCommRecommendation] = useState('');
-  const [approvedAmount, setApprovedAmount] = useState('');
-
-  useEffect(() => {
-    if (!advance) {
-      return;
-    }
-
-    setBillingStatus(String(getValueByKeys(advance.raw, ['Aby', 'EntryBy'])));
-    setAccountStatus(String(getValueByKeys(advance.raw, ['Aby', 'EntryBy'])));
-    setHodRecommendation(
-      String(getValueByKeys(advance.raw, ['Audit_Remark', 'AuditRemark'])),
-    );
-    setCommRecommendation(String(getValueByKeys(advance.raw, ['Emp_Name', 'empName'])));
-    setApprovedAmount(
-      String(getValueByKeys(advance.raw, ['AppAmt', 'ApprovedAmount', 'RAmount'])),
-    );
-    const animationFrame = window.requestAnimationFrame(() => setIsOpen(true));
-
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, [advance]);
-
-  if (!advance) {
-    return null;
-  }
-
-  const handleClose = () => {
-    setIsOpen(false);
-    window.setTimeout(onClose, 300);
-  };
-
-  const particulars = Array.isArray(advance.raw.ParticularList)
-    ? advance.raw.ParticularList
-    : [];
-  const entryBy = getValueByKeys(advance.raw, ['Emp_Name', 'empName', 'Aby']);
-  const entrySadhak = getValueByKeys(advance.raw, ['DM_NAme', 'DM_Name', 'department']);
-  const approvedOn = getValueByKeys(advance.raw, ['Aby', 'ApprovedOn']);
-  const orderLink = String(getValueByKeys(advance.raw, ['orderlink', 'OrderLink']));
-  const lastAdvance = getValueByKeys(advance.raw, ['LastAdvance']);
-  const last15DayAdvance = getValueByKeys(advance.raw, ['Last15DayAdvance']);
-  const expDue = getValueByKeys(advance.raw, ['ExpDue']);
-  const hodRecomm = String(getValueByKeys(advance.raw, ['hodRecomm']));
-  const gHodRecomm = String(getValueByKeys(advance.raw, ['GhodRecomm']));
-  const commRecomm = String(getValueByKeys(advance.raw, ['CommRecomm']));
-
-  return (
-    <>
-      <div
-        className={`dashboard-slide-backdrop ${isOpen ? 'is-open' : ''}`}
-        onClick={handleClose}
-      />
-      <aside
-        className={`dashboard-slide-modal ${isOpen ? 'is-open' : ''}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Party advance detail"
-      >
-        <div className="dashboard-slide-header">
-          <div>
-            <h4 className="mb-1 dashboard-panel-title fs-3">
-              Party Advance Detail
-            </h4>
-            <div className="text-primary mt-1 fs-6">
-              Code: {formatValue(advance.code)} | Vendor: {formatValue(advance.vendorName)}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="btn btn-sm btn-icon btn-active-color-primary"
-            aria-label="Close"
-            onClick={handleClose}
-          >
-            <i className="fa fa-times" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div className="dashboard-slide-body dashboard-bill-panel-body">
-          <section className="card p-4 mb-3 border">
-            <div className="row g-4">
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Code</div>
-              <div className="dashboard-bill-text fw-bold">{formatValue(advance.code)}</div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Entry Date</div>
-              <div className="dashboard-bill-text fw-bold">{formatValue(advance.entryDate)}</div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Bill Due Date</div>
-              <div className="dashboard-bill-text fw-bold">{formatValue(advance.billDueDate)}</div>
-            </div>
-            <div className="col-sm-6">
-              <div className="dashboard-bill-label">Vendor Name</div>
-              <div className="dashboard-bill-text fw-bold">{formatValue(advance.vendorName)}</div>
-            </div>
-            <div className="col-12">
-              <div className="dashboard-bill-label">Description</div>
-              <textarea
-                className="form-control form-control-sm"
-                rows={4}
-                value={advance.description}
-                readOnly
-              />
-            </div>
-          </div>
-          </section>
-
-          <section className="card p-4 mb-3 border">
-            <div className="row g-4">
-            <div className="col-sm-6 col-lg-3">
-              <div className="dashboard-bill-label">Billing Status</div>
-              <input
-                type="text"
-                className="form-control form-control-sm"
-                value={billingStatus}
-                onChange={event => setBillingStatus(event.target.value)}
-              />
-            </div>
-            <div className="col-sm-6 col-lg-3">
-              <div className="dashboard-bill-label">Account Status</div>
-              <input
-                type="text"
-                className="form-control form-control-sm"
-                value={accountStatus}
-                onChange={event => setAccountStatus(event.target.value)}
-              />
-            </div>
-            <div className="col-lg-6">
-              <div className="dashboard-bill-label">Particulars</div>
-              <div className="table-responsive">
-                <table className="table table-bordered align-middle dashboard-bill-modal-table mb-0">
-                  <thead>
-                    <tr>
-                      <th>Advance Type</th>
-                      <th>Days</th>
-                      <th>Expected Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {particulars.length ? (
-                      particulars.map((item, index) => (
-                        <tr key={index}>
-                          <td>{formatValue(getValueByKeys(item, ['Adv_Particular']))}</td>
-                          <td>{formatValue(getValueByKeys(item, ['ForDays']))}</td>
-                          <td>{formatValue(getValueByKeys(item, ['Advance_Amount']))}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={3} className="text-center text-muted">
-                          No particulars available.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          </section>
-
-          <section className="card p-4 mb-3 border">
-            <div className="row g-4">
-            <div className="col-lg-5">
-              <div className="dashboard-bill-label">HOD Recommendation</div>
-              <textarea
-                className="form-control form-control-sm"
-                rows={4}
-                value={hodRecommendation}
-                onChange={event => setHodRecommendation(event.target.value)}
-              />
-              <div className="d-flex gap-2 mt-3">
-                <span className="badge badge-light-success">
-                  HOD: {formatValue(hodRecomm)}
-                </span>
-                <span className="badge badge-light-primary">
-                  GHOD: {formatValue(gHodRecomm)}
-                </span>
-              </div>
-            </div>
-            <div className="col-lg-3">
-              <div className="dashboard-bill-label">Comm Recommendation</div>
-              <textarea
-                className="form-control form-control-sm"
-                rows={4}
-                value={commRecommendation}
-                onChange={event => setCommRecommendation(event.target.value)}
-              />
-              <div className="mt-3">
-                <span className="badge badge-light-info">
-                  COMM: {formatValue(commRecomm)}
-                </span>
-              </div>
-            </div>
-            <div className="col-lg-2">
-              <div className="dashboard-bill-label">Entry By</div>
-              <div className="dashboard-bill-text fw-bold">{formatValue(entryBy)}</div>
-              <div className="text-muted fs-7 mt-2">{formatValue(entrySadhak)}</div>
-            </div>
-            <div className="col-lg-2">
-              <div className="dashboard-bill-label">Approved</div>
-              <input
-                type="text"
-                className="form-control form-control-sm mb-3"
-                value={approvedAmount}
-                onChange={event => setApprovedAmount(event.target.value)}
-              />
-              <div className="d-flex gap-3">
-                <label className="form-check form-check-custom form-check-solid">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    checked={advance.status === 'Yes'}
-                    readOnly
-                  />
-                  <span className="form-check-label fw-bold">Yes</span>
-                </label>
-                <label className="form-check form-check-custom form-check-solid">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    checked={advance.status !== 'Yes'}
-                    readOnly
-                  />
-                  <span className="form-check-label fw-bold">No</span>
-                </label>
-              </div>
-              <div className="text-muted fs-7 mt-2">{formatValue(approvedOn)}</div>
-            </div>
-          </div>
-          </section>
-
-          <section className="card p-4 mb-3 border table-responsive">
-            <table className="table table-bordered align-middle dashboard-bill-modal-table">
-              <tbody>
-                <tr>
-                  <th>Last Advance</th>
-                  <td>{formatValue(lastAdvance)}</td>
-                </tr>
-                <tr>
-                  <th>Last 15 Days Advance</th>
-                  <td>{formatValue(last15DayAdvance)}</td>
-                </tr>
-                <tr>
-                  <th>Expense Due</th>
-                  <td>{formatValue(expDue)}</td>
-                </tr>
-                <tr>
-                  <th>Order Link</th>
-                  <td>
-                    {orderLink ? (
-                      <a href={orderLink} target="_blank" rel="noreferrer">
-                        View Agreement Files
-                      </a>
-                    ) : (
-                      '-'
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
-        </div>
-
-        <div className="dashboard-slide-footer dashboard-bill-action-footer">
-          <button type="button" className="btn btn-light" onClick={handleClose}>
-            Close
-          </button>
-          <button type="button" className="btn btn-primary">
-            Save
-          </button>
-        </div>
-      </aside>
-    </>
   );
 };

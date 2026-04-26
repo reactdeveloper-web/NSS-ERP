@@ -140,13 +140,13 @@ export const PurchaseQuotationApprovalTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th width="10%">Qcs Id</th>
-                      <th width="12%">Qcs Date</th>
-                      <th width="22%">Vendor Name 1</th>
-                      <th width="18%">Vendor Name 2</th>
-                      <th width="18%">Vendor Name 3</th>
-                      <th width="14%">Location</th>
-                      <th className="text-center" width="6%">
+                      <th className='width-10'>Qcs Id</th>
+                      <th className='width-12'>Qcs Date</th>
+                      <th className='width-22'>Vendor Name 1</th>
+                      <th className='width-18'>Vendor Name 2</th>
+                      <th className='width-18'>Vendor Name 3</th>
+                      <th className='width-14'>Location</th>
+                      <th className="text-center width-6%">
                         Stage
                       </th>
                     </tr>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { MaterialQualityItem } from './types';
 
 interface MaterialQualityTableProps {
@@ -11,11 +11,6 @@ interface MaterialQualityTableProps {
   onPageSizeChange: (pageSize: number) => void;
   searchValue?: string;
   onSearchChange?: (search: string) => void;
-}
-
-interface MaterialQualityModalProps {
-  item: MaterialQualityItem | null;
-  onClose: () => void;
 }
 
 const formatValue = (value: unknown) => {
@@ -37,7 +32,6 @@ export const MaterialQualityTable = ({
   searchValue,
   onSearchChange,
 }: MaterialQualityTableProps) => {
-  const [selectedItem, setSelectedItem] = useState<MaterialQualityItem | null>(null);
   const [localSearch, setLocalSearch] = useState('');
   const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
@@ -82,7 +76,6 @@ export const MaterialQualityTable = ({
   );
 
   return (
-    <>
       <div className="card h-100 mb-5 mb-xl-8 dashboard-listing-card">
         <div className="card-header pt-3 pb-3">
           <h3 className="card-title align-items-start flex-column">
@@ -116,12 +109,12 @@ export const MaterialQualityTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th width="10%">RM ID</th>
-                      <th width="12%">PO No.</th>
-                      <th width="16%">Date</th>
-                      <th width="24%">Vendor Name</th>
-                      <th width="14%">Mobile</th>
-                      <th width="24%">Sadhak Name</th>
+                      <th className='width-10'>RM ID</th>
+                      <th className='width-12'>PO No.</th>
+                      <th className='width-16'>Date</th>
+                      <th className='width-24'>Vendor Name</th>
+                      <th className='width-14'>Mobile</th>
+                      <th className='width-24'>Sadhak Name</th>
                     </tr>
                   </thead>
 
@@ -226,143 +219,5 @@ export const MaterialQualityTable = ({
           </div>
         </div>
       </div>
-
-      <MaterialQualityModal
-        item={selectedItem}
-        onClose={() => setSelectedItem(null)}
-      />
-    </>
-  );
-};
-
-const MaterialQualityModal = ({ item, onClose }: MaterialQualityModalProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    if (!item) {
-      return;
-    }
-
-    const animationFrame = window.requestAnimationFrame(() => setIsOpen(true));
-
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, [item]);
-
-  if (!item) {
-    return null;
-  }
-
-  const handleClose = () => {
-    setIsOpen(false);
-    window.setTimeout(onClose, 300);
-  };
-
-  return (
-    <>
-      <div
-        className={`dashboard-slide-backdrop ${isOpen ? 'is-open' : ''}`}
-        onClick={handleClose}
-      />
-      <aside
-        className={`dashboard-slide-modal ${isOpen ? 'is-open' : ''}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Material quality detail"
-      >
-        <div className="dashboard-slide-header">
-          <div>
-            <h4 className="mb-1 dashboard-panel-title fs-3">
-              Material Quality
-            </h4>
-            <div className="text-primary mt-1 fs-6">
-              RM ID: {formatValue(item.rmId)}
-              <span className="mx-5">PO No: {formatValue(item.poNo)}</span>
-            </div>
-            <div className="text-muted mt-1 fw-bold fs-6">
-              {formatValue(item.vendorName)}
-            </div>
-          </div>
-          <button
-            type="button"
-            className="btn btn-sm btn-icon btn-active-color-primary"
-            aria-label="Close"
-            onClick={handleClose}
-          >
-            <i className="fa fa-times" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div className="dashboard-slide-body dashboard-bill-panel-body">
-          <section className="card p-4 mb-3 border">
-            <div className="row g-4">
-              <div className="col-sm-4">
-                <div className="dashboard-bill-label">Date</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(item.date)}
-                </div>
-              </div>
-              <div className="col-sm-4">
-                <div className="dashboard-bill-label">Mobile</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(item.mobile)}
-                </div>
-              </div>
-              <div className="col-sm-4">
-                <div className="dashboard-bill-label">Store</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(item.storeName)}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="card p-4 mb-3 border table-responsive">
-            <h5 className="dashboard-bill-section-title">Line Items</h5>
-            <table className="table table-bordered align-middle dashboard-bill-modal-table mb-0">
-              <thead>
-                <tr>
-                  <th>PO Sr No</th>
-                  <th>Sadhak Name</th>
-                  <th>Item Name</th>
-                  <th>Qty</th>
-                  <th>Unit</th>
-                  <th>Company</th>
-                  <th>Amount</th>
-                  <th>QM Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {item.lineItems.length ? (
-                  item.lineItems.map((line, index) => (
-                    <tr key={`${line.qmCode}-${index}`}>
-                      <td>{formatValue(line.poSrNo)}</td>
-                      <td>{formatValue(line.sadhakName)}</td>
-                      <td>{formatValue(line.itemName)}</td>
-                      <td>{formatValue(line.pendingQuantity)}</td>
-                      <td>{formatValue(line.unit)}</td>
-                      <td>{formatValue(line.companyName)}</td>
-                      <td>{formatValue(line.amount)}</td>
-                      <td>{formatValue(line.qmStatus)}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={8} className="text-center text-muted">
-                      No line items available.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </section>
-        </div>
-
-        <div className="dashboard-slide-footer dashboard-bill-action-footer">
-          <button type="button" className="btn btn-light" onClick={handleClose}>
-            Close
-          </button>
-        </div>
-      </aside>
-    </>
   );
 };

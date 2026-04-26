@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { LeaveApprovalItem } from './types';
 
 interface LeaveApprovalTableProps {
@@ -11,11 +11,6 @@ interface LeaveApprovalTableProps {
   onPageSizeChange: (pageSize: number) => void;
   searchValue?: string;
   onSearchChange?: (search: string) => void;
-}
-
-interface LeaveApprovalModalProps {
-  leave: LeaveApprovalItem | null;
-  onClose: () => void;
 }
 
 const formatValue = (value: unknown) => {
@@ -47,7 +42,6 @@ export const LeaveApprovalTable = ({
   searchValue,
   onSearchChange,
 }: LeaveApprovalTableProps) => {
-  const [selectedLeave, setSelectedLeave] = useState<LeaveApprovalItem | null>(null);
   const [localSearch, setLocalSearch] = useState('');
   const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
@@ -128,14 +122,14 @@ export const LeaveApprovalTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th width="18%">Sadhak Name</th>
-                      <th width="12%">Apply Date</th>
-                      <th width="16%">Apply From - To</th>
-                      <th width="9%">Applied</th>
-                      <th width="14%">Leave Type</th>
-                      <th width="11%">Leave Day</th>
-                      <th width="14%">Charge Given</th>
-                      <th width="6%">Sanction</th>
+                      <th className='width-18'>Sadhak Name</th>
+                      <th className='width-12'>Apply Date</th>
+                      <th className='width-16'>Apply From - To</th>
+                      <th className='width-9'>Applied</th>
+                      <th className='width-14'>Leave Type</th>
+                      <th className='width-11'>Leave Day</th>
+                      <th className='width-14'>Charge Given</th>
+                      <th className='width-6'>Sanction</th>
                     </tr>
                   </thead>
 
@@ -256,140 +250,6 @@ export const LeaveApprovalTable = ({
         </div>
       </div>
 
-      <LeaveApprovalModal
-        leave={selectedLeave}
-        onClose={() => setSelectedLeave(null)}
-      />
-    </>
-  );
-};
-
-const LeaveApprovalModal = ({ leave, onClose }: LeaveApprovalModalProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    if (!leave) {
-      return;
-    }
-
-    const animationFrame = window.requestAnimationFrame(() => setIsOpen(true));
-
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, [leave]);
-
-  if (!leave) {
-    return null;
-  }
-
-  const handleClose = () => {
-    setIsOpen(false);
-    window.setTimeout(onClose, 300);
-  };
-
-  return (
-    <>
-      <div
-        className={`dashboard-slide-backdrop ${isOpen ? 'is-open' : ''}`}
-        onClick={handleClose}
-      />
-      <aside
-        className={`dashboard-slide-modal ${isOpen ? 'is-open' : ''}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Leave approval detail"
-      >
-        <div className="dashboard-slide-header">
-          <div>
-            <h4 className="mb-1 dashboard-panel-title fs-3">
-              Leave or Tour Records
-            </h4>
-            <div className="text-primary mt-1 fs-6">
-              Leave ID: {formatValue(leave.leaveId)}
-              <span className="mx-5">
-                Sanction: {getSanctionText(leave.sanction)}
-              </span>
-            </div>
-            <div className="text-muted mt-1 fw-bold fs-6">
-              {formatValue(leave.sadhakName)}
-            </div>
-          </div>
-          <button
-            type="button"
-            className="btn btn-sm btn-icon btn-active-color-primary"
-            aria-label="Close"
-            onClick={handleClose}
-          >
-            <i className="fa fa-times" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div className="dashboard-slide-body dashboard-bill-panel-body">
-          <section className="card p-4 mb-3 border">
-            <div className="row g-4">
-              <div className="col-sm-4">
-                <div className="dashboard-bill-label">Department</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(leave.department)}
-                </div>
-              </div>
-              <div className="col-sm-4">
-                <div className="dashboard-bill-label">Apply Date</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(leave.applyDate)}
-                </div>
-              </div>
-              <div className="col-sm-4">
-                <div className="dashboard-bill-label">Leave Type</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(leave.leaveType)}
-                </div>
-              </div>
-              <div className="col-sm-4">
-                <div className="dashboard-bill-label">From Date</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(leave.fromDate)}
-                </div>
-              </div>
-              <div className="col-sm-4">
-                <div className="dashboard-bill-label">To Date</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(leave.toDate)}
-                </div>
-              </div>
-              <div className="col-sm-4">
-                <div className="dashboard-bill-label">Total Leave</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(leave.applied)}
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="dashboard-bill-label">Charge Given</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(leave.chargeGiven)}
-                </div>
-              </div>
-              <div className="col-sm-6">
-                <div className="dashboard-bill-label">Leave Day</div>
-                <div className="dashboard-bill-text fw-bold">
-                  {formatValue(leave.leaveDay)}
-                </div>
-              </div>
-              <div className="col-12">
-                <div className="dashboard-bill-label">Reason</div>
-                <div className="dashboard-bill-text">
-                  {formatValue(leave.reason)}
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <div className="dashboard-slide-footer dashboard-bill-action-footer">
-          <button type="button" className="btn btn-light" onClick={handleClose}>
-            Close
-          </button>
-        </div>
-      </aside>
     </>
   );
 };
