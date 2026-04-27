@@ -63,7 +63,7 @@ export const login = (payload: ReqLogin) => async dispatch => {
         }),
       );
       //dispatch(loadUser(reqUserActivity));
-      return;
+      return true;
     }
 
     dispatch(
@@ -72,7 +72,8 @@ export const login = (payload: ReqLogin) => async dispatch => {
         type: AlertTypes.ERROR,
       }),
     );
-    return dispatch(actions.loginFailed());
+    dispatch(actions.loginFailed());
+    return false;
   } catch (error) {
     dispatch(
       setAlert({
@@ -80,7 +81,8 @@ export const login = (payload: ReqLogin) => async dispatch => {
         type: AlertTypes.ERROR,
       }),
     );
-    return dispatch(actions.loginFailed());
+    dispatch(actions.loginFailed());
+    return false;
   }
 };
 

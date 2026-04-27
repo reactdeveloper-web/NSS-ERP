@@ -51,6 +51,7 @@ body {
 }
 
 
+
 .ant-form-item {
   &.ant-form-item-has-error {
     .ant-input {
@@ -1675,4 +1676,31 @@ iframe {
   overflow: auto;
   flex-wrap: nowrap;
   top: -2px;
+}
+
+
+.swal2-x-mark {
+  position: relative;
+  display: block;
+  width: 38px;
+  height: 38px;
+}
+
+.swal2-x-mark-line-left,
+.swal2-x-mark-line-right {
+  position: absolute;
+  top: 17px;
+  left: 12px;
+  width: 30px;
+  height: 4px;
+  border-radius: 4px;
+  background-color: #f1416c;
+}
+.swal2-confirm.swal2-styled {
+  background: #1cb8a1;
+}
+
+
+.swal2-backdrop-show .swal2-popup{
+  display: grid;
 }
