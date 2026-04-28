@@ -1,10 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { ActionOnCorrespondenceTable } from './components/ActionOnCorrespondenceTable';
 import { getDashboard, getEmployeeAll } from 'src/api/masterApi';
 import { PageToolbar } from 'src/components/Common/PageToolbar';
 import axiosInstance from 'src/redux/interceptor';
 import { ActionOnRecruitmentTable } from './components/ActionOnRecruitmentTable';
 import { BillDetailsTable } from './components/BillDetailsTable';
 import { BranchApprovalTable } from './components/BranchApprovalTable';
+import { ChargeAcceptTable } from './components/ChargeAcceptTable';
+import { EmployeeApplicationTable } from './components/EmployeeApplicationTable';
+import { IncentiveApprovalTable } from './components/IncentiveApprovalTable';
 import { IssueVerificationTable } from './components/IssueVerificationTable';
 import { LeaveApprovalTable } from './components/LeaveApprovalTable';
 import { MaterialQualityTable } from './components/MaterialQualityTable';
@@ -13,15 +17,21 @@ import { PartyAdvanceTable } from './components/PartyAdvanceTable';
 import { PaymentTermsVerificationTable } from './components/PaymentTermsVerificationTable';
 import { PurchaseQuotationApprovalTable } from './components/PurchaseQuotationApprovalTable';
 import { RrsStatusTable } from './components/RrsStatusTable';
+import { SadhakMovementTable } from './components/SadhakMovementTable';
 import { SadhakAdvanceTable } from './components/SadhakAdvanceTable';
 import { TaskTable } from './components/TaskTable';
 import { TodoList } from './components/TodoList';
+import { TourApprovalTable } from './components/TourApprovalTable';
 import { WorkOrderApprovalTable } from './components/WorkOrderApprovalTable';
 import {
+  ActionOnCorrespondenceItem,
   ActionOnRecruitmentItem,
   BillDetailItem,
   BranchApprovalItem,
+  ChargeAcceptItem,
   DashboardItem,
+  EmployeeApplicationItem,
+  IncentiveApprovalItem,
   IssueVerificationItem,
   LeaveApprovalItem,
   MaterialQualityItem,
@@ -31,8 +41,10 @@ import {
   PurchaseQuotationItem,
   RrsStatusItem,
   SadhakAdvanceItem,
+  SadhakMovementItem,
   StaticTaskRow,
   TaskItem,
+  TourApprovalItem,
   WorkOrderItem,
 } from './components/types';
 
@@ -522,6 +534,14 @@ const isActionOnRecruitmentItem = (item: DashboardItem) => {
   );
 };
 
+const isActionOnCorrespondenceItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return label.includes('correspondence') && label.includes('action');
+};
+
 const normalizeActionOnRecruitment = (
   record: Record<string, unknown>,
 ): ActionOnRecruitmentItem => ({
@@ -534,6 +554,100 @@ const normalizeActionOnRecruitment = (
   departmentName: String(getTextByKeys(record, ['DEPT_NAME', 'deptName'])),
   postName: String(getTextByKeys(record, ['HSR_POST_NAME', 'postName'])),
   salary: getTextByKeys(record, ['NR_APPROVED_SALARY', 'approvedSalary']),
+  raw: record,
+});
+
+const normalizeActionOnCorrespondence = (
+  record: Record<string, unknown>,
+): ActionOnCorrespondenceItem => ({
+  RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+  RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+  letterId: getTextByKeys(record, ['Letter_Id', 'LetterId', 'letterId']),
+  letterFrom: String(getTextByKeys(record, ['Letter_From', 'LetterFrom'])),
+  subject: String(getTextByKeys(record, ['Letter_Subject', 'LetterSubject'])),
+  letterDate: String(getTextByKeys(record, ['Letter_Date', 'LetterDate'])),
+  receiveDate: String(
+    getTextByKeys(record, ['RDate', 'Letter_Date_Receive', 'LetterDateReceive']),
+  ),
+  categoryDescription: String(
+    getTextByKeys(record, ['sCategory_Description', 'CategoryDescription']),
+  ),
+  status: String(getTextByKeys(record, ['Status', 'status'])),
+  raw: record,
+});
+
+const isEmployeeApplicationItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return label.includes('employee application') || label.includes('empapplication');
+};
+
+const normalizeEmployeeApplication = (
+  record: Record<string, unknown>,
+): EmployeeApplicationItem => ({
+  RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+  RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+  code: getTextByKeys(record, ['ECODE', 'ECode', 'code']),
+  name: String(getTextByKeys(record, ['EMP_NAME', 'EmpName', 'name'])),
+  department: String(getTextByKeys(record, ['DM_NAME', 'DMName', 'department'])),
+  designation: String(
+    getTextByKeys(record, ['DESIGNATION_NAME', 'DesignationName', 'designation']),
+  ),
+  type: String(getTextByKeys(record, ['ATM_TYPE', 'AtmType', 'type'])),
+  amount: getTextByKeys(record, ['EA_PADV_AMOUNT1', 'amount']),
+  statusRemark: String(
+    getTextByKeys(record, ['ADMIN_ACTION_REMARK', 'AdminActionRemark', 'status']),
+  ),
+  raw: record,
+});
+
+const isSadhakMovementItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return label.includes('sadhak movement');
+};
+
+const normalizeSadhakMovement = (
+  record: Record<string, unknown>,
+): SadhakMovementItem => ({
+  RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+  RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+  movementId: getTextByKeys(record, ['MovementId', 'movementId']),
+  empNo: getTextByKeys(record, ['EmpNum', 'empNum']),
+  empName: String(getTextByKeys(record, ['EmpName', 'empName'])),
+  department: String(getTextByKeys(record, ['Department', 'department'])),
+  category: String(getTextByKeys(record, ['Category', 'category'])),
+  outTime: String(getTextByKeys(record, ['OutTime', 'outTime'])),
+  inTime: String(getTextByKeys(record, ['InTime', 'inTime'])),
+  gateFrom: String(getTextByKeys(record, ['GateFrom', 'gateFrom'])),
+  gateTo: String(getTextByKeys(record, ['GateTo', 'gateTo'])),
+  raw: record,
+});
+
+const isTourApprovalItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return label.includes('tour approval');
+};
+
+const normalizeTourApproval = (
+  record: Record<string, unknown>,
+): TourApprovalItem => ({
+  RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+  RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+  tourId: getTextByKeys(record, ['TourId', 'tourId']),
+  empId: getTextByKeys(record, ['EmpNum', 'empNum']),
+  empName: String(getTextByKeys(record, ['EmpName', 'empName'])),
+  chargesTo: String(getTextByKeys(record, ['ChargesTo', 'chargesTo'])),
+  department: String(getTextByKeys(record, ['DMName', 'department'])),
+  fromDate: String(getTextByKeys(record, ['FROMDATE', 'fromDate'])),
+  toDate: String(getTextByKeys(record, ['TODATE', 'toDate'])),
   raw: record,
 });
 
@@ -661,6 +775,53 @@ const isPartyAdvanceItem = (item: DashboardItem) =>
 const isSadhakAdvanceItem = (item: DashboardItem) =>
   normalizeLabel(item.Panel) === 'sadhak advance' ||
   normalizeLabel(item.Description) === 'sadhak advance pending';
+
+const isIncentiveApprovalItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return label.includes('incentive approval');
+};
+
+const normalizeIncentiveApproval = (
+  record: Record<string, unknown>,
+): IncentiveApprovalItem => ({
+  RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+  RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+  autoId: getTextByKeys(record, ['Auto_Id', 'AutoId', 'autoId']),
+  employeeName: String(
+    getTextByKeys(record, ['Emp_Name', 'EmpName', 'employeeName']),
+  ),
+  type: String(getTextByKeys(record, ['Type', 'type'])),
+  revertTo: String(getTextByKeys(record, ['revert_to', 'RevertTo', 'revertTo'])),
+  doe: String(getTextByKeys(record, ['DOE', 'doe'])),
+  remark: String(getTextByKeys(record, ['Remarks', 'Remark', 'remark'])),
+  raw: record,
+});
+
+const isChargeAcceptItem = (item: DashboardItem) => {
+  const panel = normalizeLabel(item.Panel);
+  const description = normalizeLabel(item.Description);
+  const label = `${panel} ${description}`;
+
+  return label.includes('charge accept');
+};
+
+const normalizeChargeAccept = (
+  record: Record<string, unknown>,
+): ChargeAcceptItem => ({
+  RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
+  RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
+  id: getTextByKeys(record, ['Id', 'ID', 'id']),
+  employeeName: String(getTextByKeys(record, ['EName', 'Emp_Name', 'EmpName'])),
+  department: String(getTextByKeys(record, ['DMName', 'Department', 'department'])),
+  dayType: String(getTextByKeys(record, ['DDay', 'DayType', 'dayType'])),
+  category: String(getTextByKeys(record, ['Category', 'category'])),
+  fromDate: String(getTextByKeys(record, ['FROM_DATE', 'FromDate', 'fromDate'])),
+  toDate: String(getTextByKeys(record, ['TO_DATE', 'ToDate', 'toDate'])),
+  raw: record,
+});
 
 const normalizeSadhakAdvance = (record: Record<string, unknown>): SadhakAdvanceItem => {
   const source = unwrapFirstRecord(record);
@@ -930,6 +1091,7 @@ const normalizeLeaveApproval = (
   RowNumber: Number(getTextByKeys(record, ['RowNumber', 'rowNumber']) || 0),
   RecordCount: Number(getTextByKeys(record, ['RecordCount', 'recordCount']) || 0),
   leaveId: getTextByKeys(record, ['LeaveId', 'leaveId']),
+  empNum: getTextByKeys(record, ['EmpNum', 'empNum']),
   sadhakName: String(getTextByKeys(record, ['EmpName', 'empName'])),
   applyDate: String(getTextByKeys(record, ['EntryDate', 'entryDate'])),
   fromDate: String(getTextByKeys(record, ['FROMDATE', 'fromDate'])),
@@ -1108,9 +1270,21 @@ export const DashboardContent: React.FC = () => {
   const [actionOnRecruitments, setActionOnRecruitments] = useState<
     ActionOnRecruitmentItem[]
   >([]);
+  const [actionOnCorrespondences, setActionOnCorrespondences] = useState<
+    ActionOnCorrespondenceItem[]
+  >([]);
+  const [employeeApplications, setEmployeeApplications] = useState<
+    EmployeeApplicationItem[]
+  >([]);
+  const [sadhakMovements, setSadhakMovements] = useState<SadhakMovementItem[]>([]);
+  const [tourApprovals, setTourApprovals] = useState<TourApprovalItem[]>([]);
   const [meetingPoints, setMeetingPoints] = useState<MeetingPointItem[]>([]);
   const [partyAdvances, setPartyAdvances] = useState<PartyAdvanceItem[]>([]);
   const [sadhakAdvances, setSadhakAdvances] = useState<SadhakAdvanceItem[]>([]);
+  const [incentiveApprovals, setIncentiveApprovals] = useState<
+    IncentiveApprovalItem[]
+  >([]);
+  const [chargeAccepts, setChargeAccepts] = useState<ChargeAcceptItem[]>([]);
   const [paymentTermsVerifications, setPaymentTermsVerifications] = useState<
     PaymentTermsVerifyItem[]
   >([]);
@@ -1127,9 +1301,16 @@ export const DashboardContent: React.FC = () => {
   const [showBranchApprovals, setShowBranchApprovals] = useState(false);
   const [showIssueVerifications, setShowIssueVerifications] = useState(false);
   const [showActionOnRecruitments, setShowActionOnRecruitments] = useState(false);
+  const [showActionOnCorrespondences, setShowActionOnCorrespondences] =
+    useState(false);
+  const [showEmployeeApplications, setShowEmployeeApplications] = useState(false);
+  const [showSadhakMovements, setShowSadhakMovements] = useState(false);
+  const [showTourApprovals, setShowTourApprovals] = useState(false);
   const [showMeetingPoints, setShowMeetingPoints] = useState(false);
   const [showPartyAdvances, setShowPartyAdvances] = useState(false);
   const [showSadhakAdvances, setShowSadhakAdvances] = useState(false);
+  const [showIncentiveApprovals, setShowIncentiveApprovals] = useState(false);
+  const [showChargeAccepts, setShowChargeAccepts] = useState(false);
   const [showPaymentTermsVerifications, setShowPaymentTermsVerifications] =
     useState(false);
   const [showPurchaseQuotations, setShowPurchaseQuotations] = useState(false);
@@ -1171,9 +1352,15 @@ export const DashboardContent: React.FC = () => {
     setBranchApprovals([]);
     setIssueVerifications([]);
     setActionOnRecruitments([]);
+    setActionOnCorrespondences([]);
+    setEmployeeApplications([]);
+    setSadhakMovements([]);
+    setTourApprovals([]);
     setMeetingPoints([]);
     setPartyAdvances([]);
     setSadhakAdvances([]);
+    setIncentiveApprovals([]);
+    setChargeAccepts([]);
     setPaymentTermsVerifications([]);
     setPurchaseQuotations([]);
     setRrsStatuses([]);
@@ -1184,9 +1371,15 @@ export const DashboardContent: React.FC = () => {
     setShowBranchApprovals(false);
     setShowIssueVerifications(false);
     setShowActionOnRecruitments(false);
+    setShowActionOnCorrespondences(false);
+    setShowEmployeeApplications(false);
+    setShowSadhakMovements(false);
+    setShowTourApprovals(false);
     setShowMeetingPoints(false);
     setShowPartyAdvances(false);
     setShowSadhakAdvances(false);
+    setShowIncentiveApprovals(false);
+    setShowChargeAccepts(false);
     setShowPaymentTermsVerifications(false);
     setShowPurchaseQuotations(false);
     setShowRrsStatuses(false);
@@ -1205,7 +1398,7 @@ export const DashboardContent: React.FC = () => {
       try {
         const response = await axiosInstance.post('/ToDo/GetRRSDetails', {
           rrsid: 0,
-          filtertype: '',
+          filtertype: 'Issue',
           userid: getEmpNum(),
           searchempnum: '',
           dataflag: getDataFlag(),
@@ -1252,19 +1445,14 @@ export const DashboardContent: React.FC = () => {
 
       try {
         const response = await axiosInstance.post('/ToDo/GetLeaveApproval', {
-          EmpNum: 219,
+          EmpNum: getEmpNum(),
           Type: 2,
           PageIndex: requestPageNumber,
-          PageSize: isSearchActive ? requestPageSize : Math.max(pageSize, 100),
+          PageSize: requestPageSize,
           DataFlag: getDataFlag(),
         });
         const leaveRows = getDataRecords(response.data).map(normalizeLeaveApproval);
-        const totalRecords =
-          response.data?.Meta?.TotalRecords ||
-          response.data?.meta?.totalRecords ||
-          leaveRows[0]?.RecordCount ||
-          item.RecordCount ||
-          0;
+        const totalRecords = getTotalRecords(response.data, leaveRows);
 
         setLeaveApprovals(leaveRows);
         setTaskTotalCount(Number(totalRecords));
@@ -1329,6 +1517,164 @@ export const DashboardContent: React.FC = () => {
         setActionOnRecruitments([]);
         setTaskTotalCount(0);
         setError('Unable to load action on recruitment listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isActionOnCorrespondenceItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowActionOnCorrespondences(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post(
+          '/ToDo/GetActionOnCorrespondenceDetails',
+          {
+            Type: 2,
+            empnum: getEmpNum(),
+            DataFlag: getDataFlag(),
+            LetterDateReceive: '',
+            LetterTypeID: 0,
+            ReplyStatus: 'A',
+            EntryClose: 'Y',
+            LetterFrom: '',
+            LetterSubject: '',
+            ReplyContents: '',
+            LetterId: 0,
+            PageIndex: requestPageNumber,
+            PageSize: requestPageSize,
+          },
+        );
+        const correspondenceRows = getDataRecords(response.data).map(
+          normalizeActionOnCorrespondence,
+        );
+        const totalRecords = getTotalRecords(response.data, correspondenceRows);
+
+        setActionOnCorrespondences(correspondenceRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setActionOnCorrespondences([]);
+        setTaskTotalCount(0);
+        setError('Unable to load action on correspondence listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isEmployeeApplicationItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowEmployeeApplications(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetEmployeeApplication', {
+          empnum: getEmpNum(),
+          DataFlag: getDataFlag(),
+          Type: 2,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
+        });
+        const applicationRows = getDataRecords(response.data).map(
+          normalizeEmployeeApplication,
+        );
+        const totalRecords = getTotalRecords(response.data, applicationRows);
+        const nextTotalCount = Number(totalRecords);
+
+        setEmployeeApplications(applicationRows);
+        setTaskTotalCount(nextTotalCount);
+        setActiveItem(currentItem =>
+          currentItem?.PanelId === item.PanelId
+            ? { ...currentItem, RecordCount: nextTotalCount }
+            : currentItem,
+        );
+        setItems(currentItems =>
+          currentItems.map(currentItem =>
+            currentItem.PanelId === item.PanelId
+              ? { ...currentItem, RecordCount: nextTotalCount }
+              : currentItem,
+          ),
+        );
+      } catch (apiError) {
+        setEmployeeApplications([]);
+        setTaskTotalCount(0);
+        setError('Unable to load employee application listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isSadhakMovementItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowSadhakMovements(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetSadhakMovementApproval', {
+          EmpNum: getEmpNum(),
+          Type: 2,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
+          DataFlag: getDataFlag(),
+        });
+        const movementRows = getDataRecords(response.data).map(
+          normalizeSadhakMovement,
+        );
+        const totalRecords = getTotalRecords(response.data, movementRows);
+
+        setSadhakMovements(movementRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setSadhakMovements([]);
+        setTaskTotalCount(0);
+        setError('Unable to load sadhak movement listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isTourApprovalItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowTourApprovals(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetTourApproval', {
+          EmpNum: getEmpNum(),
+          Type: 2,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
+          DataFlag: getDataFlag(),
+        });
+        const tourRows = getDataRecords(response.data).map(normalizeTourApproval);
+        const totalRecords = getTotalRecords(response.data, tourRows);
+
+        setTourApprovals(tourRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setTourApprovals([]);
+        setTaskTotalCount(0);
+        setError('Unable to load tour approval listing.');
       } finally {
         setLoadingTasks(false);
       }
@@ -1678,6 +2024,72 @@ export const DashboardContent: React.FC = () => {
       return;
     }
 
+    if (isIncentiveApprovalItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowIncentiveApprovals(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetIncentiveApproval', {
+          empnum: getEmpNum(),
+          DataFlag: getDataFlag(),
+          Type: 2,
+          PageIndex: requestPageNumber,
+          PageSize: isSearchActive ? requestPageSize : Math.max(pageSize, 100),
+        });
+        const incentiveRows = getDataRecords(response.data).map(
+          normalizeIncentiveApproval,
+        );
+        const totalRecords = getTotalRecords(response.data, incentiveRows);
+
+        setIncentiveApprovals(incentiveRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setIncentiveApprovals([]);
+        setTaskTotalCount(0);
+        setError('Unable to load incentive approval listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
+    if (isChargeAcceptItem(item)) {
+      setTasks([]);
+      setTaskTotalCount(item.RecordCount || 0);
+      setShowStaticTable(false);
+      setShowChargeAccepts(true);
+      setLoadingTasks(true);
+      setError('');
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetChargeAccept', {
+          EmpNum: getEmpNum(),
+          Type: 2,
+          PageIndex: requestPageNumber,
+          PageSize: requestPageSize,
+          DataFlag: getDataFlag(),
+        });
+        const chargeRows = getDataRecords(response.data).map(normalizeChargeAccept);
+        const totalRecords = getTotalRecords(response.data, chargeRows);
+
+        setChargeAccepts(chargeRows);
+        setTaskTotalCount(Number(totalRecords));
+      } catch (apiError) {
+        setChargeAccepts([]);
+        setTaskTotalCount(0);
+        setError('Unable to load charge accept listing.');
+      } finally {
+        setLoadingTasks(false);
+      }
+
+      return;
+    }
+
     if (isIssueVerificationItem(item)) {
       setTasks([]);
       setTaskTotalCount(item.RecordCount || 0);
@@ -1921,6 +2333,48 @@ export const DashboardContent: React.FC = () => {
     [],
   );
 
+  const refreshWorkOrderDashboardCount = useCallback(
+    async (dashboardItems: DashboardItem[]) => {
+      const workOrderItem = dashboardItems.find(isWorkOrderItem);
+
+      if (!workOrderItem) {
+        return;
+      }
+
+      try {
+        const response = await axiosInstance.post('/ToDo/GetWorkOrders', {
+          quotation_no: 0,
+          filtertype: '',
+          userid: 267,
+          username: '',
+          dataflag: getDataFlag(),
+          searchvendor: '',
+          Type: 2,
+          PageIndex: 1,
+          PageSize: 10,
+        });
+        const workOrderRows = getDataRecords(response.data).map(normalizeWorkOrder);
+        const nextTotalCount = Number(getTotalRecords(response.data, workOrderRows));
+
+        setItems(currentItems =>
+          currentItems.map(currentItem =>
+            currentItem.PanelId === workOrderItem.PanelId
+              ? { ...currentItem, RecordCount: nextTotalCount }
+              : currentItem,
+          ),
+        );
+        setActiveItem(currentItem =>
+          currentItem?.PanelId === workOrderItem.PanelId
+            ? { ...currentItem, RecordCount: nextTotalCount }
+            : currentItem,
+        );
+      } catch (apiError) {
+        // Keep the dashboard count if the count refresh fails.
+      }
+    },
+    [],
+  );
+
   const fetchDashboard = useCallback(async () => {
     setLoadingTodos(true);
     setError('');
@@ -1934,9 +2388,12 @@ export const DashboardContent: React.FC = () => {
       });
 
       const dashboardItems = response.data?.Dashboard || [];
-      const allDashboardItems = [...staticTodoItems, ...dashboardItems];
+      const allDashboardItems = [...dashboardItems];
       setItems(allDashboardItems);
-      await refreshPaymentTermsDashboardCount(allDashboardItems);
+      await Promise.all([
+        refreshPaymentTermsDashboardCount(allDashboardItems),
+        refreshWorkOrderDashboardCount(allDashboardItems),
+      ]);
 
       if (allDashboardItems.length) {
         fetchTasks(allDashboardItems[0]);
@@ -1946,7 +2403,11 @@ export const DashboardContent: React.FC = () => {
     } finally {
       setLoadingTodos(false);
     }
-  }, [fetchTasks, refreshPaymentTermsDashboardCount]);
+  }, [
+    fetchTasks,
+    refreshPaymentTermsDashboardCount,
+    refreshWorkOrderDashboardCount,
+  ]);
 
   useEffect(() => {
     fetchDashboard();
@@ -2044,6 +2505,54 @@ export const DashboardContent: React.FC = () => {
                   searchValue={taskSearch}
                   onSearchChange={handleTaskSearchChange}
                 />
+              ) : showActionOnCorrespondences ? (
+                <ActionOnCorrespondenceTable
+                  items={actionOnCorrespondences}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showEmployeeApplications ? (
+                <EmployeeApplicationTable
+                  items={employeeApplications}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showSadhakMovements ? (
+                <SadhakMovementTable
+                  items={sadhakMovements}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showTourApprovals ? (
+                <TourApprovalTable
+                  items={tourApprovals}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
               ) : showMeetingPoints ? (
                 <MeetingPointTable
                   meetings={meetingPoints}
@@ -2071,6 +2580,30 @@ export const DashboardContent: React.FC = () => {
               ) : showSadhakAdvances ? (
                 <SadhakAdvanceTable
                   advances={sadhakAdvances}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showIncentiveApprovals ? (
+                <IncentiveApprovalTable
+                  approvals={incentiveApprovals}
+                  loading={loadingTasks}
+                  pageNumber={taskPageNumber}
+                  pageSize={taskPageSize}
+                  totalCount={taskTotalCount}
+                  onPageChange={handleTaskPageChange}
+                  onPageSizeChange={handleTaskPageSizeChange}
+                  searchValue={taskSearch}
+                  onSearchChange={handleTaskSearchChange}
+                />
+              ) : showChargeAccepts ? (
+                <ChargeAcceptTable
+                  items={chargeAccepts}
                   loading={loadingTasks}
                   pageNumber={taskPageNumber}
                   pageSize={taskPageSize}

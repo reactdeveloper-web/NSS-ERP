@@ -157,6 +157,31 @@ export interface SadhakAdvanceItem {
   raw: Record<string, unknown>;
 }
 
+export interface IncentiveApprovalItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  autoId: string | number;
+  employeeName: string;
+  type: string;
+  revertTo: string;
+  doe: string;
+  remark: string;
+  raw: Record<string, unknown>;
+}
+
+export interface ChargeAcceptItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  id: string | number;
+  employeeName: string;
+  department: string;
+  dayType: string;
+  category: string;
+  fromDate: string;
+  toDate: string;
+  raw: Record<string, unknown>;
+}
+
 export interface PaymentTermsVerifyItem {
   RowNumber?: number;
   RecordCount?: number;
@@ -264,6 +289,7 @@ export interface LeaveApprovalItem {
   RowNumber?: number;
   RecordCount?: number;
   leaveId: string | number;
+  empNum: string | number;
   sadhakName: string;
   applyDate: string;
   fromDate: string;
@@ -288,6 +314,60 @@ export interface ActionOnRecruitmentItem {
   departmentName: string;
   postName: string;
   salary: string | number;
+  raw: Record<string, unknown>;
+}
+
+export interface ActionOnCorrespondenceItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  letterId: string | number;
+  letterFrom: string;
+  subject: string;
+  letterDate: string;
+  receiveDate: string;
+  categoryDescription: string;
+  status: string;
+  raw: Record<string, unknown>;
+}
+
+export interface EmployeeApplicationItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  code: string | number;
+  name: string;
+  department: string;
+  designation: string;
+  type: string;
+  amount: string | number;
+  statusRemark: string;
+  raw: Record<string, unknown>;
+}
+
+export interface SadhakMovementItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  movementId: string | number;
+  empNo: string | number;
+  empName: string;
+  department: string;
+  category: string;
+  outTime: string;
+  inTime: string;
+  gateFrom: string;
+  gateTo: string;
+  raw: Record<string, unknown>;
+}
+
+export interface TourApprovalItem {
+  RowNumber?: number;
+  RecordCount?: number;
+  tourId: string | number;
+  empId: string | number;
+  empName: string;
+  chargesTo: string;
+  department: string;
+  fromDate: string;
+  toDate: string;
   raw: Record<string, unknown>;
 }
 

@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { DashboardPagination } from './DashboardPagination';
-import { PartyAdvanceItem } from './types';
+import { ActionOnCorrespondenceItem } from './types';
 
-interface PartyAdvanceTableProps {
-  advances: PartyAdvanceItem[];
+interface ActionOnCorrespondenceTableProps {
+  items: ActionOnCorrespondenceItem[];
   loading: boolean;
   pageNumber: number;
   pageSize: number;
@@ -25,23 +25,19 @@ const formatValue = (value: unknown) => {
 const getStatusBadgeClass = (status: string) => {
   const normalizedStatus = status.toLowerCase();
 
-  if (normalizedStatus === 'yes') {
+  if (normalizedStatus === 'yes' || normalizedStatus === 'y') {
     return 'badge-light-success';
   }
 
-  if (normalizedStatus === 'no') {
-    return 'badge-light-danger';
+  if (normalizedStatus === 'no' || normalizedStatus === 'n') {
+    return 'badge-light-warning';
   }
 
-  if (normalizedStatus === 'closed') {
-    return 'badge-light-dark';
-  }
-
-  return 'badge-light-warning';
+  return 'badge-light-secondary';
 };
 
-export const PartyAdvanceTable = ({
-  advances,
+export const ActionOnCorrespondenceTable = ({
+  items,
   loading,
   pageNumber,
   pageSize,
@@ -50,51 +46,40 @@ export const PartyAdvanceTable = ({
   onPageSizeChange,
   searchValue,
   onSearchChange,
-}: PartyAdvanceTableProps) => {
+}: ActionOnCorrespondenceTableProps) => {
   const [localSearch, setLocalSearch] = useState('');
   const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
   const isSearchActive = normalizedSearch.length >= 3;
-  const filteredAdvances = useMemo(() => {
+  const filteredItems = useMemo(() => {
     if (!isSearchActive) {
-      return advances;
+      return items;
     }
 
-    return advances.filter(advance =>
+    return items.filter(item =>
       [
-        advance.code,
-        advance.entryDate,
-        advance.billDueDate,
-        advance.vendorName,
-        advance.description,
-        advance.status,
+        item.letterId,
+        item.letterFrom,
+        item.subject,
+        item.letterDate,
+        item.receiveDate,
+        item.categoryDescription,
+        item.status,
       ]
         .map(formatValue)
         .some(value => value.toLowerCase().includes(normalizedSearch)),
     );
-  }, [advances, isSearchActive, normalizedSearch]);
-  const displayTotalCount = isSearchActive ? filteredAdvances.length : totalCount;
+  }, [isSearchActive, items, normalizedSearch]);
+  const displayTotalCount = isSearchActive ? filteredItems.length : totalCount;
   const displayPageNumber = isSearchActive ? 1 : pageNumber;
-  const totalPages = Math.max(1, Math.ceil(displayTotalCount / pageSize));
-  const startRecord =
-    displayTotalCount === 0 ? 0 : (displayPageNumber - 1) * pageSize + 1;
-  const endRecord =
-    displayTotalCount === 0
-      ? 0
-      : Math.min(displayPageNumber * pageSize, displayTotalCount);
-  const pageNumbers = Array.from({ length: Math.min(totalPages, 5) }, (_, index) => {
-    const safeStartPage = Math.max(1, displayPageNumber - 2);
-    const safeEndPage = Math.min(totalPages, safeStartPage + 4);
-    const adjustedStartPage = Math.max(1, safeEndPage - 4);
-
-    return adjustedStartPage + index;
-  });
 
   return (
     <div className="card h-100 mb-5 mb-xl-8 dashboard-listing-card">
       <div className="card-header pt-3 pb-3">
         <h3 className="card-title align-items-start flex-column">
-          <span className="card-label fw-bolder fs-3 mb-1">Party Advance Pending</span>
+          <span className="card-label fw-bolder fs-3 mb-1">
+            Action On Correspondence Pending
+          </span>
           <span className="text-muted mt-1 fw-bold fs-7">
             {displayTotalCount} records
           </span>
@@ -122,45 +107,45 @@ export const PartyAdvanceTable = ({
               <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                 <thead>
                   <tr className="fw-bolder text-muted">
-                    <th className='width-10'>Code</th>
-                    <th className='width-12'>Entry Date</th>
-                    <th className='width-18'>Bill Due Date</th>
-                    <th className='width-18'>Vendor Name</th>
-                    <th className='width-28'>Description</th>
-                    <th className="text-center width-14%">
-                      Status
-                    </th>
+                    <th className="width-10">Letter ID</th>
+                    <th className="width-16">Letter From</th>
+                    <th className="width-22">Subject</th>
+                    <th className="width-13">Date</th>
+                    <th className="width-13">Receive Date</th>
+                    <th className="width-16">Category Description</th>
+                    <th className="text-center width-10">Status</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {filteredAdvances.map((advance, index) => (
-                    <tr key={`${advance.code}-${advance.entryDate}-${index}`}>
-                      <td>{formatValue(advance.code)}</td>
-                      <td>{formatValue(advance.entryDate)}</td>
-                      <td>{formatValue(advance.billDueDate)}</td>
+                  {filteredItems.map((item, index) => (
+                    <tr key={`${item.letterId}-${index}`}>
+                      <td>{formatValue(item.letterId)}</td>
                       <td>
                         <div className="fw-bold text-dark">
-                          {formatValue(advance.vendorName)}
+                          {formatValue(item.letterFrom)}
                         </div>
                       </td>
-                      <td>{formatValue(advance.description)}</td>
+                      <td>{formatValue(item.subject)}</td>
+                      <td>{formatValue(item.letterDate)}</td>
+                      <td>{formatValue(item.receiveDate)}</td>
+                      <td>{formatValue(item.categoryDescription)}</td>
                       <td className="text-center">
                         <span
                           className={`badge fs-8 fw-bolder ${getStatusBadgeClass(
-                            advance.status,
+                            item.status,
                           )}`}
                         >
-                          {formatValue(advance.status)}
+                          {formatValue(item.status)}
                         </span>
                       </td>
                     </tr>
                   ))}
 
-                  {!filteredAdvances.length && (
+                  {!filteredItems.length && (
                     <tr>
-                      <td colSpan={6} className="text-center text-muted fw-bold">
-                        No party advance records found.
+                      <td colSpan={7} className="text-center text-muted fw-bold">
+                        No correspondence records found.
                       </td>
                     </tr>
                   )}

@@ -28,7 +28,7 @@ export const TodoList = ({
         <div className="text-muted fw-bold">No dashboard records found.</div>
       )}
 
-      {items.map((item, index) => {
+      {!loading && items.map((item, index) => {
         const color = colors[index % colors.length];
 
         return (
