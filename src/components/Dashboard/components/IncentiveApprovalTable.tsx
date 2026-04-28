@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { DashboardPagination } from './DashboardPagination';
-import { PartyAdvanceItem } from './types';
+import { IncentiveApprovalItem } from './types';
 
-interface PartyAdvanceTableProps {
-  advances: PartyAdvanceItem[];
+interface IncentiveApprovalTableProps {
+  approvals: IncentiveApprovalItem[];
   loading: boolean;
   pageNumber: number;
   pageSize: number;
@@ -22,26 +22,8 @@ const formatValue = (value: unknown) => {
   return String(value);
 };
 
-const getStatusBadgeClass = (status: string) => {
-  const normalizedStatus = status.toLowerCase();
-
-  if (normalizedStatus === 'yes') {
-    return 'badge-light-success';
-  }
-
-  if (normalizedStatus === 'no') {
-    return 'badge-light-danger';
-  }
-
-  if (normalizedStatus === 'closed') {
-    return 'badge-light-dark';
-  }
-
-  return 'badge-light-warning';
-};
-
-export const PartyAdvanceTable = ({
-  advances,
+export const IncentiveApprovalTable = ({
+  approvals,
   loading,
   pageNumber,
   pageSize,
@@ -50,30 +32,30 @@ export const PartyAdvanceTable = ({
   onPageSizeChange,
   searchValue,
   onSearchChange,
-}: PartyAdvanceTableProps) => {
+}: IncentiveApprovalTableProps) => {
   const [localSearch, setLocalSearch] = useState('');
   const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
   const isSearchActive = normalizedSearch.length >= 3;
-  const filteredAdvances = useMemo(() => {
+  const filteredApprovals = useMemo(() => {
     if (!isSearchActive) {
-      return advances;
+      return approvals;
     }
 
-    return advances.filter(advance =>
+    return approvals.filter(approval =>
       [
-        advance.code,
-        advance.entryDate,
-        advance.billDueDate,
-        advance.vendorName,
-        advance.description,
-        advance.status,
+        approval.autoId,
+        approval.employeeName,
+        approval.type,
+        approval.revertTo,
+        approval.doe,
+        approval.remark,
       ]
         .map(formatValue)
         .some(value => value.toLowerCase().includes(normalizedSearch)),
     );
-  }, [advances, isSearchActive, normalizedSearch]);
-  const displayTotalCount = isSearchActive ? filteredAdvances.length : totalCount;
+  }, [approvals, isSearchActive, normalizedSearch]);
+  const displayTotalCount = isSearchActive ? filteredApprovals.length : totalCount;
   const displayPageNumber = isSearchActive ? 1 : pageNumber;
   const totalPages = Math.max(1, Math.ceil(displayTotalCount / pageSize));
   const startRecord =
@@ -94,7 +76,9 @@ export const PartyAdvanceTable = ({
     <div className="card h-100 mb-5 mb-xl-8 dashboard-listing-card">
       <div className="card-header pt-3 pb-3">
         <h3 className="card-title align-items-start flex-column">
-          <span className="card-label fw-bolder fs-3 mb-1">Party Advance Pending</span>
+          <span className="card-label fw-bolder fs-3 mb-1">
+            Incentive Approval Pending
+          </span>
           <span className="text-muted mt-1 fw-bold fs-7">
             {displayTotalCount} records
           </span>
@@ -122,45 +106,35 @@ export const PartyAdvanceTable = ({
               <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                 <thead>
                   <tr className="fw-bolder text-muted">
-                    <th className='width-10'>Code</th>
-                    <th className='width-12'>Entry Date</th>
-                    <th className='width-18'>Bill Due Date</th>
-                    <th className='width-18'>Vendor Name</th>
-                    <th className='width-28'>Description</th>
-                    <th className="text-center width-14%">
-                      Status
-                    </th>
+                    <th className="width-10">Auto ID</th>
+                    <th className="width-24">Emp Name</th>
+                    <th className="width-18">Type</th>
+                    <th className="width-14">Revert To</th>
+                    <th className="width-18">DOE</th>
+                    <th className="width-16">Remark</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {filteredAdvances.map((advance, index) => (
-                    <tr key={`${advance.code}-${advance.entryDate}-${index}`}>
-                      <td>{formatValue(advance.code)}</td>
-                      <td>{formatValue(advance.entryDate)}</td>
-                      <td>{formatValue(advance.billDueDate)}</td>
+                  {filteredApprovals.map((approval, index) => (
+                    <tr key={`${approval.autoId}-${approval.employeeName}-${index}`}>
+                      <td>{formatValue(approval.autoId)}</td>
                       <td>
                         <div className="fw-bold text-dark">
-                          {formatValue(advance.vendorName)}
+                          {formatValue(approval.employeeName)}
                         </div>
                       </td>
-                      <td>{formatValue(advance.description)}</td>
-                      <td className="text-center">
-                        <span
-                          className={`badge fs-8 fw-bolder ${getStatusBadgeClass(
-                            advance.status,
-                          )}`}
-                        >
-                          {formatValue(advance.status)}
-                        </span>
-                      </td>
+                      <td>{formatValue(approval.type)}</td>
+                      <td>{formatValue(approval.revertTo)}</td>
+                      <td>{formatValue(approval.doe)}</td>
+                      <td>{formatValue(approval.remark)}</td>
                     </tr>
                   ))}
 
-                  {!filteredAdvances.length && (
+                  {!filteredApprovals.length && (
                     <tr>
                       <td colSpan={6} className="text-center text-muted fw-bold">
-                        No party advance records found.
+                        No incentive approval records found.
                       </td>
                     </tr>
                   )}

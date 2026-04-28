@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { DashboardPagination } from './DashboardPagination';
 import { LeaveApprovalItem } from './types';
 
 interface LeaveApprovalTableProps {
@@ -21,15 +22,7 @@ const formatValue = (value: unknown) => {
   return String(value);
 };
 
-const getSanctionText = (value: string) => {
-  const normalizedValue = value.trim().toLowerCase();
-
-  if (['y', 'yes', 'approve', 'approved', 'a'].includes(normalizedValue)) {
-    return 'Yes';
-  }
-
-  return 'No';
-};
+type LeaveSanctionStatus = 'Yes' | 'No';
 
 export const LeaveApprovalTable = ({
   leaves,
@@ -43,6 +36,13 @@ export const LeaveApprovalTable = ({
   onSearchChange,
 }: LeaveApprovalTableProps) => {
   const [localSearch, setLocalSearch] = useState('');
+  const [selectedSanctionById, setSelectedSanctionById] = useState<
+    Record<string, LeaveSanctionStatus | ''>
+  >({});
+  const [pendingConfirmation, setPendingConfirmation] = useState<{
+    rowId: string;
+    status: LeaveSanctionStatus;
+  } | null>(null);
   const search = searchValue ?? localSearch;
   const normalizedSearch = search.trim().toLowerCase();
   const isSearchActive = normalizedSearch.length >= 3;
@@ -53,15 +53,15 @@ export const LeaveApprovalTable = ({
 
     return leaves.filter(leave =>
       [
+        leave.leaveId,
+        leave.empNum,
         leave.sadhakName,
-        leave.applyDate,
-        leave.fromDate,
-        leave.toDate,
-        leave.applied,
-        leave.leaveType,
+        leave.department,
         leave.leaveDay,
         leave.chargeGiven,
-        getSanctionText(leave.sanction),
+        leave.applied,
+        leave.fromDate,
+        leave.toDate,
       ]
         .map(formatValue)
         .some(value => value.toLowerCase().includes(normalizedSearch)),
@@ -69,23 +69,38 @@ export const LeaveApprovalTable = ({
   }, [isSearchActive, leaves, normalizedSearch]);
   const displayTotalCount = isSearchActive ? filteredLeaves.length : totalCount;
   const displayPageNumber = isSearchActive ? 1 : pageNumber;
-  const totalPages = Math.max(1, Math.ceil(displayTotalCount / pageSize));
-  const startRecord =
-    displayTotalCount === 0 ? 0 : (displayPageNumber - 1) * pageSize + 1;
-  const endRecord =
-    displayTotalCount === 0
-      ? 0
-      : Math.min(displayPageNumber * pageSize, displayTotalCount);
-  const pageNumbers = Array.from(
-    { length: Math.min(totalPages, 5) },
-    (_, index) => {
-      const safeStartPage = Math.max(1, displayPageNumber - 2);
-      const safeEndPage = Math.min(totalPages, safeStartPage + 4);
-      const adjustedStartPage = Math.max(1, safeEndPage - 4);
+  const setRowSanction = (rowId: string, status: LeaveSanctionStatus) => {
+    setSelectedSanctionById(current => ({
+      ...current,
+      [rowId]: current[rowId] === status ? '' : status,
+    }));
+  };
+  const handleSanctionChange = (
+    rowId: string,
+    status: LeaveSanctionStatus,
+    selectedSanction: LeaveSanctionStatus | '',
+  ) => {
+    if (selectedSanction === status) {
+      setRowSanction(rowId, status);
+      return;
+    }
 
-      return adjustedStartPage + index;
-    },
-  );
+    setPendingConfirmation({ rowId, status });
+  };
+  const confirmationTitle =
+    pendingConfirmation?.status === 'Yes'
+      ? 'Confirm accept'
+      : 'Confirm reject';
+  const confirmationMessage =
+    pendingConfirmation?.status === 'Yes'
+      ? 'Are you sure you want to accept this leave?'
+      : 'Are you sure you are not accept leave?';
+  const confirmationButtonText =
+    pendingConfirmation?.status === 'Yes' ? 'Accept' : 'Reject';
+  const confirmationButtonClass =
+    pendingConfirmation?.status === 'Yes'
+      ? 'swal2-confirm swal2-styled'
+      : 'swal2-confirm swal2-styled btn-danger';
 
   return (
     <>
@@ -122,50 +137,77 @@ export const LeaveApprovalTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th className='width-18'>Sadhak Name</th>
-                      <th className='width-12'>Apply Date</th>
-                      <th className='width-16'>Apply From - To</th>
-                      <th className='width-9'>Applied</th>
-                      <th className='width-14'>Leave Type</th>
-                      <th className='width-11'>Leave Day</th>
-                      <th className='width-14'>Charge Given</th>
-                      <th className='width-6'>Sanction</th>
+                      <th className="width-10">Leave Id</th>
+                      <th className="width-22">Sadhak Detail</th>
+                      <th className="width-14">Department</th>
+                      <th className="width-10">Day</th>
+                      <th className="width-16">ChargesTo</th>
+                      <th className="width-10">Apply</th>
+                      <th className="text-center width-18">Leave Sanction</th>
                     </tr>
                   </thead>
 
                   <tbody>
-                    {filteredLeaves.map((leave, index) => (
-                      <tr key={`${leave.leaveId}-${index}`}>
-                        <td>
-                          <div className="fw-bold text-dark">
-                            {formatValue(leave.sadhakName)}
-                          </div>
-                        </td>
-                        <td>{formatValue(leave.applyDate)}</td>
-                        <td>
-                          {formatValue(leave.fromDate)} To {formatValue(leave.toDate)}
-                        </td>
-                        <td>{formatValue(leave.applied)}</td>
-                        <td>{formatValue(leave.leaveType)}</td>
-                        <td>{formatValue(leave.leaveDay)}</td>
-                        <td>{formatValue(leave.chargeGiven)}</td>
-                        <td>
-                          <span
-                            className={`badge fs-8 fw-bolder ${
-                              getSanctionText(leave.sanction) === 'Yes'
-                                ? 'badge-light-success'
-                                : 'badge-light-warning'
-                            }`}
-                          >
-                            {getSanctionText(leave.sanction)}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {filteredLeaves.map((leave, index) => {
+                      const rowId = String(leave.leaveId || `${leave.empNum}-${index}`);
+                      const selectedSanction = selectedSanctionById[rowId] || '';
+
+                      return (
+                        <tr key={rowId}>
+                          <td>{formatValue(leave.leaveId)}</td>
+                          <td>
+                            <div className="fw-bold text-dark">
+                              {formatValue(leave.sadhakName)}
+                            </div>
+                            <span className="text-muted fs-7">
+                              {formatValue(leave.empNum)}
+                            </span>
+                          </td>
+                          <td>{formatValue(leave.department)}</td>
+                          <td>{formatValue(leave.leaveDay)}</td>
+                          <td>{formatValue(leave.chargeGiven)}</td>
+                          <td>{formatValue(leave.applied)}</td>
+                          <td>
+                            <div className="d-flex justify-content-center gap-4">
+                              <label className="form-check form-check-sm form-check-custom form-check-solid mb-0">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  checked={selectedSanction === 'Yes'}
+                                  onChange={() =>
+                                    handleSanctionChange(
+                                      rowId,
+                                      'Yes',
+                                      selectedSanction,
+                                    )
+                                  }
+                                />
+                                <span className="form-check-label fw-bold">Yes</span>
+                              </label>
+                              <label className="form-check form-check-sm form-check-custom form-check-solid mb-0">
+                                <input
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  checked={selectedSanction === 'No'}
+                                  onChange={() =>
+                                    handleSanctionChange(
+                                      rowId,
+                                      'No',
+                                      selectedSanction,
+                                    )
+                                  }
+                                />
+                                <span className="form-check-label fw-bold">No</span>
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
 
                     {!filteredLeaves.length && (
                       <tr>
-                        <td colSpan={8} className="text-center text-muted fw-bold">
+                        <td colSpan={7} className="text-center text-muted fw-bold">
                           No leave records found.
                         </td>
                       </tr>
@@ -176,80 +218,59 @@ export const LeaveApprovalTable = ({
             </div>
           )}
 
-          <div className="d-flex flex-stack flex-wrap pt-5 mt-auto">
-            <div className="d-flex align-items-center gap-3">
-              <span className="text-muted fs-7">Show</span>
-              <select
-                className="form-select form-select-sm form-select-solid w-100px"
-                value={pageSize}
-                onChange={event => onPageSizeChange(Number(event.target.value))}
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </select>
-              <span className="text-muted fs-7">per page</span>
-            </div>
-
-            <div className="d-flex align-items-center gap-4">
-              <span className="text-muted fs-7">
-                Showing {startRecord} to {endRecord} of {displayTotalCount}
-              </span>
-              <ul className="pagination pagination-circle pagination-outline mb-0">
-                <li
-                  className={`page-item ${
-                    displayPageNumber === 1 ? 'disabled' : ''
-                  }`}
-                >
-                  <button
-                    type="button"
-                    className="page-link"
-                    onClick={() =>
-                      onPageChange(Math.max(1, displayPageNumber - 1))
-                    }
-                  >
-                    &laquo;
-                  </button>
-                </li>
-                {pageNumbers.map(page => (
-                  <li
-                    key={page}
-                    className={`page-item ${
-                      page === displayPageNumber ? 'active' : ''
-                    }`}
-                  >
-                    <button
-                      type="button"
-                      className="page-link"
-                      onClick={() => onPageChange(page)}
-                    >
-                      {page}
-                    </button>
-                  </li>
-                ))}
-                <li
-                  className={`page-item ${
-                    displayPageNumber >= totalPages ? 'disabled' : ''
-                  }`}
-                >
-                  <button
-                    type="button"
-                    className="page-link"
-                    onClick={() =>
-                      onPageChange(Math.min(totalPages, displayPageNumber + 1))
-                    }
-                  >
-                    &raquo;
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
+          <DashboardPagination
+            displayTotalCount={displayTotalCount}
+            displayPageNumber={displayPageNumber}
+            pageSize={pageSize}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+          />
         </div>
       </div>
 
+      {pendingConfirmation && (
+        <div className="swal2-container swal2-center swal2-backdrop-show">
+          <div
+            className="swal2-popup swal2-modal login-error-popup swal2-show"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="leave-confirm-title"
+            aria-describedby="leave-confirm-message"
+          >
+            <div className="swal2-icon swal2-warning swal2-icon-show d-flex align-items-center justify-content-center">
+              <div className="swal2-icon-content">!</div>
+            </div>
+            <h2 id="leave-confirm-title" className="swal2-title">
+              {confirmationTitle}
+            </h2>
+            <div id="leave-confirm-message" className="swal2-html-container">
+              {confirmationMessage}
+            </div>
+            <div className="swal2-actions">
+              <button
+                type="button"
+                className={confirmationButtonClass}
+                onClick={() => {
+                  setRowSanction(
+                    pendingConfirmation.rowId,
+                    pendingConfirmation.status,
+                  );
+                  setPendingConfirmation(null);
+                }}
+              >
+                {confirmationButtonText}
+              </button>
+              <button
+                type="button"
+                className="swal2-cancel swal2-styled"
+                onClick={() => setPendingConfirmation(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

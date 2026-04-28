@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Checkbox, message } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Form, Input } from 'antd';
 import { connect, ConnectedProps } from 'react-redux';
 import { Link, Redirect } from 'react-router-dom';
 import { login } from './Auth.thunks';
@@ -18,19 +17,21 @@ interface Props extends ConnectedProps<typeof connector> {}
 
 const _Login = (props: Props) => {
   const [showPassword, setShowPassword] = useState(false);
-  //  eslint-disable-next-line
-  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('NSS');
   const [loading, setLoading] = useState(false);
+  const [showLoginError, setShowLoginError] = useState(false);
   const { login, isAuthenticated } = props;
 
   const onFinish = async formData => {
     try {
       setLoading(true);
-      await login(formData);
-    } catch (error: any) {
-      message.error(error.message);
-      setError(error.payload.message);
+      const isLoginSuccess = await login(formData);
+
+      if (!isLoginSuccess) {
+        setShowLoginError(true);
+      }
+    } catch (error) {
+      setShowLoginError(true);
     } finally {
       setLoading(false);
     }
@@ -39,13 +40,10 @@ const _Login = (props: Props) => {
   if (isAuthenticated) {
     return <Redirect to={PATH.DASHBOARD} />;
   }
-  const hrefa: React.CSSProperties = {
-    margin: '0 auto',
-  };
-
   return (
-    <div className="login-logo d-flex vh-100">
-      <div className="bottom-bg d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
+    <>
+      <div className="login-logo d-flex vh-100">
+        <div className="bottom-bg d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed">
         <div className="d-flex flex-start text-center flex-column flex-column-fluid p-5 px-2 p-md-5">
           <div className=" ">
             <div className="container">
@@ -63,7 +61,6 @@ const _Login = (props: Props) => {
                       Login with {activeTab}
                     </h1>
                   </div>
-                  {/* <!--begin::Heading--> */}
                   <div className="loginTabs mb-5">
                     <ul className="nav nssBtnColor rounded-pill p-1 p-md-2 justify-content-between">
                       <li className="nav-item">
@@ -194,7 +191,38 @@ const _Login = (props: Props) => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+      {showLoginError && (
+        <div className="swal2-container swal2-center swal2-backdrop-show">
+          <div
+            className="swal2-popup swal2-modal login-error-popup swal2-show"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="login-error-message"
+          >
+            <div className="swal2-icon swal2-error swal2-icon-show">
+              <span className="swal2-x-mark">
+                <span className="swal2-x-mark-line-left"></span>
+                <span className="swal2-x-mark-line-right"></span>
+              </span>
+            </div>
+            <div id="login-error-message" className="swal2-html-container">
+              Sorry, looks like there are some errors detected, please try
+              again.
+            </div>
+            <div className="swal2-actions">
+              <button
+                type="button"
+                className="swal2-confirm swal2-styled"
+                onClick={() => setShowLoginError(false)}
+              >
+                Ok, got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 const Login = connector(_Login);
