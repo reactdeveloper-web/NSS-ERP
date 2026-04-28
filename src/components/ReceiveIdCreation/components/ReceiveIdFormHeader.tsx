@@ -1,15 +1,25 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 
 export const ReceiveIdFormHeader: React.FC = () => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const receiveId = searchParams.get('RID') || '';
+  const operation = searchParams.get('Operation')?.toUpperCase() || '';
+  const shouldShowReceiveId =
+    Boolean(receiveId) && ['EDIT', 'VIEW'].includes(operation);
+
   return (
     <div className={'card-header border-bottom mb-4'}>
       <div className={'card-title w-100 justify-content-between'}>
         <div className={'d-flex gap-5'}>
           <h3 className={'fw-bold mb-0'}>Donor / Receipt Details</h3>
-          <span className={'badge badge-light-primary fs-6 fw-semibold px-4 py-2'}>
-            <i className={'fas fa-receipt text-primary me-2'}></i>
-            Receive ID : 296356
-          </span>
+          {shouldShowReceiveId ? (
+            <span className={'badge badge-light-primary fs-6 fw-semibold px-4 py-2'}>
+              <i className={'fas fa-receipt text-primary me-2'}></i>
+              Receive ID : {receiveId}
+            </span>
+          ) : null}
           <span className={'badge badge-light-info fs-6 fw-semibold px-4 py-2'}>
             <i className={'fas fa-calendar-alt text-info me-2'}></i>
             28/04/2026
