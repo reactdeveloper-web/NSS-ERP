@@ -93,30 +93,30 @@ export const EmployeeApplicationTable = ({
               <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                 <thead>
                   <tr className="fw-bolder text-muted">
-                    <th className="width-10">Code</th>
+                    <th className="width-7 text-center">Code</th>
                     <th className="width-20">Name</th>
-                    <th className="width-15">Department</th>
+                    <th className="width-15 text-center">Department</th>
                     <th className="width-18">Designation</th>
-                    <th className="width-15">Type</th>
+                    <th className="width-15 text-center">Type</th>
                     <th className="text-end width-10">Amount</th>
-                    <th className="width-12">Status Remark</th>
+                    <th className="width-12 text-center">Status Remark</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {filteredItems.map((item, index) => (
                     <tr key={`${item.code}-${index}`}>
-                      <td>{formatValue(item.code)}</td>
+                      <td className="text-center">{formatValue(item.code)}</td>
                       <td>
                         <div className="fw-bold text-dark">
                           {formatValue(item.name)}
                         </div>
                       </td>
-                      <td>{formatValue(item.department)}</td>
+                      <td className="text-center">{formatValue(item.department)}</td>
                       <td>{formatValue(item.designation)}</td>
-                      <td>{formatValue(item.type)}</td>
+                      <td className="text-center">{formatValue(item.type)}</td>
                       <td className="text-end">{formatValue(item.amount)}</td>
-                      <td>{formatValue(item.statusRemark)}</td>
+                      <td className="text-center">{formatValue(item.statusRemark)}</td>
                     </tr>
                   ))}
 

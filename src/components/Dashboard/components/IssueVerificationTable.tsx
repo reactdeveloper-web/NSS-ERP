@@ -114,8 +114,8 @@ export const IssueVerificationTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th className='width-8'>Sr No.</th>
-                      <th className='width-12'>Issue Date</th>
+                      <th className='width-8 text-center'>Sr No.</th>
+                      <th className='width-12 text-center'>Issue Date</th>
                       <th className='width-18'>Sadhak Name</th>
                       <th className='width-18'>Category</th>
                       <th className='width-24'>Item Name</th>
@@ -129,8 +129,8 @@ export const IssueVerificationTable = ({
                   <tbody>
                     {filteredIssues.map((issue, index) => (
                       <tr key={`${issue.issueId}-${issue.srNo}-${index}`}>
-                        <td>{formatValue(issue.srNo)}</td>
-                        <td>{formatValue(issue.issueDate)}</td>
+                        <td className='text-center'>{formatValue(issue.srNo)}</td>
+                        <td className='text-center'>{formatValue(issue.issueDate)}</td>
                         <td>{formatValue(issue.sadhakName)}</td>
                         <td>{formatValue(issue.category)}</td>
                         <td>{formatValue(issue.itemName)}</td>

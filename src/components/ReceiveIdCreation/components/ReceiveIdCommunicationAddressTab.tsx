@@ -1,69 +1,128 @@
 import React from 'react';
+import { CountryField } from 'src/components/Common/CountryField';
+import { DistrictField } from 'src/components/Common/DistrictField';
+import { FloatingInputField } from 'src/components/Common/FloatingInputField';
+import { PincodeField } from 'src/components/Common/PincodeField';
+import { StateField } from 'src/components/Common/StateField';
+import { EventOption } from 'src/components/AnnounceMaster/types';
+import { ReceiveIdFormTabProps } from './ReceiveIdForm.types';
 
-export const ReceiveIdCommunicationAddressTab: React.FC = () => {
+interface ReceiveIdCommunicationAddressTabProps extends ReceiveIdFormTabProps {
+  stateOptions?: EventOption[];
+  districtOptions?: EventOption[];
+  isPincodeLocationLocked?: boolean;
+}
+
+export const ReceiveIdCommunicationAddressTab: React.FC<
+  ReceiveIdCommunicationAddressTabProps
+> = ({
+  values,
+  updateField,
+  isReadOnly,
+  stateOptions = [],
+  districtOptions = [],
+  isPincodeLocationLocked = false,
+}) => {
+  const stateSelectOptions =
+    values.state &&
+    !stateOptions.some(state => state.value === values.state)
+      ? [{ value: values.state, label: values.state }, ...stateOptions]
+      : stateOptions;
+  const districtSelectOptions =
+    values.district &&
+    !districtOptions.some(district => district.value === values.district)
+      ? [{ value: values.district, label: values.district }, ...districtOptions]
+      : districtOptions;
+
   return (
     <div className={'tab-pane fade'} id="tab_address" role="tabpanel">
       <div className={'row g-5'}>
         <div className={'col-md-3'}>
-          <label className={'form-label fw-semibold'}>Address 1</label>
-          <input type="text" id="addr1" className={'form-control'} placeholder="Flat, House No. Building, Apartment" />
+          <FloatingInputField
+            id="addr1"
+            label="Address 1"
+            value={values.address1}
+            onChange={value => updateField('address1', value)}
+            placeholder="Flat, House No. Building, Apartment"
+            readOnly={isReadOnly}
+          />
         </div>
 
         <div className={'col-md-3'}>
-          <label className={'form-label fw-semibold'}>Address 2</label>
-          <input type="text" id="addr2" className={'form-control'} placeholder="Area, Street, Sector, Village" />
+          <FloatingInputField
+            id="addr2"
+            label="Address 2"
+            value={values.address2}
+            onChange={value => updateField('address2', value)}
+            placeholder="Area, Street, Sector, Village"
+            readOnly={isReadOnly}
+          />
         </div>
 
         <div className={'col-md-3'}>
-          <label className={'form-label fw-semibold'}>Address 3</label>
-          <input type="text" id="addr3" className={'form-control'} placeholder="Landmark" />
+          <FloatingInputField
+            id="addr3"
+            label="Address 3"
+            value={values.address3}
+            onChange={value => updateField('address3', value)}
+            placeholder="Landmark"
+            readOnly={isReadOnly}
+          />
         </div>
 
         <div className={'col-md-3'}>
-          <label className={'form-label fw-semibold'}>Country</label>
-          <select id="country" className={'form-select'}>
-            <option selected={true}>India</option>
-            <option>USA</option>
-            <option>UK</option>
-            <option>UAE</option>
-          </select>
+          <PincodeField
+            value={values.pincode}
+            onChange={value => updateField('pincode', value)}
+            disabled={isReadOnly}
+          />
         </div>
 
         <div className={'col-md-3'}>
-          <label className={'form-label fw-semibold'}>Pin Code</label>
-          <input type="text" id="pin" className={'form-control'} placeholder="Enter Pincode" />
+          <CountryField
+            value={values.country}
+            onChange={value => updateField('country', value)}
+            disabled={isReadOnly}
+          />
         </div>
 
         <div className={'col-md-3'}>
-          <label className={'form-label fw-semibold'}>State</label>
-          <select id="state" className={'form-select'}>
-            <option value="">Select State</option>
-            <option>Rajasthan</option>
-            <option>Delhi</option>
-            <option>Maharashtra</option>
-            <option>Gujarat</option>
-          </select>
+          <StateField
+            value={values.state}
+            options={stateSelectOptions}
+            disabled={isPincodeLocationLocked || isReadOnly}
+            onChange={value => updateField('state', value)}
+          />
         </div>
 
         <div className={'col-md-3'}>
-          <label className={'form-label fw-semibold'}>City</label>
-          <select id="city" className={'form-select'}>
-            <option value="">Select City</option>
-            <option>Udaipur</option>
-            <option>Jaipur</option>
-            <option>Delhi</option>
-            <option>Ahmedabad</option>
-          </select>
+          <FloatingInputField
+            id="city"
+            label="City"
+            value={values.city}
+            onChange={value => updateField('city', value)}
+            readOnly={isReadOnly}
+          />
         </div>
 
         <div className={'col-md-3'}>
-          <label className={'form-label fw-semibold'}>District</label>
-          <input type="text" id="district" className={'form-control'} placeholder="Enter District" />
+          <DistrictField
+            value={values.district}
+            options={districtSelectOptions}
+            disabled={isPincodeLocationLocked || isReadOnly}
+            onChange={value => updateField('district', value)}
+          />
         </div>
 
         <div className={'col-md-3'}>
-          <label className={'form-label fw-semibold'}>C/O</label>
-          <input type="text" id="C/O" className={'form-control'} placeholder="Enter C/O" />
+          <FloatingInputField
+            id="careOf"
+            label="C/O"
+            value={values.careOf}
+            onChange={value => updateField('careOf', value)}
+            placeholder="Enter C/O"
+            readOnly={isReadOnly}
+          />
         </div>
       </div>
     </div>

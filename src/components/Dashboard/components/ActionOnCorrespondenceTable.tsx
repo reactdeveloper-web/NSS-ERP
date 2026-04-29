@@ -107,12 +107,12 @@ export const ActionOnCorrespondenceTable = ({
               <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                 <thead>
                   <tr className="fw-bolder text-muted">
-                    <th className="width-10">Letter ID</th>
+                    <th className="width-8 text-center">Letter ID</th>
                     <th className="width-16">Letter From</th>
                     <th className="width-22">Subject</th>
                     <th className="width-13">Date</th>
-                    <th className="width-13">Receive Date</th>
-                    <th className="width-16">Category Description</th>
+                    <th className="width-13 text-center">Receive Date</th>
+                    <th className="width-16 text-center">Category Description</th>
                     <th className="text-center width-10">Status</th>
                   </tr>
                 </thead>
@@ -120,7 +120,7 @@ export const ActionOnCorrespondenceTable = ({
                 <tbody>
                   {filteredItems.map((item, index) => (
                     <tr key={`${item.letterId}-${index}`}>
-                      <td>{formatValue(item.letterId)}</td>
+                      <td className="text-center">{formatValue(item.letterId)}</td>
                       <td>
                         <div className="fw-bold text-dark">
                           {formatValue(item.letterFrom)}
@@ -128,8 +128,8 @@ export const ActionOnCorrespondenceTable = ({
                       </td>
                       <td>{formatValue(item.subject)}</td>
                       <td>{formatValue(item.letterDate)}</td>
-                      <td>{formatValue(item.receiveDate)}</td>
-                      <td>{formatValue(item.categoryDescription)}</td>
+                      <td className='text-center'>{formatValue(item.receiveDate)}</td>
+                      <td className="text-center">{formatValue(item.categoryDescription)}</td>
                       <td className="text-center">
                         <span
                           className={`badge fs-8 fw-bolder ${getStatusBadgeClass(

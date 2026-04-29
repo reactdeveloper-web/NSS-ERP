@@ -1,6 +1,6 @@
 export const masterApiPaths = {
   getAnnounceCauses: '/Announce/GetAnnounceCauses',
-  getOccasionMaster: '/Announce/GetOccasionMaster',
+  getOccasionMaster: '/master/GetOccasionMaster',
   getHowToDonateMaster: 'Announce/GetAnnounceRemarkMasterHowToDonate',
   getAnnounceList: '/Announce/GetAnnounceList',
   getAnnounceDetailsById: '/Announce/GetAnnounceDetailsById',
@@ -12,4 +12,5 @@ export const masterApiPaths = {
   getCallCategoryList: '/CIT/GetCallCategoryList',
   getCallSubCategoryList: '/CIT/GetCallSubCategoryList',
   getReceiveIdDetailsByFilter:'/DMS/GetReceiveIdDetailsbyFilter',
+  getReceiveIdDetailsById: '/DMS/GetReceiveIdDetailsById',
 } as const;

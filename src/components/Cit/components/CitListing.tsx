@@ -839,63 +839,54 @@ export const CitListing = ({
 
       <div className="card-body p-3">
         {apiError ? <div className="alert alert-warning m-3">{apiError}</div> : null}
-
-        <div className="table-responsive" style={{ maxHeight: '550px' }}>
+<div className="dashboard-listing-content">
+        <div className="table-responsive stickyTable dashboard-listing-table" style={{ maxHeight: '550px' }}>
           <table
             id="citListingTable"
-            className="table table-row-bordered align-middle gs-0 gy-2 mb-0"
+            className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table"
           >
             <thead>
               <tr className="fw-bolder text-uppercase text-nowrap">
                 <th
-                  className="min-w-100px text-center"
-                  style={{ background: '#27b3a7', color: '#ffffff' }}
+                  className="w-175px text-center"
                 ></th>
                 <th
                   className="text-center"
-                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
                   Ticket ID
                 </th>
                 <th
                   className="text-center"
-                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
                   Entry Date
                 </th>
                 <th
                   className="text-center"
-                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
                   Call Back Date
                 </th>
                 <th
                   className="text-center"
-                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
                   Target Date
                 </th>
                 <th
                   className="text-start"
-                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
                   Category Name / Types
                 </th>
                 <th
                   className="text-start"
-                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
                   Request By
                 </th>
                 <th
                   className="text-start"
-                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
                   Details
                 </th>
                 <th
                   className="text-center"
-                  style={{ background: '#27b3a7', color: '#ffffff' }}
                 >
                   Status
                 </th>
@@ -918,8 +909,8 @@ export const CitListing = ({
 
                   return (
                     <tr key={item.informationCode}>
-                      <td>
-                        <div className="d-flex gap-2">
+                     <td className='text-center'>
+                      <div className="d-flex gap-4 justify-content-center">
                         <button
                           type="button"
                           className="btn btn-icon btn-sm btn-light"
@@ -1003,6 +994,7 @@ export const CitListing = ({
               )}
             </tbody>
           </table>
+        </div>
         </div>
 
         <div className="d-flex flex-stack flex-wrap pt-5">

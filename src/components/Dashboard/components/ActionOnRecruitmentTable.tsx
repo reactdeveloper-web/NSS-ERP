@@ -110,10 +110,10 @@ export const ActionOnRecruitmentTable = ({
               <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                 <thead>
                   <tr className="fw-bolder text-muted">
-                    <th className='width-12'>Application No.</th>
+                    <th className='width-10 text-center'>Application No.</th>
                     <th className='width-18'>Name</th>
                     <th className='width-15'>DOB</th>
-                    <th className='width-10'>Sex</th>
+                    <th className='width-10 text-center'>Sex</th>
                     <th className='width-20'>Dept Name</th>
                     <th className='width-17'>Post Name</th>
                     <th className="text-end width-8">
@@ -125,14 +125,14 @@ export const ActionOnRecruitmentTable = ({
                 <tbody>
                   {filteredItems.map((item, index) => (
                     <tr key={`${item.applicationNo}-${index}`}>
-                      <td>{formatValue(item.applicationNo)}</td>
+                      <td className="text-center">{formatValue(item.applicationNo)}</td>
                       <td>
                         <div className="fw-bold text-dark">
                           {formatValue(item.name)}
                         </div>
                       </td>
                       <td>{formatValue(item.dob)}</td>
-                      <td>{formatValue(item.sex)}</td>
+                      <td className="text-center">{formatValue(item.sex)}</td>
                       <td>{formatValue(item.departmentName)}</td>
                       <td>{formatValue(item.postName)}</td>
                       <td className="text-end">{formatValue(item.salary)}</td>
