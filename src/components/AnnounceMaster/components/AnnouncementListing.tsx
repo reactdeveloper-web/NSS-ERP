@@ -491,12 +491,12 @@ export const AnnouncementListing = ({
 
   const getSortIconClass = (field: SortField) => {
     if (sortField !== field || !sortDirection) {
-      return 'fa-sort text-white-50';
+      return 'fa-sort';
     }
 
     return sortDirection === 'asc'
-      ? 'fa-sort-up text-white'
-      : 'fa-sort-down text-white';
+      ? 'fa-sort-up'
+      : 'fa-sort-down';
   };
 
   const renderSortableHeader = (
@@ -508,7 +508,7 @@ export const AnnouncementListing = ({
       {input}
       <button
         type="button"
-        className="btn btn-link btn-color-white btn-active-color-white p-0 text-decoration-none d-inline-flex align-items-center justify-content-center gap-2"
+        className="btn btn-link text-dark p-0 text-decoration-none d-inline-flex align-items-center justify-content-center gap-2"
         onClick={() => handleSort(field)}
       >
         <span>{label}</span>
@@ -670,34 +670,31 @@ export const AnnouncementListing = ({
 
       <div className="card-body p-3">
         {error ? <div className="alert alert-warning m-3">{error}</div> : null}
-
-        <div className="table-responsive" style={{ maxHeight: '550px' }}>
+<div className="dashboard-listing-content">
+        <div className="table-responsive stickyTable dashboard-listing-table" style={{ maxHeight: '550px' }}>
           <table
             id="receiveTable"
-            className="table table-row-bordered align-middle gs-0 gy-2 mb-0"
+            className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table"
           >
             <thead>
               <tr className="fw-bolder text-uppercase text-nowrap">
                 <th
-                  className="min-w-100px text-center"
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
+                  className="w-175px text-center"
                 ></th>
                 <th
                   className={`text-center ${getSortStateClass('announceId')}`}
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
                   {renderSortableHeader('Announce ID', 'announceId')}
                 </th>
                 <th
                   className={`text-center ${getSortStateClass('announcerName')}`}
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
                   {renderSortableHeader(
                     '',
                     'announcerName',
                     <input
                       type="text"
-                      className="border-0 bg-transparent text-white text-end p-0 fs-6 placeholder-white w-125px"
+                      className="border-0 bg-transparent text-black text-end p-0 fs-6 placeholder-text-black w-125px sortingInput"
                       placeholder="Announce Name"
                       value={tableColumnFilters.announcerName}
                       onChange={event =>
@@ -712,14 +709,13 @@ export const AnnouncementListing = ({
                 </th>
                 <th
                   className={`text-center ${getSortStateClass('mobileNo')}`}
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
                   {renderSortableHeader(
                     '',
                     'mobileNo',
                     <input
                       type="text"
-                       className="border-0 bg-transparent text-white text-end p-0 fs-6 placeholder-white w-125px"
+                       className="border-0 bg-transparent text-black text-end p-0 fs-6 placeholder-text-black w-125px sortingInput"
                       placeholder="Search mobile"
                       value={tableColumnFilters.mobileNo}
                       onChange={event =>
@@ -731,13 +727,11 @@ export const AnnouncementListing = ({
                 </th>
                 <th
                   className={`text-center ${getSortStateClass('announceAmount')}`}
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
                   {renderSortableHeader('Amount', 'announceAmount')}
                 </th>
                 <th
                   className={`text-center ${getSortStateClass('announceDate')}`}
-                  style={{ background: '#2A2B6B', color: '#ffffff' }}
                 >
                   {renderSortableHeader('Announce Date', 'announceDate')}
                 </th>
@@ -753,7 +747,8 @@ export const AnnouncementListing = ({
               ) : paginatedItems.length ? (
                 paginatedItems.map(item => (
                   <tr key={item.announceId} valign="top">
-                    <td className="d-flex gap-6">
+                    <td className='text-center'>
+                      <div className="d-flex gap-4 justify-content-center">
                       <button
                         type="button"
                         className="btn btn-icon btn-sm btn-light"
@@ -788,6 +783,7 @@ export const AnnouncementListing = ({
                           aria-hidden="true"
                         ></i>
                       </button>
+                      </div>
                     </td>
                     <td className="text-center">{item.announceId || '-'}</td>
                     <td className="text-center">{item.announcerName || '-'}</td>
@@ -807,6 +803,7 @@ export const AnnouncementListing = ({
               )}
             </tbody>
           </table>
+        </div>
         </div>
 
         <div className="d-flex flex-stack flex-wrap pt-5">

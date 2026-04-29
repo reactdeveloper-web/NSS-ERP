@@ -46,6 +46,11 @@
 		    width: 100%;
 		}
 
+		#detailsTabContent {
+		    overflow: visible;
+		    padding-top: 0.75rem;
+		}
+
 		/* Only mobile */
 		@media (max-width:768px) {
 

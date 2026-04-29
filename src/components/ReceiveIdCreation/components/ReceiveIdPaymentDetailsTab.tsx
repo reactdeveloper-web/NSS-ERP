@@ -1,87 +1,159 @@
 import React from 'react';
+import { FloatingDatePicker } from 'src/components/Common/FloatingDatePicker';
+import { FloatingInputField } from 'src/components/Common/FloatingInputField';
+import { FloatingSelectField } from 'src/components/Common/FloatingSelectField';
+import { ReceiveIdFormTabProps } from './ReceiveIdForm.types';
 
-export const ReceiveIdPaymentDetailsTab: React.FC = () => {
+const selectOnlyOptions = [{ value: '', label: 'Select' }];
+const depositBankOptions = [{ value: 'All', label: 'All' }];
+
+const withCurrentOption = (
+  options: { value: string; label: string }[],
+  value: string,
+) =>
+  value && !options.some(option => option.value === value)
+    ? [...options, { value, label: value }]
+    : options;
+
+export const ReceiveIdPaymentDetailsTab: React.FC<ReceiveIdFormTabProps> = ({
+  values,
+  updateField,
+  isReadOnly,
+}) => {
   return (
     <div className={'tab-pane fade'} id="tab_payment" role="tabpanel">
       <div id="paymentBlock">
         <div className={'row g-5'}>
           <div className={'col-md-3'}>
-            <label className={'form-label fw-semibold'}>
-              Payment Mode <span className={'text-danger'}>*</span>
-            </label>
-            <select className={'form-select'}>
-              <option>Select</option>
-            </select>
+            <FloatingSelectField
+              id="paymentMode"
+              label={
+                <>
+                  Payment Mode <span className={'text-danger'}>*</span>
+                </>
+              }
+              value={values.paymentMode}
+              options={withCurrentOption(selectOnlyOptions, values.paymentMode)}
+              disabled={isReadOnly}
+              onChange={value => updateField('paymentMode', value as string)}
+            />
           </div>
 
           <div className={'col-md-3 d-flex justify-content-between'}>
             <div className={'form-check mt-12'}>
-              <input className={'form-check-input'} type="checkbox" />
+              <input className={'form-check-input'} type="checkbox" disabled={isReadOnly} />
               <label className={'form-check-label fw-semibold'}>Pay-In-Slip Cash</label>
             </div>
-            <div className={'d-flex flex-column'}>
-              <label className={'form-label fw-semibold'}>
-                Currency <span className={'text-danger'}>*</span>
-              </label>
-              <input type="text" className={'form-control'} value="Indian Rupee (INR)" />
+            <div className={'d-flex flex-column flex-grow-1 ms-3'}>
+              <FloatingInputField
+                id="currency"
+                label={
+                  <>
+                    Currency <span className={'text-danger'}>*</span>
+                  </>
+                }
+                value={values.currency}
+                onChange={value => updateField('currency', value)}
+                readOnly={isReadOnly}
+              />
             </div>
           </div>
 
           <div className={'col-md-3'}>
-            <label className={'form-label fw-semibold'}>
-              Amount <span className={'text-danger'}>*</span>
-            </label>
-            <input type="text" className={'form-control'} />
+            <FloatingInputField
+              id="amount"
+              label={
+                <>
+                  Amount <span className={'text-danger'}>*</span>
+                </>
+              }
+              value={values.amount}
+              onChange={value => updateField('amount', value)}
+              readOnly={isReadOnly}
+            />
           </div>
 
           <div className={'col-md-3'}>
-            <label className={'form-label fw-semibold'}>Material Deposit Id</label>
-            <input type="text" className={'form-control'} />
+            <FloatingInputField
+              id="materialDepositId"
+              label="Material Deposit Id"
+              value={values.materialDepositId}
+              onChange={value => updateField('materialDepositId', value)}
+              readOnly={isReadOnly}
+            />
           </div>
 
           <div className={'col-md-3'}>
-            <label className={'form-label fw-semibold'}>Material</label>
-            <input type="text" className={'form-control'} />
+            <FloatingInputField
+              id="material"
+              label="Material"
+              value={values.material}
+              onChange={value => updateField('material', value)}
+              readOnly={isReadOnly}
+            />
           </div>
 
           <div className={'col-md-3'}>
-            <label className={'form-label fw-semibold'}>Bank Name 1</label>
-            <select className={'form-select'}>
-              <option>Select</option>
-            </select>
+            <FloatingSelectField
+              id="bankName1"
+              label="Bank Name 1"
+              value={values.bankName1}
+              options={withCurrentOption(selectOnlyOptions, values.bankName1)}
+              disabled={isReadOnly}
+              onChange={value => updateField('bankName1', value as string)}
+            />
           </div>
 
           <div className={'col-md-3'}>
-            <label className={'form-label fw-semibold'}>Cheque/Draft Date</label>
-            <input type="date" className={'form-control'} />
+            <FloatingDatePicker
+              id="chequeDate"
+              label="Cheque/Draft Date"
+              value={values.chequeDate}
+              onChange={value => updateField('chequeDate', value)}
+              readOnly={isReadOnly}
+            />
           </div>
           <div className={'col-md-3'}>
-            <label className={'form-label fw-semibold'}>Cheque/Draft No</label>
-            <input type="text" className={'form-control'} />
+            <FloatingInputField
+              id="chequeNo"
+              label="Cheque/Draft No"
+              value={values.chequeNo}
+              onChange={value => updateField('chequeNo', value)}
+              readOnly={isReadOnly}
+            />
           </div>
 
           <div className={'col-md-3'}>
-            <label className={'form-label fw-semibold'}>Deposit Bank &amp; Date</label>
-            <select className={'form-select'}>
-              <option>All</option>
-            </select>
+            <FloatingSelectField
+              id="depositBank"
+              label="Deposit Bank & Date"
+              value={values.depositBank}
+              options={withCurrentOption(depositBankOptions, values.depositBank)}
+              disabled={isReadOnly}
+              onChange={value => updateField('depositBank', value as string)}
+            />
           </div>
 
           <div className={'col-md-3'}>
-            <label className={'form-label fw-semibold'}>Deposit Date</label>
-            <input type="date" className={'form-control'} />
+            <FloatingDatePicker
+              id="depositDate"
+              label="Deposit Date"
+              value={values.depositDate}
+              onChange={value => updateField('depositDate', value)}
+              readOnly={isReadOnly}
+            />
           </div>
 
           <div className={'col-md-3'}>
             <label className={'form-label fw-semibold'}>PDC Cheque-1</label>
 
             <div className={'btn-group w-100 mt-2'} role="group">
-              <input type="radio" className={'btn-check'} name="pdc" id="pdcYes" autoComplete="off" />
+              <input type="radio" className={'btn-check'} name="pdc" id="pdcYes" autoComplete="off" disabled={isReadOnly} />
               <label className={'btn btn-outline-secondary w-50'} htmlFor="pdcYes">
                 Yes
               </label>
 
-              <input type="radio" className={'btn-check'} name="pdc" id="pdcNo" autoComplete="off" checked={true} />
+              <input type="radio" className={'btn-check'} name="pdc" id="pdcNo" autoComplete="off" defaultChecked disabled={isReadOnly} />
               <label className={'btn btn-outline-secondary w-50'} htmlFor="pdcNo">
                 No
               </label>
@@ -89,8 +161,14 @@ export const ReceiveIdPaymentDetailsTab: React.FC = () => {
           </div>
 
           <div className={'col-md-3'}>
-            <label className={'form-label fw-semibold'}>Manual Bank Id</label>
-            <input type="text" id="manualBankId" className={'form-control'} placeholder="Optional" />
+            <FloatingInputField
+              id="manualBankId"
+              label="Manual Bank Id"
+              value={values.manualBankId}
+              onChange={value => updateField('manualBankId', value)}
+              placeholder="Optional"
+              readOnly={isReadOnly}
+            />
           </div>
         </div>
 

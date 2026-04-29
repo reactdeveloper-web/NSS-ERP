@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { NavLink, useHistory, useLocation } from 'react-router-dom';
 import { logout } from 'src/components/Auth/Auth.thunks';
@@ -22,6 +22,7 @@ const _HeaderMenu = (props: Props) => {
   const { user, logout } = props;
   const history = useHistory();
   const location = useLocation();
+  const [openMenuKey, setOpenMenuKey] = useState('');
   const displayName = user.empName || user.username || 'User';
   const departmentName = user.deptName || 'Department';
   const employeeNumber = user.empNum ? Math.trunc(user.empNum) : '';
@@ -124,28 +125,41 @@ const _HeaderMenu = (props: Props) => {
                 data-kt-menu="true"
               >
                 {APP_MENU_ITEMS.map(item =>
-                  item.children?.length ? (
-                    <div
-                      key={item.key}
-                      data-kt-menu-trigger="{default:'click', lg: 'hover'}"
-                      data-kt-menu-placement="bottom-start"
-                      className={`menu-item menu-lg-down-accordion me-lg-1 ${
-                        item.children.some(child => isPathActive(child.path))
-                          ? 'here'
-                          : ''
-                      }`}
-                    >
+                  item.children?.length ? (() => {
+                    const isActiveParent = item.children.some(child =>
+                      isPathActive(child.path),
+                    );
+                    const isOpen = openMenuKey === item.key;
+
+                    return (
+                      <div
+                        key={item.key}
+                        data-kt-menu-trigger="{default:'click', lg: 'hover'}"
+                        data-kt-menu-placement="bottom-start"
+                        className={`menu-item menu-lg-down-accordion me-lg-1 ${
+                          isActiveParent ? 'here' : ''
+                        } ${isOpen ? 'hover show' : ''}`}
+                        onMouseEnter={() => setOpenMenuKey(item.key)}
+                        onMouseLeave={() => setOpenMenuKey('')}
+                      >
                       <span
                         className={`menu-link py-3 ${
-                          item.children.some(child => isPathActive(child.path))
-                            ? 'active'
-                            : ''
+                          isActiveParent ? 'active' : ''
                         }`}
+                        onClick={() =>
+                          setOpenMenuKey(current =>
+                            current === item.key ? '' : item.key,
+                          )
+                        }
                       >
                         <span className="menu-title">{item.label}</span>
                         <span className="menu-arrow"></span>
                       </span>
-                      <div className="menu-sub menu-sub-lg-down-accordion menu-sub-lg-dropdown menu-rounded-0 py-lg-4 w-lg-225px">
+                      <div
+                        className={`menu-sub menu-sub-lg-down-accordion menu-sub-lg-dropdown menu-rounded-0 py-lg-4 w-lg-225px ${
+                          isOpen ? 'show' : ''
+                        }`}
+                      >
                         {item.children.map(child => (
                           <div key={child.key} className="menu-item">
                             <NavLink
@@ -164,7 +178,8 @@ const _HeaderMenu = (props: Props) => {
                         ))}
                       </div>
                     </div>
-                  ) : (
+                    );
+                  })() : (
                     <div key={item.key} className="menu-item me-lg-1">
                       <NavLink
                         exact

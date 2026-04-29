@@ -29,6 +29,23 @@ const formatValue = (value: unknown) => {
   return String(value);
 };
 
+const formatIndianAmount = (value: unknown) => {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+
+  const normalizedValue = String(value).replace(/,/g, "").trim();
+  const numericValue = Number(normalizedValue);
+
+  if (!Number.isFinite(numericValue)) {
+    return String(value);
+  }
+
+  return new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 2,
+  }).format(numericValue);
+};
+
 const getValueByKeys = (record: Record<string, unknown>, keys: string[]) => {
   for (const key of keys) {
     const value = record[key];
@@ -61,7 +78,7 @@ const getStatusBadgeClass = (status: string) => {
     return "badge-light-warning";
   }
 
-  return "badge-light-secondary";
+  return "badge-light-warning";
 };
 
 export const BillDetailsTable = ({
@@ -156,18 +173,13 @@ export const BillDetailsTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th className='width-5'>Bill Id</th>
-                      <th className='width-12'>Bill No</th>
-                      <th className='width-12'>Bill Date</th>
-                      <th className='width-22'>Vendor/Sadhak</th>
-                      <th className='width-27'>Material</th>
-
-                      <th className="text-end width-10">
-                        Bill Amount
-                      </th>
-                      <th className="text-center width-10">
-                        Status
-                      </th>
+                      <th className='width-8 text-center'><i className="fas fa-file-invoice"></i>Bill Id</th>
+                      <th className='width-12 text-center'><i className="fas fa-hashtag" aria-hidden="true"></i> Bill No</th>
+                      <th className='width-12 text-center'><i className="far fa-calendar" aria-hidden="true"></i>Bill Date</th>
+                      <th className='width-22'><i className="far fa-user"></i>Vendor/Sadhak</th>
+                      <th className='width-27'><i className="fa fa-box-open"></i>Material</th>
+                      <th className="width-10"><i className="fa fa-rupee-sign"></i>Bill Amount</th>
+                      <th className="text-center width-10"><i className="fa fa-check"></i>Status</th>
                     </tr>
                   </thead>
 
@@ -178,9 +190,9 @@ export const BillDetailsTable = ({
                         className="cursor-pointer"
                         onClick={() => setSelectedBill(bill)}
                       >
-                        <td>{formatValue(bill.billId)}</td>
-                        <td>{formatValue(bill.billNo)}</td>
-                        <td>{formatValue(bill.billDate)}</td>
+                        <td className="text-center">{formatValue(bill.billId)}</td>
+                        <td className="text-center">{formatValue(bill.billNo)}</td>
+                        <td className="text-center">{formatValue(bill.billDate)}</td>
                         <td>
                           <div className="fw-bold text-dark">
                             {formatValue(bill.vendorSadhak)}
@@ -188,8 +200,8 @@ export const BillDetailsTable = ({
                         </td>
                         <td>{formatValue(bill.material)}</td>
 
-                        <td className="text-end">
-                          {formatValue(bill.billAmount)}
+                        <td>
+                          {formatIndianAmount(bill.billAmount)}
                         </td>
                         <td className="text-center">
                           <span
@@ -521,7 +533,9 @@ const BillDetailModal = ({ bill, onClose }: BillDetailModalProps) => {
               <div className="col-12">
                 <div className="dashboard-bill-amount-strip rounded fs-5">
                   <span>Total Bill Amount</span>
-                  <strong className="fs-3">{formatValue(bill.billAmount)} INR</strong>
+                  <strong className="fs-3">
+                    {formatIndianAmount(bill.billAmount)} INR
+                  </strong>
                 </div>
               </div>
             </div>
@@ -598,7 +612,7 @@ const BillDetailModal = ({ bill, onClose }: BillDetailModalProps) => {
                   ) : null}
                   {stage.amount ? (
                     <div className="dashboard-bill-workflow-meta">
-                      <span>Amt: ₹ {formatValue(stage.amount)}</span>
+                      <span>Amt: ₹ {formatIndianAmount(stage.amount)}</span>
                     </div>
                   ) : null}
                   <p>{formatValue(stage.remark)}</p>

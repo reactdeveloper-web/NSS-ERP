@@ -140,9 +140,9 @@ export const BranchApprovalTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th className='width-10'>Code</th>
-                      <th className='width-12'>Sadhak ID</th>
-                      <th className='width-12'>Letter ID</th>
+                      <th className='width-10 text-center'>Code</th>
+                      <th className='width-12 text-center'>Sadhak ID</th>
+                      <th className='width-12 text-center'>Letter ID</th>
                       <th className='width-20'>Name</th>
                       <th className='width-34'>Details</th>
                       <th className="text-center width-12">
@@ -154,9 +154,9 @@ export const BranchApprovalTable = ({
                   <tbody>
                     {filteredApprovals.map((approval, index) => (
                       <tr key={`${approval.letterId}-${approval.sadhakId}-${index}`}>
-                        <td>{formatValue(approval.code)}</td>
-                        <td>{formatValue(approval.sadhakId)}</td>
-                        <td>{formatValue(approval.letterId)}</td>
+                        <td className='text-center'>{formatValue(approval.code)}</td>
+                        <td className='text-center'>{formatValue(approval.sadhakId)}</td>
+                        <td className='text-center'>{formatValue(approval.letterId)}</td>
                         <td>
                           <div className="fw-bold text-dark">
                             {formatValue(approval.name)}

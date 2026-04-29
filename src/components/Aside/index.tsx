@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, Grid } from 'antd';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { connect, ConnectedProps } from 'react-redux';
 import { logout } from 'src/components/Auth/Auth.thunks';
 import { APP_MENU_ITEMS } from 'src/constants/appMenu';
@@ -22,19 +22,41 @@ interface Props extends ConnectedProps<typeof connector> {}
 const _AppAside = (props: Props) => {
   const { isAuthenticated, logout, user } = props;
   const { md } = useBreakpoint();
+  const location = useLocation();
 
   const [visible, setVisible] = useState(false);
+  const [openMenuKey, setOpenMenuKey] = useState('');
   const showDrawer = () => {
     setVisible(true);
   };
   const drawerOnClose = () => {
     setVisible(false);
   };
+
+  const isPathActive = (path?: string) => {
+    if (!path || path === '#') {
+      return false;
+    }
+
+    const targetUrl = new URL(path, window.location.origin);
+    const targetSearch = new URLSearchParams(targetUrl.search);
+    const currentSearch = new URLSearchParams(location.search);
+
+    if (targetUrl.pathname !== location.pathname) {
+      return false;
+    }
+
+    return Array.from(targetSearch.entries()).every(
+      ([key, value]) => currentSearch.get(key) === value,
+    );
+  };
+
   const leftSideLinks = (
     // begin::Aside
     <div
       id="kt_aside"
       className="aside aside-light aside-hoverable"
+      onMouseLeave={() => setOpenMenuKey('')}
       data-kt-drawer="true"
       data-kt-drawer-name="aside"
       data-kt-drawer-activate="{default: true, lg: false}"
@@ -99,20 +121,45 @@ const _AppAside = (props: Props) => {
               className="menu-item menu-accordion"
             >
               <ul className="ps-0 mb-0">
-                {APP_MENU_ITEMS.map(item => (
-                  <li
-                    key={item.key}
-                    className={`menu-item ${
-                      item.children?.length ? 'menu-accordion' : ''
-                    }`}
-                    data-submenu={item.label}
-                    data-kt-menu-trigger={
-                      item.children?.length ? 'click' : undefined
-                    }
-                  >
-                    {item.children?.length ? (
-                      <>
-                        <div className="menu-link">
+                {APP_MENU_ITEMS.map(item => {
+                  const isActiveParent = Boolean(
+                    item.children?.some(child => isPathActive(child.path)),
+                  );
+                  const isOpen = openMenuKey === item.key;
+
+                  return (
+                    <li
+                      key={item.key}
+                      className={`menu-item ${
+                        item.children?.length ? 'menu-accordion' : ''
+                      } ${isOpen ? 'hover show' : ''}`}
+                      data-submenu={item.label}
+                      data-kt-menu-trigger={
+                        item.children?.length ? 'click' : undefined
+                      }
+                      onMouseEnter={() => {
+                        if (item.children?.length) {
+                          setOpenMenuKey(item.key);
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        if (item.children?.length) {
+                          setOpenMenuKey('');
+                        }
+                      }}
+                    >
+                      {item.children?.length ? (
+                        <>
+                          <div
+                            className={`menu-link ${
+                              isActiveParent ? 'active' : ''
+                            }`}
+                            onClick={() =>
+                              setOpenMenuKey(current =>
+                                current === item.key ? '' : item.key,
+                              )
+                            }
+                          >
                           <span className="menu-icon">
                             <i className={item.iconClass}></i>
                           </span>
@@ -120,14 +167,20 @@ const _AppAside = (props: Props) => {
                           <span className="menu-arrow"></span>
                         </div>
 
-                        <div className="menu-sub menu-sub-accordion ps-6">
+                        <div
+                          className={`menu-sub menu-sub-accordion ps-6 ${
+                            isOpen ? 'show' : ''
+                          }`}
+                        >
                           {item.children.map(child => (
                             <div key={child.key} className="menu-item">
                               <NavLink
                                 exact
                                 className="menu-link"
                                 activeClassName="active"
+                                isActive={() => isPathActive(child.path)}
                                 to={child.path || '#'}
+                                onClick={() => setOpenMenuKey('')}
                               >
                                 <span className="menu-icon">
                                   <i className={child.iconClass}></i>
@@ -145,7 +198,9 @@ const _AppAside = (props: Props) => {
                         exact
                         className="menu-link"
                         activeClassName="active"
+                        isActive={() => isPathActive(item.path)}
                         to={item.path || '#'}
+                        onClick={() => setOpenMenuKey('')}
                       >
                         <span className="menu-icon">
                           <i className={item.iconClass}></i>
@@ -154,7 +209,8 @@ const _AppAside = (props: Props) => {
                       </NavLink>
                     )}
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </div>
           </div>

@@ -27,6 +27,23 @@ const formatValue = (value: unknown) => {
   return String(value);
 };
 
+const formatIndianAmount = (value: unknown) => {
+  if (value === null || value === undefined || value === '') {
+    return '-';
+  }
+
+  const normalizedValue = String(value).replace(/,/g, '').trim();
+  const numericValue = Number(normalizedValue);
+
+  if (!Number.isFinite(numericValue)) {
+    return String(value);
+  }
+
+  return new Intl.NumberFormat('en-IN', {
+    maximumFractionDigits: 2,
+  }).format(numericValue);
+};
+
 const normalizeFileUrl = (path: string) =>
   path
     .replace(/\\/g, '/')
@@ -43,9 +60,9 @@ const VendorStack = ({ order }: { order: WorkOrderItem }) => (
 
 const AmountStack = ({ order }: { order: WorkOrderItem }) => (
   <div className="d-flex flex-column gap-1 text-end">
-    <span>{formatValue(order.netAmount1)}</span>
-    {Number(order.netAmount2 || 0) ? <span>{formatValue(order.netAmount2)}</span> : null}
-    {Number(order.netAmount3 || 0) ? <span>{formatValue(order.netAmount3)}</span> : null}
+    <span>{formatIndianAmount(order.netAmount1)}</span>
+    {Number(order.netAmount2 || 0) ? <span>{formatIndianAmount(order.netAmount2)}</span> : null}
+    {Number(order.netAmount3 || 0) ? <span>{formatIndianAmount(order.netAmount3)}</span> : null}
   </div>
 );
 
@@ -145,22 +162,22 @@ export const WorkOrderApprovalTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th className='width-10'>Order No</th>
-                      <th className='width-12'>Date</th>
+                      <th className='width-8 text-center'>Order No</th>
+                      <th className='width-12 text-center'>Date</th>
                       <th className='width-16'>Created By</th>
-                      <th className='width-30'>Vendor Name</th>
+                      <th className='width-35'>Vendor Name</th>
                       <th className="text-end width-16%">
                         Net Amount
                       </th>
-                      <th className='width-16%'>Close / Renewed</th>
+                      <th className='width-10% text-center'>Close / Renewed</th>
                     </tr>
                   </thead>
 
                   <tbody>
                     {filteredOrders.map((order, index) => (
                       <tr key={`${order.orderNo}-${index}`}>
-                        <td>{formatValue(order.orderNo)}</td>
-                        <td>{formatValue(order.date)}</td>
+                        <td className="text-center">{formatValue(order.orderNo)}</td>
+                        <td className="text-center">{formatValue(order.date)}</td>
                         <td>{formatValue(order.createdBy)}</td>
                         <td>
                           <div className="fw-bold text-dark">
@@ -170,7 +187,7 @@ export const WorkOrderApprovalTable = ({
                         <td>
                           <AmountStack order={order} />
                         </td>
-                        <td>{formatValue(order.closeRenewed)}</td>
+                        <td className="text-center">{formatValue(order.closeRenewed)}</td>
                       </tr>
                     ))}
 
@@ -310,7 +327,7 @@ const WorkOrderModal = ({ order, onClose }: WorkOrderModalProps) => {
                     </div>
                     <div className="dashboard-bill-amount-strip rounded mt-3">
                       <span>Net Amount</span>
-                      <strong className="fs-4">{formatValue(amount)}</strong>
+                      <strong className="fs-4">{formatIndianAmount(amount)}</strong>
                     </div>
                   </div>
                 );
@@ -369,7 +386,7 @@ const WorkOrderModal = ({ order, onClose }: WorkOrderModalProps) => {
                       <span>{formatValue(term.percentage)}%</span>
                     </div>
                     <div className="dashboard-bill-workflow-meta">
-                      <span>Amount: {formatValue(term.amount)}</span>
+                      <span>Amount: {formatIndianAmount(term.amount)}</span>
                     </div>
                     <p>Pay Type: {formatValue(term.payType)}</p>
                     <div className="dashboard-bill-workflow-footer">

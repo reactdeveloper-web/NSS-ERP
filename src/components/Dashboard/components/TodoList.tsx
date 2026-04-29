@@ -18,7 +18,7 @@ export const TodoList = ({
 }: TodoListProps) => (
   <div className="card h-100 mb-xl-8">
     <div className="card-header border-0">
-      <h3 className="card-title fw-bolder text-dark">Todo</h3>
+      <h3 className="card-title fw-bolder text-dark">To do</h3>
     </div>
 
     <div className="card-body pt-2" style={{maxHeight:"620px", overflow:'auto'}}>
