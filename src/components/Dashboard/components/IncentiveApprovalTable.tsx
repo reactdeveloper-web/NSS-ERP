@@ -106,10 +106,10 @@ export const IncentiveApprovalTable = ({
               <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                 <thead>
                   <tr className="fw-bolder text-muted">
-                    <th className="width-10">Auto ID</th>
+                    <th className="width-7 text-center">Auto ID</th>
                     <th className="width-24">Emp Name</th>
-                    <th className="width-18">Type</th>
-                    <th className="width-14">Revert To</th>
+                    <th className="width-18 text-center">Type</th>
+                    <th className="width-14 text-center">Revert To</th>
                     <th className="width-18">DOE</th>
                     <th className="width-16">Remark</th>
                   </tr>
@@ -118,14 +118,14 @@ export const IncentiveApprovalTable = ({
                 <tbody>
                   {filteredApprovals.map((approval, index) => (
                     <tr key={`${approval.autoId}-${approval.employeeName}-${index}`}>
-                      <td>{formatValue(approval.autoId)}</td>
+                      <td className="text-center">{formatValue(approval.autoId)}</td>
                       <td>
                         <div className="fw-bold text-dark">
                           {formatValue(approval.employeeName)}
                         </div>
                       </td>
-                      <td>{formatValue(approval.type)}</td>
-                      <td>{formatValue(approval.revertTo)}</td>
+                      <td className="text-center">{formatValue(approval.type)}</td>
+                      <td className='text-center'>{formatValue(approval.revertTo)}</td>
                       <td>{formatValue(approval.doe)}</td>
                       <td>{formatValue(approval.remark)}</td>
                     </tr>

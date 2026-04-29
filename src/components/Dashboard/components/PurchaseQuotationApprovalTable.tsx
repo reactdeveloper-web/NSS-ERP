@@ -141,8 +141,8 @@ export const PurchaseQuotationApprovalTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th className='width-10'>Qcs Id</th>
-                      <th className='width-12'>Qcs Date</th>
+                      <th className='width-8 text-center'>Qcs Id</th>
+                      <th className='width-12 text-center'>Qcs Date</th>
                       <th className='width-22'>Vendor Name 1</th>
                       <th className='width-18'>Vendor Name 2</th>
                       <th className='width-18'>Vendor Name 3</th>
@@ -156,8 +156,8 @@ export const PurchaseQuotationApprovalTable = ({
                   <tbody>
                     {filteredQuotations.map((quotation, index) => (
                       <tr key={`${quotation.qcsId}-${index}`}>
-                        <td>{formatValue(quotation.qcsId)}</td>
-                        <td>{formatValue(quotation.qcsDate)}</td>
+                        <td className="text-center">{formatValue(quotation.qcsId)}</td>
+                        <td className="text-center">{formatValue(quotation.qcsDate)}</td>
                         <td>
                           <div className="fw-bold text-dark">
                             {formatValue(quotation.vendorName1)}

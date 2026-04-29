@@ -128,13 +128,13 @@ export const MeetingPointTable = ({
                 <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                   <thead>
                     <tr className="fw-bolder text-muted">
-                      <th className='width-7'>Sr No.</th>
-                      <th className='width-10'>Code</th>
-                      <th className='width-12'>Date</th>
+                      <th className='width-7 text-center'>Sr No.</th>
+                      <th className='width-10 text-center'>Code</th>
+                      <th className='width-12 text-center'>Date</th>
                       <th className='width-16'>Assign Name</th>
-                      <th className='width-10'>Priority</th>
-                      <th className='width-12'>Due Date</th>
-                      <th className='width-23'>Title</th>
+                      <th className='width-10 text-center'>Priority</th>
+                      <th className='width-12 text-center'>Due Date</th>
+                      <th className='width-25'>Title</th>
                       <th className="text-center width-10">
                         Complete
                       </th>
@@ -144,14 +144,14 @@ export const MeetingPointTable = ({
                   <tbody>
                     {filteredMeetings.map((meeting, index) => (
                       <tr key={`${meeting.code}-${meeting.srNo}-${index}`}>
-                        <td>{formatValue(meeting.srNo)}</td>
-                        <td>{formatValue(meeting.code)}</td>
-                        <td>{formatValue(meeting.date)}</td>
+                        <td className='text-center'>{formatValue(meeting.srNo)}</td>
+                        <td className='text-center'>{formatValue(meeting.code)}</td>
+                        <td className='text-center'>{formatValue(meeting.date)}</td>
                         <td>{formatValue(meeting.assignName)}</td>
-                        <td className="fw-bold text-dark">
+                        <td className="fw-bold text-dark text-center">
                           {formatValue(meeting.priority)}
                         </td>
-                        <td>{formatValue(meeting.dueDate)}</td>
+                        <td className='text-center'>{formatValue(meeting.dueDate)}</td>
                         <td>{formatValue(meeting.title)}</td>
                         <td className="text-center">
                           <span

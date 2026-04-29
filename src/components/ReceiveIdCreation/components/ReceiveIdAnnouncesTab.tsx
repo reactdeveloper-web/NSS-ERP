@@ -1,6 +1,12 @@
 import React from 'react';
+import { FloatingInputField } from 'src/components/Common/FloatingInputField';
+import { ReceiveIdFormTabProps } from './ReceiveIdForm.types';
 
-export const ReceiveIdAnnouncesTab: React.FC = () => {
+export const ReceiveIdAnnouncesTab: React.FC<ReceiveIdFormTabProps> = ({
+  values,
+  updateField,
+  isReadOnly,
+}) => {
   return (
     <div className={'tab-pane fade'} id="tab_announces" role="tabpanel">
       <div className={'row g-6'}>
@@ -25,8 +31,14 @@ export const ReceiveIdAnnouncesTab: React.FC = () => {
             <div className={'card-body'}>
               <div className={'row g-5'}>
                 <div className={'col-md-4'}>
-                  <label className={'form-label fw-semibold'}>Main Member Donor ID</label>
-                  <input type="text" className={'form-control'} placeholder="Enter Main Member Donor ID" />
+                  <FloatingInputField
+                    id="announceMainMemberDonorId"
+                    label="Main Member Donor ID"
+                    value={values.mainMemberDonorId}
+                    onChange={value => updateField('mainMemberDonorId', value)}
+                    placeholder="Enter Main Member Donor ID"
+                    readOnly={isReadOnly}
+                  />
                 </div>
               </div>
             </div>
@@ -44,17 +56,23 @@ export const ReceiveIdAnnouncesTab: React.FC = () => {
             <div className={'card-body'}>
               <div className={'file-row row g-5 align-items-end'}>
                 <div className={'col-md-4'}>
-                  <label className={'form-label fw-semibold'}>Total Due Amount</label>
-                  <input type="text" className={'form-control'} placeholder="Enter Total Due Amount" />
+                  <FloatingInputField
+                    id="totalDueAmount"
+                    label="Total Due Amount"
+                    value={values.totalDueAmount}
+                    onChange={value => updateField('totalDueAmount', value)}
+                    placeholder="Enter Total Due Amount"
+                    readOnly={isReadOnly}
+                  />
                 </div>
 
                 <div className={'col-md-4'}>
                   <label className={'form-label d-block'}>&nbsp;</label>
                   <div className={'d-flex gap-3'}>
-                    <button type="button" className={'btn btn-primary'}>
+                    <button type="button" className={'btn btn-primary'} disabled={isReadOnly}>
                       <i className={'fa fa-plus'}></i> Add
                     </button>
-                    <button type="button" className={'btn btn-light-danger d-none'}>
+                    <button type="button" className={'btn btn-light-danger d-none'} disabled={isReadOnly}>
                       <i className={'fa fa-trash'}></i> Delete
                     </button>
                   </div>

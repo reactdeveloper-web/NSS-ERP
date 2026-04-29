@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActionOnCorrespondenceTable } from './components/ActionOnCorrespondenceTable';
 import { getDashboard, getEmployeeAll } from 'src/api/masterApi';
 import { PageToolbar } from 'src/components/Common/PageToolbar';
@@ -80,6 +80,23 @@ const staticRows: StaticTaskRow[] = [
     status: 'Pending',
   },
 ];
+
+let employeeDirectoryRequest: ReturnType<typeof getEmployeeAll> | null = null;
+
+const getEmployeeDirectory = () => {
+  if (!employeeDirectoryRequest) {
+    employeeDirectoryRequest = getEmployeeAll({
+      emp_num: 0,
+      dm_id: 0,
+      emp_code: 0,
+    }).catch(error => {
+      employeeDirectoryRequest = null;
+      throw error;
+    });
+  }
+
+  return employeeDirectoryRequest;
+};
 
 function createStaticItem(
   PanelId: number,
@@ -1327,6 +1344,7 @@ export const DashboardContent: React.FC = () => {
   const [loadingTasks, setLoadingTasks] = useState(false);
   const [error, setError] = useState('');
   const [hodName, setHodName] = useState('');
+  const searchDebounceRef = useRef<number | undefined>(undefined);
   const hodCode = getHodCode();
   const toolbarDescription = `${getEmployeeName()} (${getEmpNum()}) ${getDepartmentName()} - HOD : ${
     hodName || hodCode || '-'
@@ -2108,11 +2126,7 @@ export const DashboardContent: React.FC = () => {
             PageIndex: requestPageNumber,
             PageSize: requestPageSize,
           }),
-          getEmployeeAll({
-            emp_num: 0,
-            dm_id: 0,
-            emp_code: 0,
-          }),
+          getEmployeeDirectory(),
         ]);
         const issueRows = getDataRecords(response.data).map(record =>
           normalizeIssueVerificationWithEmployees(record, employeeResponse.data),
@@ -2284,7 +2298,19 @@ export const DashboardContent: React.FC = () => {
       return;
     }
 
-    fetchTasks(activeItem, 1, taskPageSize, searchText);
+    if (searchDebounceRef.current) {
+      window.clearTimeout(searchDebounceRef.current);
+    }
+
+    const normalizedSearchText = searchText.trim();
+
+    if (normalizedSearchText.length > 0 && normalizedSearchText.length < 3) {
+      return;
+    }
+
+    searchDebounceRef.current = window.setTimeout(() => {
+      fetchTasks(activeItem, 1, taskPageSize, searchText);
+    }, 400);
   };
 
   const refreshPaymentTermsDashboardCount = useCallback(
@@ -2390,14 +2416,17 @@ export const DashboardContent: React.FC = () => {
       const dashboardItems = response.data?.Dashboard || [];
       const allDashboardItems = [...dashboardItems];
       setItems(allDashboardItems);
-      await Promise.all([
-        refreshPaymentTermsDashboardCount(allDashboardItems),
-        refreshWorkOrderDashboardCount(allDashboardItems),
-      ]);
 
       if (allDashboardItems.length) {
         fetchTasks(allDashboardItems[0]);
       }
+
+      Promise.all([
+        refreshPaymentTermsDashboardCount(allDashboardItems),
+        refreshWorkOrderDashboardCount(allDashboardItems),
+      ]).catch(() => {
+        // Count refresh is best-effort; keep the initial dashboard usable.
+      });
     } catch (apiError) {
       setError('Unable to load dashboard todo list.');
     } finally {
@@ -2413,6 +2442,15 @@ export const DashboardContent: React.FC = () => {
     fetchDashboard();
   }, [fetchDashboard]);
 
+  useEffect(
+    () => () => {
+      if (searchDebounceRef.current) {
+        window.clearTimeout(searchDebounceRef.current);
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
     const loadHodName = async () => {
       if (!hodCode) {
@@ -2420,11 +2458,7 @@ export const DashboardContent: React.FC = () => {
       }
 
       try {
-        const response = await getEmployeeAll({
-          emp_num: 0,
-          dm_id: 0,
-          emp_code: 0,
-        });
+        const response = await getEmployeeDirectory();
         const nextHodName = findEmployeeNameByCode(response.data, hodCode);
         setHodName(nextHodName ? String(nextHodName) : '');
       } catch (apiError) {

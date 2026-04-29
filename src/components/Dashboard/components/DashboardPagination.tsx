@@ -35,7 +35,7 @@ export const DashboardPagination = ({
   });
 
   return (
-    <div className="d-flex flex-stack flex-wrap pt-5 mt-auto">
+    <div className="d-flex flex-stack flex-wrap mt-auto">
       <div className="d-flex align-items-center gap-3">
         <span className="text-muted fs-7">Show</span>
         <select

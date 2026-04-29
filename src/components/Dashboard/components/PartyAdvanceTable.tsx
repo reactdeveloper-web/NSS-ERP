@@ -122,9 +122,9 @@ export const PartyAdvanceTable = ({
               <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
                 <thead>
                   <tr className="fw-bolder text-muted">
-                    <th className='width-10'>Code</th>
-                    <th className='width-12'>Entry Date</th>
-                    <th className='width-18'>Bill Due Date</th>
+                    <th className='width-8 text-center'>Code</th>
+                    <th className='width-12 text-center'>Entry Date</th>
+                    <th className='width-12 text-center'>Bill Due Date</th>
                     <th className='width-18'>Vendor Name</th>
                     <th className='width-28'>Description</th>
                     <th className="text-center width-14%">
@@ -136,9 +136,9 @@ export const PartyAdvanceTable = ({
                 <tbody>
                   {filteredAdvances.map((advance, index) => (
                     <tr key={`${advance.code}-${advance.entryDate}-${index}`}>
-                      <td>{formatValue(advance.code)}</td>
-                      <td>{formatValue(advance.entryDate)}</td>
-                      <td>{formatValue(advance.billDueDate)}</td>
+                      <td className="text-center">{formatValue(advance.code)}</td>
+                      <td className="text-center">{formatValue(advance.entryDate)}</td>
+                      <td className="text-center">{formatValue(advance.billDueDate)}</td>
                       <td>
                         <div className="fw-bold text-dark">
                           {formatValue(advance.vendorName)}

@@ -24,7 +24,7 @@ export const APP_MENU_ITEMS: AppMenuItem[] = [
   },
   {
     key: 'receive-id',
-    label: 'Receive ID',
+    label: 'Donation Receive',
     iconClass: 'fas fa-clipboard-check fs-4',
     children: RECEIVE_ID_HEADS.map(head => ({
       key: `receive-id-${head.key}`,

@@ -50,13 +50,13 @@ export const TaskDetailTable = ({
           <table className="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4 dashboard-task-detail-table">
             <thead>
               <tr className="fw-bolder text-muted">
-                <th  align='center'>Sr.No.</th>
-                <th  align='center'>Program&nbsp;ID</th>
-                <th  align='center'>Task&nbsp;ID</th>
+                <th  className='text-center'>Sr.No.</th>
+                <th  className='text-center'>Program&nbsp;ID</th>
+                <th  className='text-center'>Task&nbsp;ID</th>
                 <th>Program Name / Date</th>
                 <th>Task Names</th>
-                <th align='center'>Task Date</th>
-                <th align='center'>Completed</th>
+                <th className='text-center'>Task Date</th>
+                <th className='text-center'>Completed</th>
               </tr>
             </thead>
 

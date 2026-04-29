@@ -1,37 +1,66 @@
 import React from 'react';
+import { FloatingInputField } from 'src/components/Common/FloatingInputField';
+import { FloatingSelectField } from 'src/components/Common/FloatingSelectField';
+import { ReceiveIdFormTabProps } from './ReceiveIdForm.types';
 
-export const ReceiveIdInstructionTab: React.FC = () => {
+const instructionOptions = [
+  { value: '', label: 'Select' },
+  { value: 'AADHAAR CARD UPDATED', label: 'AADHAAR CARD UPDATED' },
+  { value: 'ADDRESS UPDATED', label: 'ADDRESS UPDATED' },
+  { value: 'PAN UPDATED', label: 'PAN UPDATED' },
+  { value: 'MOBILE UPDATED', label: 'MOBILE UPDATED' },
+];
+
+const updateInOptions = [
+  { value: '', label: 'Select' },
+  { value: 'Donor Master', label: 'Donor Master' },
+  { value: 'Receive Master', label: 'Receive Master' },
+  { value: 'Both', label: 'Both' },
+];
+
+export const ReceiveIdInstructionTab: React.FC<ReceiveIdFormTabProps> = ({
+  values,
+  updateField,
+  isReadOnly,
+}) => {
   return (
     <div className={'tab-pane fade'} id="tab_instruction" role="tabpanel">
       <div className={'row g-5 align-items-end'}>
         <div className={'col-md-3'}>
-          <label className={'form-label fw-semibold'}>Instruction</label>
-          <select id="instType" className={'form-select'}>
-            <option value="">Select</option>
-            <option>AADHAAR CARD UPDATED</option>
-            <option>ADDRESS UPDATED</option>
-            <option>PAN UPDATED</option>
-            <option>MOBILE UPDATED</option>
-          </select>
+          <FloatingSelectField
+            id="instType"
+            label="Instruction"
+            value={values.instruction}
+            options={instructionOptions}
+            disabled={isReadOnly}
+            onChange={value => updateField('instruction', value as string)}
+          />
         </div>
 
         <div className={'col-md-3'}>
-          <label className={'form-label fw-semibold'}>Update In</label>
-          <select id="instUpdateIn" className={'form-select'}>
-            <option value="">Select</option>
-            <option>Donor Master</option>
-            <option>Receive Master</option>
-            <option>Both</option>
-          </select>
+          <FloatingSelectField
+            id="instUpdateIn"
+            label="Update In"
+            value={values.updateIn}
+            options={updateInOptions}
+            disabled={isReadOnly}
+            onChange={value => updateField('updateIn', value as string)}
+          />
         </div>
 
         <div className={'col-md-4'}>
-          <label className={'form-label fw-semibold'}>Details</label>
-          <input type="text" id="instDetails" className={'form-control'} placeholder="e.g., Aadhaar No." />
+          <FloatingInputField
+            id="instDetails"
+            label="Details"
+            value={values.details}
+            onChange={value => updateField('details', value)}
+            placeholder="e.g., Aadhaar No."
+            readOnly={isReadOnly}
+          />
         </div>
 
         <div className={'col-md-2'}>
-          <button className={'btn btn-primary'} type="button" id="addInstBtn">
+          <button className={'btn btn-primary'} type="button" id="addInstBtn" disabled={isReadOnly}>
             Add
           </button>
         </div>
